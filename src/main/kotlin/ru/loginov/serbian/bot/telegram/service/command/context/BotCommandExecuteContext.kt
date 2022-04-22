@@ -1,10 +1,10 @@
 package ru.loginov.serbian.bot.telegram.service.command.context
 
-import ru.loginov.serbian.bot.telegram.service.TelegramService
+import ru.loginov.telegram.api.TelegramAPI
 
 interface BotCommandExecuteContext {
 
-    val telegramService: TelegramService
+    val telegramApi: TelegramAPI
     val userId: Long
     val chatId: Long
     val lang: String?

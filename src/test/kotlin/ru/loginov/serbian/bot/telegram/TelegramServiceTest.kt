@@ -1,4 +1,4 @@
-//package ru.loginov.serbian.bot.telegram
+package ru.loginov.serbian.bot.telegram//package ru.loginov.serbian.bot.telegram
 //
 //import kotlinx.coroutines.runBlocking
 //import org.junit.jupiter.api.Test

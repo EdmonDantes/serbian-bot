@@ -6,9 +6,9 @@ import ru.loginov.serbian.bot.data.dao.category.CategoryDaoLocalization
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.telegram.service.command.BotCommand
 import ru.loginov.serbian.bot.telegram.service.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.util.StringBuilderMarkdownV2
-import ru.loginov.serbian.bot.telegram.util.markdown2
-import ru.loginov.serbian.bot.telegram.util.markdown2FromString
+import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
+import ru.loginov.telegram.api.util.markdown2
+import ru.loginov.telegram.api.util.markdown2FromString
 
 @Component
 class CreateCategoryCommand : BotCommand {
@@ -33,7 +33,7 @@ class CreateCategoryCommand : BotCommand {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         if (context.arguments.isEmpty()) {
-            context.telegramService.sendMessage {
+            context.telegramApi.sendMessage {
                 chatId = context.chatId
                 buildText {
                     append("You didn't write category name. Please use command like:\n")
@@ -63,7 +63,7 @@ class CreateCategoryCommand : BotCommand {
 
             if (possibleCategories.isEmpty()) {
                 val category = categoryManager.createNewCategory(categoryNames)
-                context.telegramService.sendMessage {
+                context.telegramApi.sendMessage {
                     chatId = context.chatId
                     buildText {
                         append("Created category with names:\n")
@@ -76,7 +76,7 @@ class CreateCategoryCommand : BotCommand {
                     }
                 }
             } else {
-                context.telegramService.sendMessage {
+                context.telegramApi.sendMessage {
                     chatId = context.chatId
                     buildText {
                         append("We found some similar categories.\nIf you want to create new category please use /createCategoryForce\n")

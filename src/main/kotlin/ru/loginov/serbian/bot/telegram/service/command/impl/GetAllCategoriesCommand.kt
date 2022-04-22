@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.telegram.service.command.BotCommand
 import ru.loginov.serbian.bot.telegram.service.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.util.StringBuilderMarkdownV2
-import ru.loginov.serbian.bot.telegram.util.markdown2FromString
+import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
+import ru.loginov.telegram.api.util.markdown2FromString
 
 @Component
 class GetAllCategoriesCommand : BotCommand {
@@ -19,7 +19,7 @@ class GetAllCategoriesCommand : BotCommand {
     override val usage: StringBuilderMarkdownV2? = null
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        context.telegramService.sendMessage {
+        context.telegramApi.sendMessage {
             chatId = context.chatId
             buildText {
                 append("Available categories:")

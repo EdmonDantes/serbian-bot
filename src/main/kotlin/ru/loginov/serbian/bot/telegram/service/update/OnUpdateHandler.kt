@@ -1,6 +1,6 @@
 package ru.loginov.serbian.bot.telegram.service.update
 
-import ru.loginov.serbian.bot.telegram.entity.Update
+import ru.loginov.telegram.api.entity.Update
 
 interface OnUpdateHandler {
 

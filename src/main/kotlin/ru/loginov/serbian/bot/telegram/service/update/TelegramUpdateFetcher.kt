@@ -1,17 +1,17 @@
 package ru.loginov.serbian.bot.telegram.service.update
 
 import kotlinx.coroutines.runBlocking
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.data.dao.telegram.UpdateSequence
 import ru.loginov.serbian.bot.data.repository.telegram.UpdateSequenceRepository
 import ru.loginov.serbian.bot.data.repository.telegram.UpdateSequenceRepository.Companion.DEFAULT_ID
-import ru.loginov.serbian.bot.telegram.service.DefaultTelegramService
+import ru.loginov.telegram.api.TelegramAPI
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.ForkJoinPool
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -27,11 +27,14 @@ class TelegramUpdateFetcher {
     private lateinit var updateSequenceRepository: UpdateSequenceRepository
 
     @Autowired
-    private lateinit var telegramService: DefaultTelegramService
+    private lateinit var telegramService: TelegramAPI
 
     @Autowired
     @Qualifier("smalltasks")
     private lateinit var executor: Executor
+
+    @Value("\${bot.long.polling.timeout.sec:5}")
+    private var longPollingTimeoutSec: Long = 5
 
     private val isContinue = AtomicBoolean(true)
 
@@ -46,7 +49,15 @@ class TelegramUpdateFetcher {
         executor.execute {
             var newLastSeq: Long? = lastSeq
             runBlocking {
-                telegramService.getUpdates(lastSeq)
+                try {
+                    telegramService.getUpdates {
+                        offset = lastSeq
+                        timeoutSec = longPollingTimeoutSec
+                    }
+                } catch (e: Exception) {
+                    LOGGER.warn("Can not get updates for telegram bot", e)
+                    emptyList()
+                }
             }.forEach { update ->
                 newLastSeq = max(newLastSeq ?: Long.MIN_VALUE, update.id + 1)
                 onUpdateHandlers.forEach { handler ->
@@ -70,5 +81,9 @@ class TelegramUpdateFetcher {
     @PreDestroy
     fun preDestroy() {
         isContinue.set(false)
+    }
+
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(TelegramUpdateFetcher::class.java)
     }
 }

@@ -1,4 +1,4 @@
-//package ru.loginov.serbian.bot.data.repository.category
+package ru.loginov.serbian.bot.data.repository.category//package ru.loginov.serbian.bot.data.repository.category
 //
 //import org.junit.jupiter.api.Assertions.assertEquals
 //import org.junit.jupiter.api.Test

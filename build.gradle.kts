@@ -29,9 +29,7 @@ dependencies {
 	implementation("mysql:mysql-connector-java")
 	implementation("com.h2database:h2")
 
-	implementation("io.ktor:ktor-client-core:1.6.7")
-	implementation("io.ktor:ktor-client-cio:1.6.7")
-	implementation("io.ktor:ktor-client-okhttp:1.6.7")
+	implementation(project(":kotlin-telegram-api"))
 
 	implementation("org.hibernate.search:hibernate-search-mapper-orm:6.1.4.Final")
 //	implementation("org.hibernate:hibernate-search-orm:5.11.10.Final")

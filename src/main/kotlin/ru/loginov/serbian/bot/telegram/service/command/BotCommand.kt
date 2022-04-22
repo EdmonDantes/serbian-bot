@@ -1,7 +1,7 @@
 package ru.loginov.serbian.bot.telegram.service.command
 
 import ru.loginov.serbian.bot.telegram.service.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.util.StringBuilderMarkdownV2
+import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
 
 interface BotCommand {
 

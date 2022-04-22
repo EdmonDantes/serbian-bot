@@ -1,4 +1,4 @@
-//package ru.loginov.serbian.bot.data.repository.search
+package ru.loginov.serbian.bot.data.repository.search//package ru.loginov.serbian.bot.data.repository.search
 //
 //import org.apache.lucene.analysis.core.LowerCaseFilterFactory
 //import org.apache.lucene.analysis.ngram.NGramFilterFactory
