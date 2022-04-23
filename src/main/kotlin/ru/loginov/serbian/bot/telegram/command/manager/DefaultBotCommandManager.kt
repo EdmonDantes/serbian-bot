@@ -1,9 +1,9 @@
-package ru.loginov.serbian.bot.telegram.service.command.manager
+package ru.loginov.serbian.bot.telegram.command.manager
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import ru.loginov.serbian.bot.telegram.service.command.BotCommand
+import ru.loginov.serbian.bot.telegram.command.BotCommand
 
 @Service
 class DefaultBotCommandManager : BotCommandManager {

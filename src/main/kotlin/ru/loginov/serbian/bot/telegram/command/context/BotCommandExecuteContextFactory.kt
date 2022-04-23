@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.telegram.service.command.context
+package ru.loginov.serbian.bot.telegram.command.context
 
 interface BotCommandExecuteContextFactory {
 

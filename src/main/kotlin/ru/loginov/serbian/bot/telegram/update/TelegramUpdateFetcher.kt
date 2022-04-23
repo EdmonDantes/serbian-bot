@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.telegram.service.update
+package ru.loginov.serbian.bot.telegram.update
 
 import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger

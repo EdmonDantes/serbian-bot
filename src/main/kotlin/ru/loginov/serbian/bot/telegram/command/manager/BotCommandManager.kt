@@ -1,6 +1,6 @@
-package ru.loginov.serbian.bot.telegram.service.command.manager
+package ru.loginov.serbian.bot.telegram.command.manager
 
-import ru.loginov.serbian.bot.telegram.service.command.BotCommand
+import ru.loginov.serbian.bot.telegram.command.BotCommand
 
 interface BotCommandManager {
 

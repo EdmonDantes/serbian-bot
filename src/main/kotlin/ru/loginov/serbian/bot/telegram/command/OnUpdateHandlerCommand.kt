@@ -1,12 +1,12 @@
-package ru.loginov.serbian.bot.telegram.service.command
+package ru.loginov.serbian.bot.telegram.command
 
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import ru.loginov.serbian.bot.telegram.service.command.context.BotCommandExecuteContextFactory
-import ru.loginov.serbian.bot.telegram.service.command.manager.BotCommandManager
-import ru.loginov.serbian.bot.telegram.service.update.OnUpdateHandler
+import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextFactory
+import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
+import ru.loginov.serbian.bot.telegram.update.OnUpdateHandler
 import ru.loginov.telegram.api.entity.Update
 import java.util.concurrent.Executor
 

@@ -1,10 +1,10 @@
-package ru.loginov.serbian.bot.telegram.service.command.impl
+package ru.loginov.serbian.bot.telegram.command.impl
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
-import ru.loginov.serbian.bot.telegram.service.command.BotCommand
-import ru.loginov.serbian.bot.telegram.service.command.context.BotCommandExecuteContext
+import ru.loginov.serbian.bot.telegram.command.BotCommand
+import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
 import ru.loginov.telegram.api.util.markdown2FromString
 

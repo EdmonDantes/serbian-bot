@@ -1,9 +1,9 @@
-package ru.loginov.serbian.bot.telegram.service.command.context.impl
+package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import ru.loginov.serbian.bot.telegram.service.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.service.command.context.BotCommandExecuteContextFactory
+import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
+import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextFactory
 import ru.loginov.telegram.api.TelegramAPI
 
 @Component
