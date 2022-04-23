@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.data.dao.localization
+package ru.loginov.serbian.bot.data.dto.localization
 
 import java.io.Serializable
 import javax.persistence.Embeddable

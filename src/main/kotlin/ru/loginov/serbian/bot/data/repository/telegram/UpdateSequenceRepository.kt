@@ -1,7 +1,7 @@
 package ru.loginov.serbian.bot.data.repository.telegram
 
 import org.springframework.data.jpa.repository.JpaRepository
-import ru.loginov.serbian.bot.data.dao.telegram.UpdateSequence
+import ru.loginov.serbian.bot.data.dto.telegram.UpdateSequence
 
 interface UpdateSequenceRepository : JpaRepository<UpdateSequence, Long> {
     companion object {

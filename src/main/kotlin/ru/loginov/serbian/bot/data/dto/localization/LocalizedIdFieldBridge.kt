@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.data.dao.localization
+package ru.loginov.serbian.bot.data.dto.localization
 
 import org.hibernate.search.mapper.pojo.bridge.IdentifierBridge
 import org.hibernate.search.mapper.pojo.bridge.runtime.IdentifierBridgeFromDocumentIdentifierContext

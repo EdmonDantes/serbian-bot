@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.data.dao.telegram
+package ru.loginov.serbian.bot.data.dto.telegram
 
 import javax.persistence.Column
 import javax.persistence.Entity

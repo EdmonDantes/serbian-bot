@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.data.dao.category
+package ru.loginov.serbian.bot.data.dto.category
 
 import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
@@ -13,7 +13,7 @@ import javax.persistence.MapKey
 import javax.persistence.OneToMany
 
 @Entity
-class SubCategoryDao {
+class SubCategoryDto {
 
     @Id
     @GeneratedValue
@@ -21,7 +21,7 @@ class SubCategoryDao {
 
     @ManyToOne
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
-    var category: CategoryDao? = null
+    var category: CategoryDto? = null
 
     @Column(name = "category_id", nullable = false)
     var categoryId: Int? = null
@@ -29,6 +29,6 @@ class SubCategoryDao {
     @MapKey(name = "localizedId.locale")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
     @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var localization: MutableMap<String, SubCategoryDaoLocalization> = HashMap()
+    var localization: MutableMap<String, SubCategoryDtoLocalization> = HashMap()
 
 }

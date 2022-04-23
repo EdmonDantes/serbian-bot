@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration
 import ru.loginov.http.HttpClient
 import ru.loginov.telegram.api.DefaultTelegramAPI
 import ru.loginov.telegram.api.TelegramAPI
+import java.util.ResourceBundle
 
 @Configuration
 class TelegramAPIConfiguration {
@@ -17,6 +18,5 @@ class TelegramAPIConfiguration {
     private lateinit var telegramToken: String
 
     @Bean
-    fun telegramApi() : TelegramAPI = DefaultTelegramAPI(HttpClient(), telegramServerUrl+telegramToken)
-
+    fun telegramApi(): TelegramAPI = DefaultTelegramAPI(HttpClient(), telegramServerUrl + telegramToken)
 }

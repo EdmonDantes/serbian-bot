@@ -2,7 +2,7 @@ package ru.loginov.serbian.bot.telegram.service.command.impl
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import ru.loginov.serbian.bot.data.dao.category.CategoryDaoLocalization
+import ru.loginov.serbian.bot.data.dto.category.CategoryDtoLocalization
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.telegram.service.command.BotCommand
 import ru.loginov.serbian.bot.telegram.service.command.context.BotCommandExecuteContext
@@ -55,7 +55,7 @@ class CreateCategoryCommand : BotCommand {
                 }
             }.toMap()
 
-            val possibleCategories = HashSet<CategoryDaoLocalization>()
+            val possibleCategories = HashSet<CategoryDtoLocalization>()
 
             categoryNames.values.forEach {
                 possibleCategories.addAll(categoryManager.findCategoryByName(it))

@@ -30,6 +30,12 @@ data class KeyboardButton(
          * *Optional*
          */
         @JsonProperty(value = "request_location", required = false) val requestLocation: Boolean? = null,
-//        @JsonProperty(value = "request_poll", required = false) val request_poll: KeyboardButtonPollType?,
+        /**
+         * If specified, the user will be asked to create a poll and send it to the bot when the button is pressed.
+         * Available in private chats only.
+         *
+         * *Optional*
+         */
+        @JsonProperty(value = "request_poll", required = false) val request_poll: KeyboardButtonPollType?,
 //        @JsonProperty(value = "web_app", required = false) val web_app: WebAppInfo?,
 )

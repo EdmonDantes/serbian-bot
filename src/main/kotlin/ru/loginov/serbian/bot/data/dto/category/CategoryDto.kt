@@ -1,10 +1,9 @@
-package ru.loginov.serbian.bot.data.dao.category
+package ru.loginov.serbian.bot.data.dto.category
 
 import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
 import java.util.Locale
 import javax.persistence.CascadeType
-import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
@@ -12,7 +11,7 @@ import javax.persistence.MapKey
 import javax.persistence.OneToMany
 
 @Entity
-class CategoryDao {
+class CategoryDto {
 
     @Id
     @GeneratedValue
@@ -21,15 +20,15 @@ class CategoryDao {
     @MapKey(name = "localizedId.locale")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
     @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var localization: MutableMap<String, CategoryDaoLocalization> = HashMap()
+    var localization: MutableMap<String, CategoryDtoLocalization> = HashMap()
 
     fun putLocalization(locale: Locale, value: String) {
         val localeTag = locale.toLanguageTag()
-        localization[localeTag] = CategoryDaoLocalization(this, localeTag, value)
+        localization[localeTag] = CategoryDtoLocalization(this, localeTag, value)
     }
 
     fun putLocalization(locale: String, value: String) {
-        localization[locale] = CategoryDaoLocalization(this, locale, value)
+        localization[locale] = CategoryDtoLocalization(this, locale, value)
     }
 
 }

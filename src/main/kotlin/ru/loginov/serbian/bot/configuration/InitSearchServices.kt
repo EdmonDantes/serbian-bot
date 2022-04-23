@@ -4,8 +4,8 @@ import org.hibernate.search.mapper.orm.Search
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.stereotype.Component
-import ru.loginov.serbian.bot.data.dao.category.CategoryDaoLocalization
-import ru.loginov.serbian.bot.data.dao.category.SubCategoryDaoLocalization
+import ru.loginov.serbian.bot.data.dto.category.CategoryDtoLocalization
+import ru.loginov.serbian.bot.data.dto.category.SubCategoryDtoLocalization
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 import javax.transaction.Transactional
@@ -19,8 +19,8 @@ class InitSearchServices(@PersistenceContext val entityManager: EntityManager) :
             val searchSession = Search.session(entityManager)
 
             val indexer = searchSession.massIndexer(
-                    CategoryDaoLocalization::class.java,
-                    SubCategoryDaoLocalization::class.java
+                    CategoryDtoLocalization::class.java,
+                    SubCategoryDtoLocalization::class.java
             ).threadsToLoadObjects(8)
 
             indexer.startAndWait()

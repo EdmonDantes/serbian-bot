@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.data.dao.shop
+package ru.loginov.serbian.bot.data.dto.shop
 
 import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
