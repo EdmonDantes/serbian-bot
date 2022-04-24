@@ -16,7 +16,7 @@ class ExecutorsConfiguration {
     private lateinit var executorForSmallTasks: ExecutorService
 
     @Bean
-    @Qualifier("smalltasks")
+    @Qualifier("small_tasks")
     fun executorForSmallTasks() : Executor {
         executorForSmallTasks = ForkJoinPool(
                 Runtime.getRuntime().availableProcessors() * 2,

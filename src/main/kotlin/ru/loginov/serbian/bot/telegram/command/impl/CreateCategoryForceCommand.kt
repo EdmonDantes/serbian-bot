@@ -1,3 +1,4 @@
+/*
 package ru.loginov.serbian.bot.telegram.command.impl
 
 import org.springframework.beans.factory.annotation.Autowired
@@ -70,4 +71,4 @@ class CreateCategoryForceCommand : BotCommand {
             }
         }
     }
-}
+}*/

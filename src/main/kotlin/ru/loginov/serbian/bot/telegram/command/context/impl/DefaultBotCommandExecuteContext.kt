@@ -1,12 +1,14 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
+import ru.loginov.serbian.bot.data.dto.user.UserDto
+import ru.loginov.serbian.bot.telegram.command.context.BotCommandArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.telegram.api.TelegramAPI
 
 class DefaultBotCommandExecuteContext(
-        override val telegramApi: TelegramAPI,
-        override val userId: Long,
+        override val telegram: TelegramAPI,
+        override val user: UserDto,
+        override val isDirect: Boolean,
         override val chatId: Long,
-        override val lang: String?,
-        override val arguments: List<String>
+        override val argumentManager: BotCommandArgumentManager
 ) : BotCommandExecuteContext

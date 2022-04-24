@@ -8,7 +8,10 @@ interface BotCommand {
     val commandName: String
     val description: StringBuilderMarkdownV2?
     val usage: StringBuilderMarkdownV2?
+    val userAdditionalDataKeys: List<String>
 
     suspend fun execute(context: BotCommandExecuteContext)
+
+    suspend fun executeStage(stage: Long, context: BotCommandExecuteContext)
 
 }

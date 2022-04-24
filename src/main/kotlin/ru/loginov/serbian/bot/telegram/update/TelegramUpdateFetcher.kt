@@ -1,6 +1,11 @@
 package ru.loginov.serbian.bot.telegram.update
 
 import kotlinx.coroutines.runBlocking
+import org.hibernate.id.IdentifierGenerator
+import org.hibernate.id.IncrementGenerator
+import org.hibernate.id.enhanced.SequenceStyleGenerator
+import org.hibernate.id.factory.IdentifierGeneratorFactory
+import org.hibernate.id.factory.internal.DefaultIdentifierGeneratorFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,6 +20,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
+import javax.persistence.SequenceGenerator
 import kotlin.math.max
 
 @Service
@@ -30,7 +36,7 @@ class TelegramUpdateFetcher {
     private lateinit var telegramService: TelegramAPI
 
     @Autowired
-    @Qualifier("smalltasks")
+    @Qualifier("small_tasks")
     private lateinit var executor: Executor
 
     @Value("\${bot.long.polling.timeout.sec:5}")
@@ -40,6 +46,10 @@ class TelegramUpdateFetcher {
 
     @PostConstruct
     fun postConstruct() {
+//        val factory = DefaultIdentifierGeneratorFactory()
+//        factory.injectServices()
+
+
         val lastSeq = updateSequenceRepository.findById(DEFAULT_ID).orElse(null)?.seq
 
         fetchUpdates(lastSeq)

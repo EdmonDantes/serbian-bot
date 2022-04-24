@@ -3,11 +3,17 @@ package ru.loginov.telegram.api
 import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.Update
 import ru.loginov.telegram.api.entity.User
+import ru.loginov.telegram.api.request.AnswerCallbackQueryRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
 
 interface TelegramAPI {
 
+    /**
+     * Use this method to send answers to callback queries sent from inline keyboards.
+     * The answer will be displayed to the user as a notification at the top of the chat screen or as an alert.
+     */
+    suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit)
     suspend fun getMe() : User?
     suspend fun getUpdates(request: GetUpdatesRequest.() -> Unit) : List<Update>
     suspend fun sendMessage(request: SendMessageRequest.() -> Unit) : Message?

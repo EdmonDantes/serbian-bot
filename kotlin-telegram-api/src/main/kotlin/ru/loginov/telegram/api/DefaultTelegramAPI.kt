@@ -8,6 +8,7 @@ import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.Update
 import ru.loginov.telegram.api.entity.User
 import ru.loginov.telegram.api.exception.ResponseErrorException
+import ru.loginov.telegram.api.request.AnswerCallbackQueryRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
 import ru.loginov.telegram.api.response.TelegramResponse
@@ -16,6 +17,13 @@ class DefaultTelegramAPI(
         private val client: HttpClient,
         private val baseUrl: String,
 ) : TelegramAPI {
+    override suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit) {
+        client.requestJson<Boolean>(
+                HttpMethod.Post,
+                "answerCallbackQuery",
+                AnswerCallbackQueryRequest().also(request)
+        )
+    }
 
     override suspend fun getMe(): User? =
             client.requestJson<User>(HttpMethod.Get, "getMe")

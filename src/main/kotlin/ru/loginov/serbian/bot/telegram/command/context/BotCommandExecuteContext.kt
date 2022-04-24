@@ -1,13 +1,17 @@
 package ru.loginov.serbian.bot.telegram.command.context
 
+import ru.loginov.serbian.bot.data.dto.user.UserDto
 import ru.loginov.telegram.api.TelegramAPI
 
 interface BotCommandExecuteContext {
-
-    val telegramApi: TelegramAPI
-    val userId: Long
+    val telegram: TelegramAPI
+    val user: UserDto
+    val isDirect: Boolean
     val chatId: Long
-    val lang: String?
-    val arguments: List<String>
+    val argumentManager: BotCommandArgumentManager
 
+//    fun startStage(stage: Long)
+//    fun endStage(stage: Long)
+//
+//    fun <T> stage(stage: Long, block: () -> T)
 }

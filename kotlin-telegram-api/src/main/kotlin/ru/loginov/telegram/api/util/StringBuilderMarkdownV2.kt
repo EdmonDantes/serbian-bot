@@ -69,6 +69,20 @@ class StringBuilderMarkdownV2 {
         stringWithoutFormatting.append(name)
     }
 
+    fun link(name: String, url: String) : StringBuilderMarkdownV2 = this.apply {
+        stringBuilder.append("[").append(name).append("](").append(url).append(")")
+
+        entities.add(
+                MessageEntity(
+                        MessageEntityType.TEXT_LINK,
+                        stringWithoutFormatting.length.toLong(),
+                        name.length.toLong(),
+                        url = url
+                )
+        )
+        stringWithoutFormatting.append(name)
+    }
+
     fun mention(user: User): StringBuilderMarkdownV2 = this.apply {
         if (user.username.isNullOrEmpty()) {
             return@apply

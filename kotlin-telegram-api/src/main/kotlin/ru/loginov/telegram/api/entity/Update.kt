@@ -1,12 +1,14 @@
 package ru.loginov.telegram.api.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * This object represents an incoming update.
  * At most one of the optional parameters can be present in any given update.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Update(
         /**
@@ -48,7 +50,7 @@ data class Update(
          *
          * *Optional*
          */
-        @JsonProperty(value = "inline_query", required = false) val inline_query: InlineQuery? = null,
+        @JsonProperty(value = "inline_query", required = false) val inlineQuery: InlineQuery? = null,
         /**
          * The result of an inline query that was chosen by a user and sent to their chat partner.
          *
@@ -60,7 +62,7 @@ data class Update(
          *
          * *Optional*
          */
-        //TODO: Add support for: @JsonProperty(value = "callback_query", required = false) val callbackQuery: CallbackQuery?,
+        @JsonProperty(value = "callback_query", required = false) val callbackQuery: CallbackQuery?,
         /**
          * New incoming shipping query. Only for invoices with flexible price
          *

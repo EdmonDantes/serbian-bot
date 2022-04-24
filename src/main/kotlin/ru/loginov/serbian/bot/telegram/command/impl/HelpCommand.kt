@@ -25,20 +25,25 @@ class HelpCommand : BotCommand {
             append("command_name")
         }
     }
+    override val userAdditionalDataKeys: List<String> = emptyList()
 
     override suspend fun execute(context: BotCommandExecuteContext) {
 
-        context.telegramApi.sendMessage {
+        context.telegram.sendMessage {
             this.chatId = context.chatId
             buildText {
-                if (context.arguments.isEmpty()) {
-                    printAllCommand()
-                } else {
-                    printCommandUsage(context.arguments[0])
-                }
+                printAllCommand()
+//                if (context.arguments.isEmpty()) {
+//                } else {
+//                    printCommandUsage(context.arguments[0])
+//                }
             }
 
         }
+    }
+
+    override suspend fun executeStage(stage: Long, context: BotCommandExecuteContext) {
+        TODO("Not yet implemented")
     }
 
     private fun StringBuilderMarkdownV2.printAllCommand() {
