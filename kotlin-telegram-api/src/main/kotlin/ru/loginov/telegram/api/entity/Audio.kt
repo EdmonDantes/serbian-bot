@@ -1,11 +1,13 @@
 package ru.loginov.telegram.api.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * This object represents an audio file to be treated as music by the Telegram clients.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Audio(
         /**

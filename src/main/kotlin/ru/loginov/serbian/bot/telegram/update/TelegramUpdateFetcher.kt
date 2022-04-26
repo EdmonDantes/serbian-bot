@@ -46,10 +46,6 @@ class TelegramUpdateFetcher {
 
     @PostConstruct
     fun postConstruct() {
-//        val factory = DefaultIdentifierGeneratorFactory()
-//        factory.injectServices()
-
-
         val lastSeq = updateSequenceRepository.findById(DEFAULT_ID).orElse(null)?.seq
 
         fetchUpdates(lastSeq)
@@ -72,7 +68,11 @@ class TelegramUpdateFetcher {
                 newLastSeq = max(newLastSeq ?: Long.MIN_VALUE, update.id + 1)
                 onUpdateHandlers.forEach { handler ->
                     executor.execute {
-                        handler.onUpdate(update)
+                        try {
+                            handler.onUpdate(update)
+                        } catch (e: Exception) {
+                            LOGGER.error("Can not execute 'onUpdate' for handler: ${handler.javaClass}", e)
+                        }
                     }
                 }
             }

@@ -12,6 +12,4 @@ interface BotCommand {
 
     suspend fun execute(context: BotCommandExecuteContext)
 
-    suspend fun executeStage(stage: Long, context: BotCommandExecuteContext)
-
 }

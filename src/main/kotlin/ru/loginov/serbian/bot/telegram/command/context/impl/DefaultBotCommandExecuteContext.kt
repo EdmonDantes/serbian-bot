@@ -1,7 +1,7 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import ru.loginov.serbian.bot.data.dto.user.UserDto
-import ru.loginov.serbian.bot.telegram.command.context.BotCommandArgumentManager
+import ru.loginov.serbian.bot.telegram.command.context.arguments.BotCommandArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.telegram.api.TelegramAPI
 

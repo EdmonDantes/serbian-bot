@@ -1,12 +1,14 @@
 package ru.loginov.telegram.api.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import ru.loginov.telegram.api.entity.User
 
 /**
  * Represents an invite link for a chat.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ChatInviteLink(
         /**

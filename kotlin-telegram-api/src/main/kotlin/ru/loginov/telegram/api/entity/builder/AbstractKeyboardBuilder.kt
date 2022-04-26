@@ -23,7 +23,7 @@ abstract class AbstractKeyboardBuilder<K, B, LB : AbstractKeyboardLineBuilder<B,
     }
 
     fun line(block: LB.() -> Unit) {
-        if (height != null && keyboardButtons.size < height!!) {
+        if (height == null || keyboardButtons.size < height!!) {
             val builder = createLineBuilder()
             block(builder)
             keyboardButtons.add(builder)

@@ -1,11 +1,13 @@
 package ru.loginov.telegram.api.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * Describes actions that a non-administrator user is allowed to take in a chat.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ChatPermissions(
         /**

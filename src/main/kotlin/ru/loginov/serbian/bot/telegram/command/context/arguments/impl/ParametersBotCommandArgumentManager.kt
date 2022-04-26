@@ -1,6 +1,6 @@
-package ru.loginov.serbian.bot.telegram.command.context.impl
+package ru.loginov.serbian.bot.telegram.command.context.arguments.impl
 
-import ru.loginov.serbian.bot.telegram.command.context.BotCommandArgumentManager
+import ru.loginov.serbian.bot.telegram.command.context.arguments.BotCommandArgumentManager
 
 class ParametersBotCommandArgumentManager(
         private val parent: BotCommandArgumentManager?,
@@ -38,26 +38,31 @@ class ParametersBotCommandArgumentManager(
     }
 
     override suspend fun getNextArgument(): String =
-            if (index < arguments.size) {
-                arguments[index++]
-            } else {
-                parent?.getNextArgument()
-                        ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
-            }
+            internalGetNextArgument()
+                    ?: parent?.getNextArgument()
+                    ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
 
     override suspend fun getNextArgument(name: String, description: String?): String =
+            internalGetNextArgument()
+                    ?: parent?.getNextArgument(name, description)
+                    ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
+
+    override suspend fun getNextArgument(variants: List<String>, description: String?): String? =
+            internalGetNextArgument()
+                    ?: parent?.getNextArgument(variants, description)
+                    ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
+
+    override suspend fun getNextArgument(variants: Map<String, String>, description: String?): String? =
+            internalGetNextArgument()
+                    ?: parent?.getNextArgument(variants, description)
+                    ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
+
+
+    private fun internalGetNextArgument(): String? =
             if (index < arguments.size) {
                 arguments[index++]
             } else {
-                parent?.getNextArgument(name, description)
-                        ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
+                null
             }
 
-    override suspend fun getNextArgument(variants: List<String>, description: String?): String? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getNextArgument(variants: Map<String, String>, description: String?): String? {
-        TODO("Not yet implemented")
-    }
 }

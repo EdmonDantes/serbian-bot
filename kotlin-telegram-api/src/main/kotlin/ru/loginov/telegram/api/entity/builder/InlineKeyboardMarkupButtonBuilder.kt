@@ -4,37 +4,46 @@ import ru.loginov.telegram.api.entity.InlineKeyboardButton
 
 class InlineKeyboardMarkupButtonBuilder : AbstractKeyboardButtonBuilder<InlineKeyboardButton>() {
 
-    private var text: String? = null
-    private var url: String? = null
-    private var callbackData: String? = null
+    var text: String? = null
+    var url: String? = null
+    var callbackData: String? = null
     var switchInlineQuery: String? = null // FIXME: Make private and write methods for build
     var switchInlineQueryCurrentChat: String? = null // FIXME: Make private and write methods for build
-    private var pay: Boolean? = null
+    var pay: Boolean? = null
 
-    fun text(text: CharSequence) {
-        this.text = text.toString()
+    /**
+     * Add callback with format:
+     *
+     * **_[chatId]_:_[userId]_#_[data]_**
+     */
+    fun callbackData(chatId: Long, userId: Long?, data: Long?): InlineKeyboardMarkupButtonBuilder = apply {
+        this.callbackData = "$chatId${userId?.let { ":$userId" } ?: ""}${data?.let { "#$data" } ?: ""}"
     }
 
-    fun text(block: () -> CharSequence) = text(block())
-
-    fun url(url: String) {
-        this.url = url
+    /**
+     * Add callback with format:
+     *
+     * **_[chatId]_:_[userId]_#cancel**
+     */
+    fun cancelCallback(chatId: Long, userId: Long?): InlineKeyboardMarkupButtonBuilder = apply {
+        this.callbackData = "$chatId${userId?.let { ":$userId" } ?: ""}#$CANCEL_CALLBACK"
     }
 
-    fun callbackData(data: String) {
-        this.callbackData = data
-    }
-
-    fun requiredPay() {
+    fun requiredPay(): InlineKeyboardMarkupButtonBuilder = apply {
         pay = true
     }
-    override fun build(): InlineKeyboardButton = InlineKeyboardButton(
-                text ?: error("Builder hasn't text. Can not create keyboard button without text"),
-                url,
-                callbackData,
-                switchInlineQuery,
-                switchInlineQueryCurrentChat,
-                pay
 
-        )
+    override fun build(): InlineKeyboardButton = InlineKeyboardButton(
+            text ?: error("Builder hasn't text. Can not create keyboard button without text"),
+            url,
+            callbackData,
+            switchInlineQuery,
+            switchInlineQueryCurrentChat,
+            pay
+
+    )
+
+    companion object {
+        const val CANCEL_CALLBACK = "cancel"
+    }
 }

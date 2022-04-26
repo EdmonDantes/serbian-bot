@@ -10,15 +10,14 @@ abstract class AbstractKeyboardLineBuilder<T, B : AbstractKeyboardButtonBuilder<
     private var line: MutableList<B> = ArrayList()
     private var width: Long? = null
 
-    fun add(block: B.() -> Unit): Boolean {
-        if (width != null && line.size >= width!!) {
-            return false
+    fun add(block: B.() -> Unit) {
+        if (width == null || line.size < width!!) {
+            val builder = createKeyboardBuilder()
+            block(builder)
+            line.add(builder)
+        } else {
+            error("Limit buttons reached = '$width'")
         }
-
-        val builder = createKeyboardBuilder()
-        block(builder)
-        line.add(builder)
-        return true
     }
 
     fun maxWidth(width: Number?) {

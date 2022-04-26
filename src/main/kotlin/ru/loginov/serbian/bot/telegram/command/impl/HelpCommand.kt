@@ -28,7 +28,7 @@ class HelpCommand : BotCommand {
     override val userAdditionalDataKeys: List<String> = emptyList()
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-
+        println(context.argumentManager.getNextArgument())
         context.telegram.sendMessage {
             this.chatId = context.chatId
             buildText {
@@ -40,10 +40,6 @@ class HelpCommand : BotCommand {
             }
 
         }
-    }
-
-    override suspend fun executeStage(stage: Long, context: BotCommandExecuteContext) {
-        TODO("Not yet implemented")
     }
 
     private fun StringBuilderMarkdownV2.printAllCommand() {

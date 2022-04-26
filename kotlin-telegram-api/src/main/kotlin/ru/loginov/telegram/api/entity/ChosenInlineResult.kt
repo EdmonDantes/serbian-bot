@@ -1,11 +1,13 @@
 package ru.loginov.telegram.api.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * Represents a result of an inline query that was chosen by the user and sent to their chat partner.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ChosenInlineResult(
         /**

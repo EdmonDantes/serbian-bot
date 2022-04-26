@@ -1,11 +1,15 @@
 package ru.loginov.telegram.api.entity
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
 
 /**
  * This object represents a message.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Message(
         /**
          * Unique message identifier inside this chat

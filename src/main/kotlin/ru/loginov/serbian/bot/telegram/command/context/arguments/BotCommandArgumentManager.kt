@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.telegram.command.context
+package ru.loginov.serbian.bot.telegram.command.context.arguments
 
 interface BotCommandArgumentManager {
 
