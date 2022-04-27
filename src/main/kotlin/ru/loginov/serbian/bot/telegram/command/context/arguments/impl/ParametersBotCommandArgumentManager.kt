@@ -34,6 +34,10 @@ class ParametersBotCommandArgumentManager(
             }
         }
 
+        if (builder.isNotEmpty()) {
+            arguments.add(builder.toString())
+        }
+
         this.arguments = arguments
     }
 

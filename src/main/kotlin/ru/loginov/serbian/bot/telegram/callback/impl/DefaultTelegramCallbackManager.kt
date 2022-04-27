@@ -56,7 +56,7 @@ class DefaultTelegramCallbackManager : TelegramCallbackManager, CallbackExecutor
                 }
             }
 
-    override fun invoke(chatId: Long, userId: Long?, data: String?): Boolean {
+    override suspend fun invoke(chatId: Long, userId: Long?, data: String?): Boolean {
 
         if (InlineKeyboardMarkupButtonBuilder.CANCEL_CALLBACK == data) {
             cancel(chatId, userId)
@@ -71,22 +71,18 @@ class DefaultTelegramCallbackManager : TelegramCallbackManager, CallbackExecutor
 
         while (callbacks.isNotEmpty()) {
             val callback = callbacks.poll()
-            executor.execute {
-                callback.invoke(data, false)
-            }
+            callback.invoke(data, false)
         }
 
         return true
     }
 
-    override fun cancel(chatId: Long, userId: Long?) {
+    override suspend fun cancel(chatId: Long, userId: Long?) {
         val callbacks = getCallbacks(chatId, userId) ?: return
 
         while (callbacks.isNotEmpty()) {
             val callback = callbacks.poll()
-            executor.execute {
-                callback.invoke(null, true)
-            }
+            callback.invoke(null, true)
         }
     }
 

@@ -4,6 +4,7 @@ import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.Update
 import ru.loginov.telegram.api.entity.User
 import ru.loginov.telegram.api.request.AnswerCallbackQueryRequest
+import ru.loginov.telegram.api.request.DeleteMessageRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
 
@@ -14,8 +15,10 @@ interface TelegramAPI {
      * The answer will be displayed to the user as a notification at the top of the chat screen or as an alert.
      */
     suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit)
+    suspend fun deleteMessage(request: DeleteMessageRequest.() -> Unit)
     suspend fun getMe() : User?
     suspend fun getUpdates(request: GetUpdatesRequest.() -> Unit) : List<Update>
     suspend fun sendMessage(request: SendMessageRequest.() -> Unit) : Message?
+    suspend fun sendMessageWithoutLimit(request: SendMessageRequest.() -> Unit) : List<Message>
 
 }

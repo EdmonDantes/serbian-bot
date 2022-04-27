@@ -4,6 +4,6 @@ import ru.loginov.telegram.api.entity.Update
 
 interface OnUpdateHandler {
 
-    fun onUpdate(update: Update)
+    suspend fun onUpdate(update: Update)
 
 }

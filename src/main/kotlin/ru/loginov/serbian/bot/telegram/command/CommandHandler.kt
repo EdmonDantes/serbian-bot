@@ -1,6 +1,12 @@
 package ru.loginov.serbian.bot.telegram.command
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -11,6 +17,7 @@ import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
 import ru.loginov.serbian.bot.telegram.update.OnUpdateHandler
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Update
+import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
 
 @Component
@@ -28,11 +35,7 @@ class CommandHandler : OnUpdateHandler {
     @Autowired
     private lateinit var callbackExecutor: CallbackExecutor
 
-    @Autowired
-    @Qualifier("small_tasks")
-    private lateinit var executor: Executor
-
-    override fun onUpdate(update: Update) {
+    override suspend fun onUpdate(update: Update) {
         if (update.message != null) {
             processUpdateMessage(update)
         }
@@ -42,7 +45,7 @@ class CommandHandler : OnUpdateHandler {
         }
     }
 
-    private fun processUpdateMessage(update: Update) {
+    private suspend fun processUpdateMessage(update: Update) {
         if (update.message?.from == null || update.message?.text == null) {
             LOGGER.warn("Can not process update message, because message haven't sender or/and text: '$update'")
             return
@@ -50,12 +53,10 @@ class CommandHandler : OnUpdateHandler {
 
         if (update.message!!.from!!.isBot) {
             LOGGER.warn("Can not process update message, because message's sender is a bot: '$update'")
-            runBlocking {
-                telegram.sendMessage {
-                    chatId = update.message!!.chat.id
-                    buildText {
-                        append("This bot doesn't support messages from bots")
-                    }
+            telegram.sendMessage {
+                chatId = update.message!!.chat.id
+                buildText {
+                    append("This bot doesn't support messages from bots")
                 }
             }
             return
@@ -75,13 +76,20 @@ class CommandHandler : OnUpdateHandler {
             if (command != null) {
                 val argumentsStr = update.message!!.text!!.substring(commandName.length + 1)
 
-                executor.execute {
-                    callbackExecutor.cancel(charId, userId)
-                }
+                callbackExecutor.cancel(charId, userId)
 
-                executor.execute {
-                    runBlocking {
-                        command.execute(botCommandExecuteContextFactory.createContext(userId, charId, lang, argumentsStr))
+                try {
+                    command.execute(
+                            botCommandExecuteContextFactory.createContext(
+                                    userId,
+                                    charId,
+                                    lang,
+                                    argumentsStr
+                            )
+                    )
+                } catch (e: Exception) {
+                    if (e is CancellationException) {
+                        LOGGER.info("Command with name '$commandName' was canceled")
                     }
                 }
                 return
@@ -91,7 +99,11 @@ class CommandHandler : OnUpdateHandler {
         callbackExecutor.invoke(charId, userId, update.message?.text)
     }
 
-    private fun processCallbackQuery(update: Update) {
+    private suspend fun processCallbackQuery(update: Update) {
+        telegram.answerCallbackQuery {
+            callbackQueryId = update.callbackQuery!!.id
+        }
+
         if (update.callbackQuery?.data == null) {
             LOGGER.warn("Can not process callback. Callback query hasn't 'data' field. Update: '$update'")
             return
@@ -115,9 +127,7 @@ class CommandHandler : OnUpdateHandler {
             return
         }
 
-        executor.execute {
-            callbackExecutor.invoke(chatId, userId, dataStr)
-        }
+        callbackExecutor.invoke(chatId, userId, dataStr)
     }
 
     companion object {

@@ -1,5 +1,7 @@
 package ru.loginov.serbian.bot.telegram.update
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.hibernate.id.IdentifierGenerator
 import org.hibernate.id.IncrementGenerator
@@ -36,6 +38,9 @@ class TelegramUpdateFetcher {
     private lateinit var telegramService: TelegramAPI
 
     @Autowired
+    private lateinit var coroutine: CoroutineScope
+
+    @Autowired
     @Qualifier("small_tasks")
     private lateinit var executor: Executor
 
@@ -67,7 +72,7 @@ class TelegramUpdateFetcher {
             }.forEach { update ->
                 newLastSeq = max(newLastSeq ?: Long.MIN_VALUE, update.id + 1)
                 onUpdateHandlers.forEach { handler ->
-                    executor.execute {
+                    coroutine.launch {
                         try {
                             handler.onUpdate(update)
                         } catch (e: Exception) {

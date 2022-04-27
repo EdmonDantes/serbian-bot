@@ -16,7 +16,7 @@ class InlineKeyboardMarkupButtonBuilder : AbstractKeyboardButtonBuilder<InlineKe
      *
      * **_[chatId]_:_[userId]_#_[data]_**
      */
-    fun callbackData(chatId: Long, userId: Long?, data: Long?): InlineKeyboardMarkupButtonBuilder = apply {
+    fun callbackData(chatId: Long, userId: Long?, data: Number?): InlineKeyboardMarkupButtonBuilder = apply {
         this.callbackData = "$chatId${userId?.let { ":$userId" } ?: ""}${data?.let { "#$data" } ?: ""}"
     }
 

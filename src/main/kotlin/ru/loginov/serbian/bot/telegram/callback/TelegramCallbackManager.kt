@@ -3,7 +3,7 @@ package ru.loginov.serbian.bot.telegram.callback
 import java.util.concurrent.CancellationException
 import kotlin.jvm.Throws
 
-typealias TelegramCallback = (String?, Boolean) -> Unit
+typealias TelegramCallback = suspend (String?, Boolean) -> Unit
 
 interface TelegramCallbackManager {
 

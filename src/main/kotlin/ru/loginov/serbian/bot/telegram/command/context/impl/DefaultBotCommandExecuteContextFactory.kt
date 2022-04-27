@@ -9,6 +9,7 @@ import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextF
 import ru.loginov.serbian.bot.telegram.command.context.arguments.impl.ParametersBotCommandArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.arguments.impl.TelegramBotCommandArgumentManager
 import ru.loginov.telegram.api.TelegramAPI
+import javax.annotation.PostConstruct
 
 @Component
 class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
@@ -35,7 +36,6 @@ class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
         return DefaultBotCommandExecuteContext(
                 telegramApi,
                 user,
-                false,
                 charId,
                 ParametersBotCommandArgumentManager(
                         TelegramBotCommandArgumentManager(

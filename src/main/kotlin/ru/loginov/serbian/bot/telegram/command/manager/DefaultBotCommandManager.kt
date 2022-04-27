@@ -13,10 +13,11 @@ class DefaultBotCommandManager : BotCommandManager {
 
     @Autowired
     fun initCommands(commands: List<BotCommand>) {
-        this.commands.addAll(commands)
+        val botCommands = commands.filter { !it.isSubCommand }
+        this.commands.addAll(botCommands)
         this.commands.sortBy { it.commandName }
 
-        commands.forEach {
+        botCommands.forEach {
             if (it.commandName.isNotEmpty()) {
                 if (!commandByName.containsKey(it.commandName.lowercase())) {
                     commandByName[it.commandName.lowercase()] = it

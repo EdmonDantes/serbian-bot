@@ -4,10 +4,11 @@ import ru.loginov.serbian.bot.data.dto.user.UserDto
 import ru.loginov.serbian.bot.telegram.command.context.arguments.BotCommandArgumentManager
 import ru.loginov.telegram.api.TelegramAPI
 
-interface BotCommandExecuteContext {
+interface BotCommandExecuteContext : TelegramAPI {
+
+
     val telegram: TelegramAPI
     val user: UserDto
-    val isDirect: Boolean
     val chatId: Long
     val argumentManager: BotCommandArgumentManager
 
