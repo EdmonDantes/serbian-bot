@@ -20,6 +20,11 @@ class UserDto {
     var language: String? = null
 
     /**
+     * Permissions group
+     */
+    var permissionGroup: String? = null
+
+    /**
      * Additional data for user (custom)
      * If you want to modify it, please use manager's methods
      */

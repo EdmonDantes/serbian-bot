@@ -7,14 +7,21 @@ import kotlin.jvm.Throws
 
 interface BotCommand {
 
-    val commandName: String
-    val simpleName: String?
+    val name: String
+    val shortDescription: String?
     val description: StringBuilderMarkdownV2?
     val usage: StringBuilderMarkdownV2?
-    val userAdditionalDataKeys: List<String>
-    val isSubCommand: Boolean
+
+//    val commandName: String
+//    val simpleName: String?
+//    val description: StringBuilderMarkdownV2?
+//    val usage: StringBuilderMarkdownV2?
+//    val userAdditionalDataKeys: List<String>
+//    val isSubCommand: Boolean
 
     @Throws(CancellationException::class)
     suspend fun execute(context: BotCommandExecuteContext)
+
+    suspend fun failedReason(context: BotCommandExecuteContext) : BotCommandFailedReason
 
 }
