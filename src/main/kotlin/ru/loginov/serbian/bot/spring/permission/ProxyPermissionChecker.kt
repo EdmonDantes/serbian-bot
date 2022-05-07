@@ -10,19 +10,14 @@ class ProxyPermissionChecker(
         private val bean: Any?,
         clazz: Class<*>,
         private val beanName: String,
-        private val methodsConditionals: Map<Method, PermissionConditionals>
+        private val methodsConditionals: Map<Method, List<String>>
 ) : InvocationHandler {
 
     private val logger = LoggerFactory.getLogger(clazz)
 
     override fun invoke(proxy: Any?, method: Method?, args: Array<out Any>?): Any? {
         val params = args ?: emptyArray()
-
-        val methodConditionals = methodsConditionals[method ?: return null]
-        if (methodConditionals?.group == null && methodConditionals?.permissions == null) {
-            return method.invoke(bean, *params)
-        }
-
+        val methodPermissions = methodsConditionals[method ?: return null] ?: return method.invoke(bean, *params)
         val context = args?.find { it is PermissionContext } as PermissionContext?
 
         if (context == null) {
@@ -33,16 +28,8 @@ class ProxyPermissionChecker(
             return method.invoke(bean, *params)
         }
 
-        if (methodConditionals.group != null) {
-            if (context.haveGroup(methodConditionals.group.lowercase())) {
-                return method.invoke(bean, *params)
-            } else {
-                throw HaveNotPermissionException()
-            }
-        }
-
         try {
-            if (methodConditionals.permissions!!.all { context.havePermission(it) }) {
+            if (methodPermissions.all { context.havePermission(it) }) {
                 return method.invoke(bean, *params)
             } else {
                 throw HaveNotPermissionException()

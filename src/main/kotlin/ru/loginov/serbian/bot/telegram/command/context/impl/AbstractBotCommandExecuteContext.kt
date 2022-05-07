@@ -22,8 +22,9 @@ abstract class AbstractBotCommandExecuteContext(
         return tree.havePermission(permission.lowercase())
     }
 
-    override fun haveGroup(group: String): Boolean {
-        return user.permissionGroup?.lowercase() == group.lowercase()
+    override fun haveAllPermissions(permissions: List<String>): Boolean {
+        val tree = permissionManager.getPermissionsForUser(user) ?: throw NotFoundPermissionException(user)
+        return permissions.all { tree.havePermission(it.lowercase()) }
     }
 
     override suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit) =

@@ -8,4 +8,10 @@ import ru.loginov.serbian.bot.telegram.command.impl.ComplexBotCommand
 @RequiredPermission("commands.permission")
 class PermissionBotCommand : ComplexBotCommand() {
     override val commandName: String = "permission"
+    override val canExecuteWithoutSubCommand: Boolean
+        get() = true
+
+    override fun executeWithoutSubCommands() {
+        println("Hello")
+    }
 }

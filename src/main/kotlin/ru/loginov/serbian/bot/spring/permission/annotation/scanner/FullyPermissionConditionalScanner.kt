@@ -1,14 +1,17 @@
 package ru.loginov.serbian.bot.spring.permission.annotation.scanner
 
 import com.fasterxml.jackson.module.kotlin.isKotlinClass
+import ru.loginov.serbian.bot.spring.permission.annotation.IgnoreAllPermissionCheck
 import ru.loginov.serbian.bot.spring.permission.annotation.IgnorePermissionCheck
-import ru.loginov.serbian.bot.spring.permission.annotation.IgnorePermissionCheckFor
 import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
+import ru.loginov.serbian.bot.spring.permission.annotation.RequiredPermission
+import ru.loginov.serbian.bot.util.tryToGetJavaMethods
 import java.lang.reflect.Method
 import kotlin.reflect.KCallable
+import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.declaredMembers
 
-class FullyPermissionConditionalScanner(private val clazz: Class<*>) : PermissionConditionalScanner {
+class FullyPermissionConditionalScanner(clazz: Class<*>) : PermissionConditionalScanner {
 
     private val root: PermissionConditionalScanner = constructPart(clazz)
 
@@ -39,61 +42,70 @@ class FullyPermissionConditionalScanner(private val clazz: Class<*>) : Permissio
         private val kotlinMembers: Map<Method, KCallable<*>>
 
         init {
-            val ignoreAnnotation: IgnorePermissionCheckFor?
-            val classAnnotations: List<Annotation>
             val members = HashMap<Method, Pair<Boolean, KCallable<*>?>>()
             val isKotlin = clazz.isKotlinClass()
 
-            if (isKotlin) {
-                ignoreAnnotation = clazz.kotlin.annotations
-                        .find { it is IgnorePermissionCheckFor } as IgnorePermissionCheckFor?
-
-                classAnnotations = clazz.kotlin.annotations
-
-                clazz.kotlin.declaredMembers.forEach { callable ->
-                    val methodIsIgnored = (callable.annotations.find { it is IgnorePermissionCheck } as? IgnorePermissionCheck)?.enabled == true
-                    callable.tryToGetJavaMethods().forEach {
-                        members[it] = methodIsIgnored to callable
+            val classAnnotations: List<Annotation> =
+                    if (isKotlin) {
+                        clazz.kotlin.annotations
+                    } else {
+                        clazz.annotations.toList()
                     }
-                }
-            } else {
-                ignoreAnnotation = clazz.annotations
-                        .find { it is IgnorePermissionCheckFor } as IgnorePermissionCheckFor?
 
-                classAnnotations = clazz.annotations.toList()
-                clazz.declaredMethods.forEach { method ->
-                    val methodIsIgnored = (method.annotations.find { it is IgnorePermissionCheck } as? IgnorePermissionCheck)?.enabled == true
-                    members[method] = methodIsIgnored to null
-                }
-            }
+            val ignoreAnnotation: IgnoreAllPermissionCheck? = classAnnotations.find { it is IgnoreAllPermissionCheck }?.let { it as IgnoreAllPermissionCheck }
 
-            defaultPermission = getPermissionsFromAnnotations(classAnnotations)
+            // Class will be ignored if it has IgnoreAllPermissionCheck annotation or if it hasn't annotations PermissionCheck or RequiredPermission
             isIgnored = ignoreAnnotation?.all
-                    ?: if (parents.isNotEmpty())
-                        parents.all { it.isIgnored }
-                                && classAnnotations.find { it is PermissionCheck } == null
-                                && defaultPermission == null
-                    else false
+                    ?: (classAnnotations.find { it is PermissionCheck || it is RequiredPermission } == null)
 
+            if (isIgnored) { // Skip process if ignored
+                defaultPermission = null
+                ignoredMethods = clazz.declaredMethods.toList()
+                kotlinMembers = emptyMap()
+            } else {
 
-            //Process IgnorePermissionCheckFor annotation
-            ignoreAnnotation?.memberNames?.forEach { memberName ->
-                if (isKotlin)
-                    clazz.kotlin.declaredMembers
-                            .filter { it.name == memberName }
-                            .forEach { callable ->
-                                callable.tryToGetJavaMethods().forEach { method ->
-                                    members[method] = false to callable
-                                }
-                            }
-                else
-                    clazz.methods.filter { it.name == memberName }.forEach { method ->
-                        members.compute(method) { _, pair -> false to pair?.second }
+                if (isKotlin) {
+                    clazz.kotlin.declaredFunctions.forEach { callable ->
+                        val methodIsIgnored = (callable.annotations.find { it is IgnorePermissionCheck } != null)
+                        val methodIsRequiredCheck = (callable.annotations.find { it is PermissionCheck || it is RequiredPermission } != null)
+                        callable.tryToGetJavaMethods().forEach { method ->
+                            val methodIsIgnoredInParent = parents.any { parent -> parent.checkMethodIsIgnored(method) }
+                            // Method will be ignored if it has IgnorePermissionCheck annotations or
+                            // if it hasn't PermissionCheck or RequiredPermission annotation, and it was ignored in parent
+                            members[method] = (methodIsIgnored || !methodIsRequiredCheck && methodIsIgnoredInParent) to callable
+                        }
                     }
-            }
+                } else {
+                    clazz.declaredMethods.forEach { method ->
+                        val methodIsIgnored = (method.annotations.find { it is IgnorePermissionCheck } != null)
+                        val methodIsRequiredCheck = (method.annotations.find { it is PermissionCheck || it is RequiredPermission } != null)
+                        val methodIsIgnoredInParent = parents.any { parent -> parent.checkMethodIsIgnored(method) }
+                        members[method] = (methodIsIgnored || !methodIsRequiredCheck && methodIsIgnoredInParent) to null
+                    }
+                }
 
-            ignoredMethods = members.filter { it.value.first }.map { it.key }
-            kotlinMembers = members.filter { it.value.second != null }.mapValues { it.value.second!! }
+                defaultPermission = getPermissionsFromAnnotations(classAnnotations)
+
+
+                //Process IgnorePermissionCheckFor annotation
+                ignoreAnnotation?.memberNames?.forEach { memberName ->
+                    if (isKotlin)
+                        clazz.kotlin.declaredMembers
+                                .filter { it.name == memberName }
+                                .forEach { callable ->
+                                    callable.tryToGetJavaMethods().forEach { method ->
+                                        members[method] = false to callable
+                                    }
+                                }
+                    else
+                        clazz.declaredMethods.filter { it.name == memberName }.forEach { method ->
+                            members.compute(method) { _, pair -> false to pair?.second }
+                        }
+                }
+
+                ignoredMethods = members.filter { it.value.first }.map { it.key }
+                kotlinMembers = members.filter { it.value.second != null }.mapValues { it.value.second!! }
+            }
         }
 
         override fun getMethodAnnotations(method: Method): List<Annotation> = kotlinMembers[method]?.annotations

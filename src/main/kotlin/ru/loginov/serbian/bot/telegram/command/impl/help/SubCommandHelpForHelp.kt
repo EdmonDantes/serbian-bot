@@ -3,6 +3,7 @@ package ru.loginov.serbian.bot.telegram.command.impl.help
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.spring.subcommand.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractBotCommand
@@ -35,11 +36,19 @@ class SubCommandHelpForHelp : AbstractSubCommand() {
                     val command = botCommandManager.getCommandByName(commandName)
                     if (command == null) {
                         append("Can not find command with name '$commandName'")
-                    } else if (command.usage == null) {
-                        append("Command /${command.commandName} have no special instructions for usage")
                     } else {
-                        append("Usage for command /${command.commandName}:\n")
-                        append(command.usage!!)
+                        try {
+                            val (commandName, usage) = command.getCommandName(context) to command.getUsage(context)
+
+                            if (usage == null) {
+                                append("Command /${commandName} have no special instructions for usage")
+                            } else {
+                                append("Usage for command /${commandName}:\n")
+                                append(usage)
+                            }
+                        } catch (e: HaveNotPermissionException) {
+                            append("Can not find command with name '$commandName'")
+                        }
                     }
                 }
             }

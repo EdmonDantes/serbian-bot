@@ -5,6 +5,7 @@ import ru.loginov.serbian.bot.spring.permission.exception.NotFoundPermissionExce
 interface PermissionContext {
     @Throws(NotFoundPermissionException::class)
     fun havePermission(permission: String): Boolean
-    fun haveGroup(group: String): Boolean
 
+    @Throws(NotFoundPermissionException::class)
+    fun haveAllPermissions(permissions: List<String>) : Boolean
 }

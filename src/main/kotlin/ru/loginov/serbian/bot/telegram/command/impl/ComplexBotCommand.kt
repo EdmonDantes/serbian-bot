@@ -1,12 +1,14 @@
 package ru.loginov.serbian.bot.telegram.command.impl
 
 import ru.loginov.serbian.bot.spring.permission.annotation.IgnorePermissionCheck
+import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.telegram.command.BotCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
 import ru.loginov.telegram.api.util.markdown2
 
+@PermissionCheck
 abstract class ComplexBotCommand : AbstractBotCommand() {
 
     private var _subCommands: Map<String, BotCommand>? = null
