@@ -227,6 +227,10 @@ class StringBuilderMarkdownV2 {
     }
 }
 
+suspend fun markdown2Coroutine(block: suspend StringBuilderMarkdownV2.() -> Unit): StringBuilderMarkdownV2 = StringBuilderMarkdownV2().apply {
+    block(this)
+}
+
 fun markdown2(block: StringBuilderMarkdownV2.() -> Unit): StringBuilderMarkdownV2 = StringBuilderMarkdownV2().apply {
     block(this)
 }

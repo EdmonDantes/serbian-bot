@@ -1,5 +1,7 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
+import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
+import ru.loginov.serbian.bot.spring.permission.exception.NotFoundPermissionException
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Message
@@ -11,8 +13,18 @@ import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
 
 abstract class AbstractBotCommandExecuteContext(
-        override val telegram: TelegramAPI
+        override val telegram: TelegramAPI,
+        private val permissionManager: PermissionManager
 ) : BotCommandExecuteContext {
+
+    override fun havePermission(permission: String): Boolean {
+        val tree = permissionManager.getPermissionsForUser(user) ?: throw NotFoundPermissionException(user)
+        return tree.havePermission(permission.lowercase())
+    }
+
+    override fun haveGroup(group: String): Boolean {
+        return user.permissionGroup?.lowercase() == group.lowercase()
+    }
 
     override suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit) =
             telegram.answerCallbackQuery(request)

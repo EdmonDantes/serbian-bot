@@ -44,16 +44,21 @@ class TelegramUpdateFetcher {
     @Qualifier("small_tasks")
     private lateinit var executor: Executor
 
-    @Value("\${bot.long.polling.timeout.sec:5}")
+    @Value("\${bot.update.timeout.sec:5}")
     private var longPollingTimeoutSec: Long = 5
+
+    @Value("\${bot.update.enable:true}")
+    private var enabled: Boolean = true
 
     private val isContinue = AtomicBoolean(true)
 
     @PostConstruct
     fun postConstruct() {
-        val lastSeq = updateSequenceRepository.findById(DEFAULT_ID).orElse(null)?.seq
+        if (enabled) {
+            val lastSeq = updateSequenceRepository.findById(DEFAULT_ID).orElse(null)?.seq
 
-        fetchUpdates(lastSeq)
+            fetchUpdates(lastSeq)
+        }
     }
 
     private fun fetchUpdates(lastSeq: Long?) {

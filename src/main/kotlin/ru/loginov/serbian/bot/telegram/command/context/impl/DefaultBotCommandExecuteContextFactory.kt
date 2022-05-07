@@ -2,6 +2,7 @@ package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
 import ru.loginov.serbian.bot.data.manager.user.UserManager
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
@@ -23,6 +24,9 @@ class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
     @Autowired
     private lateinit var callbackManager: TelegramCallbackManager
 
+    @Autowired
+    private lateinit var permissionManager: PermissionManager
+
     override fun createContext(
             userId: Long,
             charId: Long,
@@ -35,6 +39,7 @@ class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
 
         return DefaultBotCommandExecuteContext(
                 telegramApi,
+                permissionManager,
                 user,
                 charId,
                 ParametersBotCommandArgumentManager(
