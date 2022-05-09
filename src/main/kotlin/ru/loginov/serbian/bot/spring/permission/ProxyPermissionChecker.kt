@@ -8,16 +8,33 @@ import java.lang.reflect.Method
 
 class ProxyPermissionChecker(
         private val bean: Any?,
-        clazz: Class<*>,
+        private val clazz: Class<*>,
         private val beanName: String,
         private val methodsConditionals: Map<Method, List<String>>
 ) : InvocationHandler {
 
+    private val methodNamesForCheck = HashSet(methodsConditionals.map { it.key.name })
     private val logger = LoggerFactory.getLogger(clazz)
 
     override fun invoke(proxy: Any?, method: Method?, args: Array<out Any>?): Any? {
+        val methodName = method?.name ?: return null
+        if (!methodNamesForCheck.contains(methodName)) {
+            return if (args == null) {
+                method.invoke(bean)
+            } else {
+                method.invoke(bean, *args)
+            }
+        }
+
         val params = args ?: emptyArray()
-        val methodPermissions = methodsConditionals[method ?: return null] ?: return method.invoke(bean, *params)
+
+        val currentMethod = try {
+            clazz.getMethod(method.name, *method.parameterTypes)
+        } catch (e: Exception) {
+            return null
+        }
+
+        val methodPermissions = methodsConditionals[currentMethod] ?: return method.invoke(bean, *params)
         val context = args?.find { it is PermissionContext } as PermissionContext?
 
         if (context == null) {

@@ -1,6 +1,6 @@
 package ru.loginov.serbian.bot.spring.permission.annotation
 
-@Target(allowedTargets = [AnnotationTarget.CLASS, AnnotationTarget.FUNCTION])
+@Target(allowedTargets = [AnnotationTarget.FUNCTION, AnnotationTarget.CLASS])
 @Retention(AnnotationRetention.RUNTIME)
 @Repeatable
 @MustBeDocumented

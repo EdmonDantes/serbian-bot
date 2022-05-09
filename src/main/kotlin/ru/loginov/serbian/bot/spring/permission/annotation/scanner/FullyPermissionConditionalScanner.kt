@@ -1,12 +1,13 @@
 package ru.loginov.serbian.bot.spring.permission.annotation.scanner
 
 import com.fasterxml.jackson.module.kotlin.isKotlinClass
-import ru.loginov.serbian.bot.spring.permission.annotation.IgnoreAllPermissionCheck
 import ru.loginov.serbian.bot.spring.permission.annotation.IgnorePermissionCheck
+import ru.loginov.serbian.bot.spring.permission.annotation.IgnorePermissionCheckFor
 import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
 import ru.loginov.serbian.bot.spring.permission.annotation.RequiredPermission
 import ru.loginov.serbian.bot.util.tryToGetJavaMethods
 import java.lang.reflect.Method
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.declaredMembers
@@ -15,7 +16,7 @@ class FullyPermissionConditionalScanner(clazz: Class<*>) : PermissionConditional
 
     private val root: PermissionConditionalScanner = constructPart(clazz)
 
-    override val defaultPermission: List<String>? = root.defaultPermission
+    override val defaultPermissions: List<String>? = root.defaultPermissions
     override val isIgnored: Boolean = root.isIgnored
 
     override fun checkMethodIsIgnored(method: Method): Boolean = root.checkMethodIsIgnored(method)
@@ -23,19 +24,26 @@ class FullyPermissionConditionalScanner(clazz: Class<*>) : PermissionConditional
 
     override fun getMethodPermissions(method: Method): List<String>? = root.getMethodPermissions(method)
 
-    private fun constructPart(clazz: Class<*>): PermissionConditionalScanner = PREDEFINED_SCANNER_PART[clazz]
-            ?: InnerPermissionConditionalScannerPart(
-                    (clazz.superclass?.let { listOf(it) } ?: emptyList())
-                            .plus(clazz.interfaces)
-                            .map { constructPart(it) },
-                    clazz
-            )
+    private fun constructPart(clazz: Class<*>): PermissionConditionalScanner {
+        val scanner = ALL_SCANNERS[clazz]
+        if (scanner != null) {
+            return scanner
+        }
+
+        val newScanner = InnerPermissionConditionalScannerPart(
+                clazz.interfaces.plus(clazz.superclass).filterNotNull().map { constructPart(it) },
+                clazz
+        )
+
+        ALL_SCANNERS[clazz] = newScanner
+        return newScanner
+    }
 
     private class InnerPermissionConditionalScannerPart(
             parents: List<PermissionConditionalScanner>,
             clazz: Class<*>
     ) : AbstractPermissionConditionalScanner(clazz, parents) {
-        override val defaultPermission: List<String>?
+        override val defaultPermissions: List<String>?
         override val isIgnored: Boolean
         override val ignoredMethods: List<Method>
 
@@ -52,18 +60,20 @@ class FullyPermissionConditionalScanner(clazz: Class<*>) : PermissionConditional
                         clazz.annotations.toList()
                     }
 
-            val ignoreAnnotation: IgnoreAllPermissionCheck? = classAnnotations.find { it is IgnoreAllPermissionCheck }?.let { it as IgnoreAllPermissionCheck }
+            val ignoreAnnotation: IgnorePermissionCheckFor? = classAnnotations.find { it is IgnorePermissionCheckFor }?.let { it as IgnorePermissionCheckFor }
 
-            // Class will be ignored if it has IgnoreAllPermissionCheck annotation or if it hasn't annotations PermissionCheck or RequiredPermission
-            isIgnored = ignoreAnnotation?.all
-                    ?: (classAnnotations.find { it is PermissionCheck || it is RequiredPermission } == null)
+            // Class will process only if it has PermissionCheck or RequiredPermission annotation
+            val requiredPermissionAnnotations = classAnnotations.filterIsInstance<RequiredPermission>()
+            val permissionCheckAnnotation = classAnnotations.find { it is PermissionCheck } as? PermissionCheck
+
+            isIgnored = requiredPermissionAnnotations.isEmpty()
+                    && (permissionCheckAnnotation == null || !permissionCheckAnnotation.enabled)
 
             if (isIgnored) { // Skip process if ignored
-                defaultPermission = null
+                defaultPermissions = null
                 ignoredMethods = clazz.declaredMethods.toList()
                 kotlinMembers = emptyMap()
             } else {
-
                 if (isKotlin) {
                     clazz.kotlin.declaredFunctions.forEach { callable ->
                         val methodIsIgnored = (callable.annotations.find { it is IgnorePermissionCheck } != null)
@@ -84,7 +94,7 @@ class FullyPermissionConditionalScanner(clazz: Class<*>) : PermissionConditional
                     }
                 }
 
-                defaultPermission = getPermissionsFromAnnotations(classAnnotations)
+                defaultPermissions = getPermissionsFromAnnotations(requiredPermissionAnnotations)
 
 
                 //Process IgnorePermissionCheckFor annotation
@@ -113,8 +123,13 @@ class FullyPermissionConditionalScanner(clazz: Class<*>) : PermissionConditional
     }
 
     companion object {
-        private val PREDEFINED_SCANNER_PART = listOf(
-                Any::class.java
-        ).associateWith { IgnoreScannerPart(it) }
+        private val PREDEFINED_SCANNER_PART = listOf(Any::class.java)
+        private val ALL_SCANNERS = ConcurrentHashMap<Class<*>, PermissionConditionalScanner>()
+
+        init {
+            PREDEFINED_SCANNER_PART.forEach { clazz ->
+                ALL_SCANNERS[clazz] = IgnoreScannerPart(clazz)
+            }
+        }
     }
 }

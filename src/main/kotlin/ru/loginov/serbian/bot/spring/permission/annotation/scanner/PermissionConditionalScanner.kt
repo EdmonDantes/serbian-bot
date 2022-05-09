@@ -4,7 +4,7 @@ import java.lang.reflect.Method
 
 interface PermissionConditionalScanner {
 
-    val defaultPermission: List<String>?
+    val defaultPermissions: List<String>?
     val isIgnored: Boolean
 
     fun checkMethodIsIgnored(method: Method) : Boolean

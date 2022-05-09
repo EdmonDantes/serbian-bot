@@ -1,12 +1,8 @@
 package ru.loginov.serbian.bot.spring.permission.annotation.scanner
 
-import org.springframework.util.ClassUtils.hasMethod
 import ru.loginov.serbian.bot.spring.permission.annotation.RequiredPermission
-import ru.loginov.serbian.bot.util.tryToGetJavaMethods
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import kotlin.reflect.KClass
-import kotlin.reflect.full.declaredMembers
 
 abstract class AbstractPermissionConditionalScanner(
         protected val clazz: Class<*>,
@@ -20,20 +16,26 @@ abstract class AbstractPermissionConditionalScanner(
      * Else check method in parents
      */
     override fun checkMethodIsIgnored(method: Method): Boolean = hasMethod(method)
-            ?.let { isIgnored || ignoredMethods.contains(it) || !Modifier.isPublic(it.modifiers) }
+            ?.let { isIgnored || ignoredMethods.contains(it) || !Modifier.isPublic(method.modifiers) }
             ?: parents.any { it.checkMethodIsIgnored(method) }
 
-    //FIXME: Mark equals, toString and another method is ignored
-    //FIXME: Create architecture for ignored strategy
     override fun getMethodPermissions(method: Method): List<String>? {
         val currentMethod = hasMethod(method)
+        val parentPermission = parents.mapNotNull { it.getMethodPermissions(method) }.flatten().ifEmpty { null }
+        val parentAndDefaultPermissions = parentPermission?.let {
+            if (defaultPermissions == null) it else it.plus(
+                    defaultPermissions!!
+            )
+        }
+                ?: defaultPermissions
+
         if (currentMethod == null) {
-            return parents.firstNotNullOfOrNull { it.getMethodPermissions(method) }
-        } else if (isIgnored || ignoredMethods.contains(method) || !Modifier.isPublic(method.modifiers)) {
+            return parentAndDefaultPermissions
+        } else if (isIgnored || ignoredMethods.contains(currentMethod) || !Modifier.isPublic(method.modifiers)) {
             return null
         }
 
-        val result = if (defaultPermission == null) ArrayList<String>() else ArrayList(defaultPermission)
+        val result: MutableList<String> = parentAndDefaultPermissions?.let { ArrayList(it) } ?: ArrayList()
 
         getPermissionsFromAnnotations(getMethodAnnotations(currentMethod))?.also {
             result.addAll(it)
@@ -50,7 +52,7 @@ abstract class AbstractPermissionConditionalScanner(
 
     protected fun hasMethod(method: Method): Method? {
         return try {
-            clazz.getMethod(method.name, *method.parameterTypes)
+            clazz.getDeclaredMethod(method.name, *method.parameterTypes)
         } catch (e: Exception) {
             null
         }
@@ -58,12 +60,10 @@ abstract class AbstractPermissionConditionalScanner(
 
     protected fun getPermissionsFromAnnotations(annotations: List<Annotation>): List<String>? {
         return annotations
-                .filter { it is RequiredPermission }
+                .filterIsInstance<RequiredPermission>()
                 .ifEmpty { null }
-                ?.map { (it as RequiredPermission).permission }
+                ?.map { it.permission }
     }
-
-    protected fun KClass<*>.getAllJavaMethod(): List<Method> = this.declaredMembers.flatMap { it.tryToGetJavaMethods() }
 
     protected abstract fun getMethodAnnotations(method: Method): List<Annotation>
 }
