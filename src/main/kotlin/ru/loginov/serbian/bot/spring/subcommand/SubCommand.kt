@@ -9,5 +9,5 @@ import kotlin.reflect.KClass
 @MustBeDocumented
 annotation class SubCommand(
         val parent: KClass<out BotCommand>,
-        val subCommandName: String
+        val subCommandName: String // FIXME: Remove and use property command name
 )

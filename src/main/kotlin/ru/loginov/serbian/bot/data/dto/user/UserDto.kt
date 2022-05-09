@@ -28,6 +28,6 @@ class UserDto {
      * Additional data for user (custom)
      * If you want to modify it, please use manager's methods
      */
-    @Transient // Will be set in manager, because we can save many data for differnet commands
+    @Transient // Will be set in manager, because we can save many data for different commands
     var additionalData: Map<String, String> = emptyMap()
 }

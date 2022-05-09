@@ -3,6 +3,7 @@ package ru.loginov.serbian.bot.data.manager.permission
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.dto.permission.GroupPermissionDto
 import ru.loginov.serbian.bot.data.dto.permission.PermissionDto
@@ -31,9 +32,22 @@ class DefaultPermissionManager : PermissionManager {
     @Autowired
     private lateinit var permissionNodeDtoRepository: PermissionNodeDtoRepository
 
+    @Autowired
+    private lateinit var permissionRegister: PermissionRegister
+
+    private lateinit var adminIds: List<Long>
+
     private val readWriteLock = ReentrantReadWriteLock()
 
     private var permissions: MutableMap<String, PermissionTree> = HashMap()
+
+    @Value("\${bot.user.admin.ids}")
+    fun setAdminIds(value: String?) {
+        if (!value.isNullOrEmpty()) {
+            adminIds = value.split(';').mapNotNull { it.toLongOrNull() }
+            LOGGER.info("Admins ids = '$adminIds'")
+        }
+    }
 
     @PostConstruct
     fun start() {
@@ -46,7 +60,11 @@ class DefaultPermissionManager : PermissionManager {
             }
 
     override fun getPermissionsForUser(user: UserDto): PermissionOwner? =
-            user.permissionGroup?.let { getPermissionsForGroup(it.lowercase()) }
+            if (adminIds.contains(user.id)) {
+                PermissionOwner.ALL_PERMISSION
+            } else {
+                user.permissionGroup?.let { getPermissionsForGroup(it.lowercase()) }
+            }
 
     override fun addPermissionForGroup(groupName: String, permission: String): Boolean {
         flush()
@@ -88,7 +106,23 @@ class DefaultPermissionManager : PermissionManager {
         }
     }
 
-    override fun flush() {
+    override fun deleteGroup(name: String): Boolean {
+        return try {
+            groupPermissionDtoRepository.deleteById(name.lowercase())
+            true
+        } catch (e: Exception) {
+            LOGGER.warn("Can not delete group with name '$name'", e)
+            false
+        } finally {
+            flush()
+        }
+    }
+
+    override fun getAllGroups(): List<GroupPermissionDto> = groupPermissionDtoRepository.findAll()
+
+    override fun getAllPermissions(): List<String> = permissionRegister.getAllRegisteredPermissions()
+
+    private fun flush() {
         if (readWriteLock.writeLock().tryLock()) {
             reloadPermissions()
         }
@@ -111,7 +145,7 @@ class DefaultPermissionManager : PermissionManager {
         }
     }
 
-    private fun processMutations(mutations: PermissionsMutation) : Boolean {
+    private fun processMutations(mutations: PermissionsMutation): Boolean {
         try {
             permissionNodeDtoRepository.deleteAllById(mutations.forDelete)
         } catch (e: Exception) {
@@ -123,7 +157,10 @@ class DefaultPermissionManager : PermissionManager {
         try {
             permissionNodeDtoRepository.saveAll(mutations.forInsertOrUpdate)
         } catch (e: Exception) {
-            LOGGER.error("Can not save or update permissions with ids: '${mutations.forInsertOrUpdate.map { it.id }}'", e)
+            LOGGER.error(
+                    "Can not save or update permissions with ids: '${mutations.forInsertOrUpdate.map { it.id }}'",
+                    e
+            )
             return false
         }
 

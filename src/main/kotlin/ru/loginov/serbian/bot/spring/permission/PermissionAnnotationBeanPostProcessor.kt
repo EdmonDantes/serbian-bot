@@ -2,8 +2,10 @@ package ru.loginov.serbian.bot.spring.permission
 
 import com.fasterxml.jackson.module.kotlin.isKotlinClass
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.data.manager.permission.PermissionRegister
 import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
 import ru.loginov.serbian.bot.spring.permission.annotation.RequiredPermission
 import ru.loginov.serbian.bot.spring.permission.annotation.scanner.FullyPermissionConditionalScanner
@@ -11,11 +13,14 @@ import ru.loginov.serbian.bot.spring.permission.annotation.scanner.PermissionCon
 import ru.loginov.serbian.bot.util.tryToGetJavaMethods
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
-import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.functions
 
 @Component
 class PermissionAnnotationBeanPostProcessor : BeanPostProcessor {
+
+    @Autowired
+    private lateinit var permissionRegister: PermissionRegister
+
     private val beanScanners = HashMap<String, PermissionConditionalScanner>()
     private val beanClasses = HashMap<String, Class<*>>()
 
@@ -47,6 +52,12 @@ class PermissionAnnotationBeanPostProcessor : BeanPostProcessor {
         val beanMethodsConditionals = createConditionals(clazz, scanner)
         if (beanMethodsConditionals.isEmpty()) {
             return bean
+        }
+
+        beanMethodsConditionals.values.forEach {
+            it.forEach {
+                permissionRegister.registerPermission(it)
+            }
         }
 
         val proxy = Proxy.newProxyInstance(

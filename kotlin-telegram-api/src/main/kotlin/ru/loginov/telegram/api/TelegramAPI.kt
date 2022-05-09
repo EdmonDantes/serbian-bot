@@ -1,10 +1,12 @@
 package ru.loginov.telegram.api
 
+import ru.loginov.telegram.api.entity.BotCommand
 import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.Update
 import ru.loginov.telegram.api.entity.User
 import ru.loginov.telegram.api.request.AnswerCallbackQueryRequest
 import ru.loginov.telegram.api.request.DeleteMessageRequest
+import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
 
@@ -16,7 +18,8 @@ interface TelegramAPI {
      */
     suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit)
     suspend fun deleteMessage(request: DeleteMessageRequest.() -> Unit)
-    suspend fun getMe() : User?
+    suspend fun getMyCommands(request: GetMyCommandsRequest.() -> Unit): List<BotCommand>
+    suspend fun getMe(): User?
     suspend fun getUpdates(request: GetUpdatesRequest.() -> Unit) : List<Update>
     suspend fun sendMessage(request: SendMessageRequest.() -> Unit) : Message?
     suspend fun sendMessageWithoutLimit(request: SendMessageRequest.() -> Unit) : List<Message>

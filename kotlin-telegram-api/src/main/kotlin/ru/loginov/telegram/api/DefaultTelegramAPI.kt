@@ -3,19 +3,19 @@ package ru.loginov.telegram.api
 import com.fasterxml.jackson.core.type.TypeReference
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import ru.loginov.http.HttpClient
+import ru.loginov.telegram.api.entity.BotCommand
 import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.Update
 import ru.loginov.telegram.api.entity.User
 import ru.loginov.telegram.api.exception.ResponseErrorException
 import ru.loginov.telegram.api.request.AnswerCallbackQueryRequest
 import ru.loginov.telegram.api.request.DeleteMessageRequest
+import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
 import ru.loginov.telegram.api.response.TelegramResponse
+import kotlin.math.min
 
 class DefaultTelegramAPI(
         private val client: HttpClient,
@@ -32,6 +32,12 @@ class DefaultTelegramAPI(
     override suspend fun deleteMessage(request: DeleteMessageRequest.() -> Unit) {
         client.requestJson<Boolean>(HttpMethod.Post, "deleteMessage", DeleteMessageRequest().also(request))
     }
+
+    override suspend fun getMyCommands(request: GetMyCommandsRequest.() -> Unit): List<BotCommand> =
+            GetMyCommandsRequest().let {
+                request(it)
+                client.requestJson<List<BotCommand>>(HttpMethod.Post, "getMyCommands", it) ?: emptyList()
+            }
 
     override suspend fun getMe(): User? =
             client.requestJson<User>(HttpMethod.Get, "getMe")
@@ -56,13 +62,13 @@ class DefaultTelegramAPI(
                     ?: emptyList()
         }
 
-        val result = ArrayList<Deferred<Message?>>()
+        val result = ArrayList<Message>()
         var index = 0
-        coroutineScope {
-            while (request.text!!.length - index > 0) {
-                val msg = async {
+        while (request.text!!.length - index > 0) {
+            val msg =
                     sendMessage {
                         chatId = request.chatId
+                        parseMode = request.parseMode
                         disableWebPagePreview = request.disableWebPagePreview
                         disableNotification = request.disableNotification
                         protectContent = request.protectContent
@@ -71,24 +77,31 @@ class DefaultTelegramAPI(
                             replyToMessageId = request.replyToMessageId
                         }
 
-                        val prepareText = request.text!!.substring(index, index + MAX_MESSAGE_TEXT_LENGTH)
-                        val lastIndex = prepareText.lastIndexOf('\n')
-                                .let { if (it != -1) it else prepareText.lastIndexOf(' ') }
-                                .let { if (it != -1) it else prepareText.length }
+                        val prepareText = request.text!!.substring(
+                                index,
+                                min(index + MAX_MESSAGE_TEXT_LENGTH, request.text!!.length)
+                        )
+                        text = if (prepareText.length == MAX_MESSAGE_TEXT_LENGTH) {
+                            val lastIndex = prepareText.lastIndexOf('\n')
+                                    .let { if (it != -1) it else prepareText.lastIndexOf(' ') }
+                                    .let { if (it != -1) it else prepareText.length }
 
-                        text = prepareText.substring(0, lastIndex)
-                        index += lastIndex + 1
+                            prepareText.substring(0, lastIndex)
+                        } else {
+                            prepareText
+                        }
+                        index += text!!.length + 1
 
                         if (index >= request.text!!.length) {
                             keyboard = request.keyboard
                         }
                     }
-                }
+            if (msg != null) {
                 result.add(msg)
             }
         }
 
-        return result.mapNotNull { it.await() }
+        return result
     }
 
     private fun <T> checkAnswer(response: TelegramResponse<T>?): T? {

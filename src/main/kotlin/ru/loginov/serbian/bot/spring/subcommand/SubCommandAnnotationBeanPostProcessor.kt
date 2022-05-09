@@ -1,6 +1,7 @@
 package ru.loginov.serbian.bot.spring.subcommand
 
 import org.springframework.beans.factory.config.BeanPostProcessor
+import org.springframework.core.PriorityOrdered
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.telegram.command.BotCommand
 import ru.loginov.serbian.bot.telegram.command.impl.ComplexBotCommand
@@ -10,7 +11,7 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
 @Component
-class SubCommandAnnotationBeanPostProcessor : BeanPostProcessor {
+class SubCommandAnnotationBeanPostProcessor : BeanPostProcessor, PriorityOrdered {
 
     private val botCommandsNames = HashMap<KClass<*>, String>()
     private val botCommandsClasses = HashMap<String, KClass<*>>()
@@ -84,4 +85,6 @@ class SubCommandAnnotationBeanPostProcessor : BeanPostProcessor {
         }
         return false
     }
+
+    override fun getOrder(): Int = 0
 }

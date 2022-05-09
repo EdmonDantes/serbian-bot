@@ -4,11 +4,13 @@ import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
 import ru.loginov.serbian.bot.spring.permission.exception.NotFoundPermissionException
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.telegram.api.TelegramAPI
+import ru.loginov.telegram.api.entity.BotCommand
 import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.Update
 import ru.loginov.telegram.api.entity.User
 import ru.loginov.telegram.api.request.AnswerCallbackQueryRequest
 import ru.loginov.telegram.api.request.DeleteMessageRequest
+import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
 
@@ -32,6 +34,9 @@ abstract class AbstractBotCommandExecuteContext(
 
     override suspend fun deleteMessage(request: DeleteMessageRequest.() -> Unit) =
             telegram.deleteMessage(request)
+
+    override suspend fun getMyCommands(request: GetMyCommandsRequest.() -> Unit): List<BotCommand> =
+            telegram.getMyCommands(request)
 
     override suspend fun getMe(): User? =
             telegram.getMe()

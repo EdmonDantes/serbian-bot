@@ -67,6 +67,8 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
                         append('\n')
                     }
                 }
+            } else if (!_subCommands.isNullOrEmpty()) {
+                throw HaveNotPermissionException()
             }
         }
     }
@@ -85,5 +87,7 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
     }
 
     @IgnorePermissionCheck
-    open fun executeWithoutSubCommands() {}
+    open fun executeWithoutSubCommands() {
+        error("Can not find any subcommands for class: '${this.javaClass}'")
+    }
 }
