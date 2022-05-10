@@ -5,7 +5,10 @@ import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
 import ru.loginov.serbian.bot.telegram.command.context.arguments.BotCommandArgumentManager
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Message
+import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupButtonBuilder.Companion.CANCEL_CALLBACK
+import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupButtonBuilder.Companion.CONTINUE_CALLBACK
 import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupLineBuilder
+import kotlin.coroutines.cancellation.CancellationException
 
 class TelegramBotCommandArgumentManager(
         private val parent: BotCommandArgumentManager?,
@@ -15,47 +18,31 @@ class TelegramBotCommandArgumentManager(
         private val _userId: Long?
 ) : BotCommandArgumentManager {
 
-    override suspend fun getNextArgument(): String? {
-        val message = telegram.sendMessage {
+    override suspend fun getNextArgument(message: String?, optional: Boolean): String? {
+        val telegramMessage = telegram.sendMessage {
             chatId = _chatId
             buildText {
-                append("Please write argument:")
+                append(message ?: "Please write argument")
                 buildInlineKeyboard {
                     line {
-                        addCancelButton()
+                        addUIButton(optional)
                     }
                 }
             }
         }
 
-        return waitAndRemove(message) ?: parent?.getNextArgument()
+        return waitAndRemove(telegramMessage) ?: parent?.getNextArgument(message, optional)
     }
 
-    override suspend fun getNextArgument(name: String, description: String?): String? {
-        val message = telegram.sendMessage {
-            chatId = _chatId
-            buildText {
-                append("Please write $name${description?.let { " $description" } ?: ""}")
-                buildInlineKeyboard {
-                    line {
-                        addCancelButton()
-                    }
-                }
-            }
-        }
-
-        return waitAndRemove(message) ?: parent?.getNextArgument(name, description)
-    }
-
-    override suspend fun getNextArgument(variants: List<String>, description: String?): String? {
+    override suspend fun getNextArgument(variants: List<String>, message: String?, optional: Boolean): String? {
         if (variants.isEmpty()) {
             return null
         }
 
-        val message = telegram.sendMessage {
+        val telegramMessage = telegram.sendMessage {
             chatId = _chatId
             buildText {
-                append("Please choose${description?.let { " $description" } ?: ""}")
+                append(message ?: "Please choose argument")
                 buildInlineKeyboard {
                     variants.forEachIndexed { index, it ->
                         line {
@@ -66,29 +53,29 @@ class TelegramBotCommandArgumentManager(
                         }
                     }
                     line {
-                        addCancelButton()
+                        addUIButton(optional)
                     }
                 }
             }
         }
 
-        return waitAndRemove(message)?.let { data ->
+        return waitAndRemove(telegramMessage)?.let { data ->
             data.toLongOrNull()?.let { if (variants.indices.contains(it)) variants[it.toInt()] else null }
                     ?: variants.filter { it.lowercase() == data.lowercase() }.firstOrNull()
         }
-                ?: parent?.getNextArgument(variants, description)
+                ?: parent?.getNextArgument(variants, message, optional)
     }
 
-    override suspend fun getNextArgument(variants: Map<String, String>, description: String?): String? {
+    override suspend fun getNextArgument(variants: Map<String, String>, message: String?, optional: Boolean): String? {
         if (variants.isEmpty()) {
             return null
         }
 
         val list = variants.toList()
-        val message = telegram.sendMessage {
+        val telegramMessage = telegram.sendMessage {
             chatId = _chatId
             buildText {
-                append("Please choose${description?.let { " $description" } ?: ""}")
+                append(message ?: "Please choose argument")
                 buildInlineKeyboard {
                     list.forEachIndexed { index, pair ->
                         line {
@@ -99,41 +86,59 @@ class TelegramBotCommandArgumentManager(
                         }
                     }
                     line {
-                        addCancelButton()
+                        addUIButton(optional)
                     }
                 }
             }
         }
 
-        return waitAndRemove(message)?.let { data ->
+        return waitAndRemove(telegramMessage)?.let { data ->
             data.toLongOrNull()?.let { if (list.indices.contains(it)) list[it.toInt()].second else null }
                     ?: list.filter { it.first.lowercase() == data.lowercase() }.firstOrNull()?.second
         }
-                ?: parent?.getNextArgument(variants, description)
+                ?: parent?.getNextArgument(variants, message, optional)
     }
 
-    private fun InlineKeyboardMarkupLineBuilder.addCancelButton() {
+    private fun InlineKeyboardMarkupLineBuilder.addUIButton(optional: Boolean) {
         add {
-            text = "Cancel"
+            text = "\u274C"
             cancelCallback(_chatId, _userId)
+        }
+        if (optional) {
+            add {
+                text = "\u27A1"
+                continueCallback(_chatId, _userId)
+            }
         }
     }
 
-    private suspend fun waitAndRemove(message: Message?) : String? {
+    private suspend fun waitAndRemove(message: Message?): String? {
         try {
-            return callbackManager.waitCallback(_chatId, _userId)
+            val data = callbackManager.waitCallback(_chatId, _userId)
+            return when (data.dataFromCallback) {
+                CANCEL_CALLBACK -> {
+                    throw CancellationException()
+                }
+                CONTINUE_CALLBACK -> {
+                    null
+                }
+                else -> {
+                    data.dataFromMessage ?: data.dataFromCallback
+                }
+            }
         } catch (e: Exception) {
             throw e
         } finally {
-            if (message != null) {
-                try {
-                    telegram.deleteMessage {
-                        fromMessage(message)
-                    }
-                } catch (e: Exception) {
-                    LOGGER.error("Can not delete message: '$message'")
-                }
-            }
+            //FIXME: Should make an architecture for bot UI
+//            if (message != null) {
+//                try {
+//                    telegram.deleteMessage {
+//                        fromMessage(message)
+//                    }
+//                } catch (e: Exception) {
+//                    LOGGER.error("Can not delete message: '$message'", e)
+//                }
+//            }
         }
     }
 

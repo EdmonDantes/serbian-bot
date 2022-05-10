@@ -6,14 +6,11 @@ import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.spring.subcommand.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.AbstractBotCommand
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
-import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
-import ru.loginov.telegram.api.util.markdown2
 
 @Component
-@SubCommand(parent = HelpCommand::class, subCommandName = "all")
+@SubCommand(parents = [HelpCommand::class])
 class SubCommandAllForHelp : AbstractSubCommand() {
 
     @Autowired
@@ -21,9 +18,7 @@ class SubCommandAllForHelp : AbstractSubCommand() {
     private lateinit var botCommandManager: BotCommandManager
 
     override val commandName: String = "all"
-    override val description: StringBuilderMarkdownV2 = markdown2 {
-        append("Print all commands and theirs descriptions")
-    }
+    override val shortDescription: String = "Print all command`s descriptions"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.telegram.sendMessage {

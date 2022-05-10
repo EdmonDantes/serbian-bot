@@ -12,6 +12,7 @@ import ru.loginov.serbian.bot.data.manager.permission.tree.PermissionTree
 import ru.loginov.serbian.bot.data.manager.permission.tree.PermissionsMutation
 import ru.loginov.serbian.bot.data.repository.permission.GroupPermissionDtoRepository
 import ru.loginov.serbian.bot.data.repository.permission.PermissionNodeDtoRepository
+import ru.loginov.serbian.bot.data.repository.user.UserDtoRepository
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -34,6 +35,9 @@ class DefaultPermissionManager : PermissionManager {
 
     @Autowired
     private lateinit var permissionRegister: PermissionRegister
+
+    @Autowired
+    private lateinit var userDtoRepository: UserDtoRepository
 
     private lateinit var adminIds: List<Long>
 
@@ -106,12 +110,13 @@ class DefaultPermissionManager : PermissionManager {
         }
     }
 
-    override fun deleteGroup(name: String): Boolean {
+    override fun deleteGroup(name: String, forReplace: String?): Boolean {
         return try {
+            userDtoRepository.replacePermissionGroup(name.lowercase(), forReplace?.lowercase())
             groupPermissionDtoRepository.deleteById(name.lowercase())
             true
         } catch (e: Exception) {
-            LOGGER.warn("Can not delete group with name '$name'", e)
+            LOGGER.warn("Can not delete group with name '${name.lowercase()}'", e)
             false
         } finally {
             flush()

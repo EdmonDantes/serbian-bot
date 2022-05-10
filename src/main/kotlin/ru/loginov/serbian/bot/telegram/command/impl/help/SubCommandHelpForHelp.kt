@@ -6,14 +6,13 @@ import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.spring.subcommand.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.AbstractBotCommand
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
 import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
 import ru.loginov.telegram.api.util.markdown2
 
 @Component
-@SubCommand(parent = HelpCommand::class, subCommandName = "help")
+@SubCommand(parents = [HelpCommand::class])
 class SubCommandHelpForHelp : AbstractSubCommand() {
 
     @Autowired

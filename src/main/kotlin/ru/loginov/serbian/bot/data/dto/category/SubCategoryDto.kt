@@ -13,6 +13,8 @@ import javax.persistence.MapKey
 import javax.persistence.OneToMany
 
 @Entity
+//TODO: Remove. Please use CategoryDto.parent
+@Deprecated(message = "Please use CategoryDto.parent")
 class SubCategoryDto {
 
     @Id

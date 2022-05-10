@@ -4,25 +4,23 @@ interface BotCommandArgumentManager {
 
     /**
      * Return next argument.
-     * Please use [getNextArgument] with name
      */
-    suspend fun getNextArgument() : String?
-
-    /**
-     * Return next argument
-     */
-    suspend fun getNextArgument(name: String, description: String? = null) : String?
+    suspend fun getNextArgument(message: String?, optional: Boolean = false): String?
 
     /**
      * Return next argument
      * Returned argument will be one of [variants]
      */
-    suspend fun getNextArgument(variants: List<String>, description: String? = null) : String?
+    suspend fun getNextArgument(variants: List<String>, message: String? = null, optional: Boolean = false): String?
 
     /**
      * Return next argument
      * Returned argument will be one of [variants] values
      * User can see only keys of [variants]
      */
-    suspend fun getNextArgument(variants: Map<String, String>, description: String? = null) : String?
+    suspend fun getNextArgument(
+            variants: Map<String, String>,
+            message: String? = null,
+            optional: Boolean = false
+    ): String?
 }

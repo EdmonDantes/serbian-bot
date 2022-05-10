@@ -10,7 +10,7 @@ import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 
 @Component
-@SubCommand(parent = CategoryBotCommand::class, subCommandName = "create")
+@SubCommand(parents = [CategoryBotCommand::class])
 @RequiredPermission("commands.category.create")
 class SubCommandCreateForCategory : AbstractSubCommand() {
 

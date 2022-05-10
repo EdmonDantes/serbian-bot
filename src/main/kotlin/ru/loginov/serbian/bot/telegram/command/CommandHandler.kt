@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
+import ru.loginov.serbian.bot.telegram.callback.CallbackData
 import ru.loginov.serbian.bot.telegram.callback.CallbackExecutor
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextFactory
@@ -62,7 +63,7 @@ class CommandHandler : OnUpdateHandler {
         val lang = update.message!!.from!!.languageTag
 
         if (!update.message!!.text!!.startsWith('/')) {
-            callbackExecutor.invoke(chatId, userId, update.message?.text)
+            callbackExecutor.invoke(chatId, userId, CallbackData(update.message?.text, null))
             return
         }
 
@@ -117,7 +118,7 @@ class CommandHandler : OnUpdateHandler {
             return
         }
 
-        callbackExecutor.invoke(chatId, userId, dataStr)
+        callbackExecutor.invoke(chatId, userId, CallbackData(null, dataStr))
     }
 
 

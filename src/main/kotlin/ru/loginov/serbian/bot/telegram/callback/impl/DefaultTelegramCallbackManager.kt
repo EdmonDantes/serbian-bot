@@ -3,6 +3,7 @@ package ru.loginov.serbian.bot.telegram.callback.impl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.telegram.callback.CallbackData
 import ru.loginov.serbian.bot.telegram.callback.CallbackExecutor
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallback
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
@@ -35,19 +36,19 @@ class DefaultTelegramCallbackManager : TelegramCallbackManager, CallbackExecutor
         return true
     }
 
-    override suspend fun waitCallback(chatId: Long, userId: Long?): String? =
+    override suspend fun waitCallback(chatId: Long, userId: Long?): CallbackData =
             suspendCoroutine { continuation ->
                 if (userId == null) {
-                    addCallback(chatId) { data, canceled ->
-                        if (canceled) {
+                    addCallback(chatId) { data ->
+                        if (data == null) {
                             continuation.resumeWithException(CancellationException())
                         } else {
                             continuation.resumeWith(Result.success(data))
                         }
                     }
                 } else {
-                    addCallback(chatId, userId) { data, canceled ->
-                        if (canceled) {
+                    addCallback(chatId, userId) { data ->
+                        if (data == null) {
                             continuation.resumeWithException(CancellationException())
                         } else {
                             continuation.resumeWith(Result.success(data))
@@ -56,9 +57,9 @@ class DefaultTelegramCallbackManager : TelegramCallbackManager, CallbackExecutor
                 }
             }
 
-    override suspend fun invoke(chatId: Long, userId: Long?, data: String?): Boolean {
+    override suspend fun invoke(chatId: Long, userId: Long?, data: CallbackData): Boolean {
 
-        if (InlineKeyboardMarkupButtonBuilder.CANCEL_CALLBACK == data) {
+        if (InlineKeyboardMarkupButtonBuilder.CANCEL_CALLBACK == data.dataFromCallback) {
             cancel(chatId, userId)
             return false
         }
@@ -71,7 +72,7 @@ class DefaultTelegramCallbackManager : TelegramCallbackManager, CallbackExecutor
 
         while (callbacks.isNotEmpty()) {
             val callback = callbacks.poll()
-            callback.invoke(data, false)
+            callback.invoke(data)
         }
 
         return true
@@ -82,7 +83,7 @@ class DefaultTelegramCallbackManager : TelegramCallbackManager, CallbackExecutor
 
         while (callbacks.isNotEmpty()) {
             val callback = callbacks.poll()
-            callback.invoke(null, true)
+            callback.invoke(null)
         }
     }
 

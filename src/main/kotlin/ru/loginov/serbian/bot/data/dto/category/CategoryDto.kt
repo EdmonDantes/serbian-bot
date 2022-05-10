@@ -4,9 +4,12 @@ import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
 import java.util.Locale
 import javax.persistence.CascadeType
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
 import javax.persistence.MapKey
 import javax.persistence.OneToMany
 
@@ -16,6 +19,13 @@ class CategoryDto {
     @Id
     @GeneratedValue
     var id: Int? = null
+
+    @ManyToOne(cascade = [CascadeType.REFRESH], optional = true)
+    @JoinColumn(name = "parent_id", insertable = false, updatable = false)
+    var parent: CategoryDto? = null
+
+    @Column(name = "parent_id")
+    var parentId: Long? = null
 
     @MapKey(name = "localizedId.locale")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)

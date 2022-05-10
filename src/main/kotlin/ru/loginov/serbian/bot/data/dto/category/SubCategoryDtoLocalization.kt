@@ -15,9 +15,12 @@ import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.MapsId
 
+
+//TODO: Remove. Please use CategoryDto.parent
 @Entity
 @Indexed
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
+@Deprecated(message = "Please use CategoryDto.parent")
 class SubCategoryDtoLocalization {
 
     @EmbeddedId

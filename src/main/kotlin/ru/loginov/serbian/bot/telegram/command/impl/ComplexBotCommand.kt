@@ -1,5 +1,6 @@
 package ru.loginov.serbian.bot.telegram.command.impl
 
+import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.spring.permission.annotation.IgnorePermissionCheck
 import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
@@ -11,12 +12,15 @@ import ru.loginov.telegram.api.util.markdown2
 @PermissionCheck
 abstract class ComplexBotCommand : AbstractBotCommand() {
 
+    private val LOGGER = LoggerFactory.getLogger(this.javaClass)
     private var _subCommands: Map<String, BotCommand>? = null
         set(value) {
             field = value
-            _subCommandsNames = value?.keys?.toList() ?: emptyList()
+            _subCommandsNames = value
+                    ?.values?.associate { (it.shortDescription ?: it.commandName) to (it.commandName) }
+                    ?: emptyMap()
         }
-    private var _subCommandsNames: List<String> = emptyList()
+    private var _subCommandsNames: Map<String, String> = emptyMap()
 
     val subCommands: Map<String, BotCommand>
         get() = _subCommands ?: emptyMap()
@@ -77,10 +81,17 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
         if (_subCommandsNames.isEmpty()) {
             executeWithoutSubCommands()
         } else {
-            val commandName = context.argumentManager.getNextArgument(_subCommandsNames, "subcommand")
-            subCommands[commandName]?.execute(context) ?: context.sendMessage {
-                buildText {
-                    append("Can not find subcommand with $commandName")
+            val commandName = context.argumentManager.getNextArgument(_subCommandsNames, "Please choose subcommand")
+
+            val command = subCommands[commandName]
+            if (command != null) {
+                command.execute(context)
+            } else {
+                LOGGER.error("Can not find subcommand with '$commandName'")
+                context.sendMessage {
+                    buildText {
+                        append("Can not execute subcommand. Internal error")
+                    }
                 }
             }
         }

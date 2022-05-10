@@ -29,6 +29,15 @@ class InlineKeyboardMarkupButtonBuilder : AbstractKeyboardButtonBuilder<InlineKe
         this.callbackData = "$chatId${userId?.let { ":$userId" } ?: ""}#$CANCEL_CALLBACK"
     }
 
+    /**
+     * Add callback with format:
+     *
+     * **_[chatId]_:_[userId]_#continue**
+     */
+    fun continueCallback(chatId: Long, userId: Long?): InlineKeyboardMarkupButtonBuilder = apply {
+        this.callbackData = "$chatId${userId?.let { ":$userId" } ?: ""}#$CONTINUE_CALLBACK"
+    }
+
     fun requiredPay(): InlineKeyboardMarkupButtonBuilder = apply {
         pay = true
     }
@@ -45,5 +54,6 @@ class InlineKeyboardMarkupButtonBuilder : AbstractKeyboardButtonBuilder<InlineKe
 
     companion object {
         const val CANCEL_CALLBACK = "cancel"
+        const val CONTINUE_CALLBACK = "continue"
     }
 }

@@ -5,9 +5,8 @@ import kotlin.reflect.KClass
 
 @Target(allowedTargets = [AnnotationTarget.CLASS])
 @Retention(AnnotationRetention.RUNTIME)
-@Repeatable
+@Repeatable //FIXME: Add support (sometime in future)
 @MustBeDocumented
 annotation class SubCommand(
-        val parent: KClass<out BotCommand>,
-        val subCommandName: String // FIXME: Remove and use property command name
+        val parents: Array<KClass<out BotCommand>>
 )

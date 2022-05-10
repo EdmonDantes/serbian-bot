@@ -9,7 +9,7 @@ import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 
 @Component
-@SubCommand(parent = SubCommandShowForPermission::class, subCommandName = "permissions")
+@SubCommand(parents = [SubCommandShowForPermission::class])
 @RequiredPermission("commands.permission.show.permissions")
 class SubCommandPermissionsForShow : AbstractSubCommand() {
 
@@ -17,6 +17,7 @@ class SubCommandPermissionsForShow : AbstractSubCommand() {
     private lateinit var permissionManager: PermissionManager
 
     override val commandName: String = "permissions"
+    override val shortDescription: String = "Show all registered permissions"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.sendMessageWithoutLimit {

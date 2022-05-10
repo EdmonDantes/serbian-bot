@@ -41,26 +41,17 @@ class ParametersBotCommandArgumentManager(
         this.arguments = arguments
     }
 
-    override suspend fun getNextArgument(): String =
+    override suspend fun getNextArgument(message: String?, optional: Boolean): String? =
             internalGetNextArgument()
-                    ?: parent?.getNextArgument()
-                    ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
+                    ?: parent?.getNextArgument(message, optional)
 
-    override suspend fun getNextArgument(name: String, description: String?): String =
+    override suspend fun getNextArgument(variants: List<String>, message: String?, optional: Boolean): String? =
             internalGetNextArgument()
-                    ?: parent?.getNextArgument(name, description)
-                    ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
+                    ?: parent?.getNextArgument(variants, message, optional)
 
-    override suspend fun getNextArgument(variants: List<String>, description: String?): String? =
+    override suspend fun getNextArgument(variants: Map<String, String>, message: String?, optional: Boolean): String? =
             internalGetNextArgument()
-                    ?: parent?.getNextArgument(variants, description)
-                    ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
-
-    override suspend fun getNextArgument(variants: Map<String, String>, description: String?): String? =
-            internalGetNextArgument()
-                    ?: parent?.getNextArgument(variants, description)
-                    ?: throw IndexOutOfBoundsException("Current index '$index', but size '${arguments.size}'")
-
+                    ?: parent?.getNextArgument(variants, message, optional)
 
     private fun internalGetNextArgument(): String? =
             if (index < arguments.size) {

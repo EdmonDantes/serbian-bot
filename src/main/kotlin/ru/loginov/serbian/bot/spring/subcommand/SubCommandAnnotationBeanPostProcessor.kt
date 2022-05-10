@@ -1,5 +1,6 @@
 package ru.loginov.serbian.bot.spring.subcommand
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.core.PriorityOrdered
 import org.springframework.stereotype.Component
@@ -10,6 +11,7 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
+//TODO: Add creating command tree and print it to log (example: { root: { commandClass1: { commandClass2: null }}})
 @Component
 class SubCommandAnnotationBeanPostProcessor : BeanPostProcessor, PriorityOrdered {
 
@@ -42,9 +44,21 @@ class SubCommandAnnotationBeanPostProcessor : BeanPostProcessor, PriorityOrdered
                     .filter { it is SubCommand }
                     .map { it as SubCommand }
                     .forEach { annotation ->
-                        if (annotation.parent != bean::class) {
-                            subCommands.computeIfAbsent(annotation.parent) { HashMap() }[annotation.subCommandName.lowercase()] = beanName
-                            subCommandsParent.computeIfAbsent(beanName) { ArrayList() }.add(annotation.parent)
+                        annotation.parents.forEach { parent ->
+                            if (parent != bean::class) {
+                                val oldBeanName = subCommands.computeIfAbsent(parent) { HashMap() }.put(
+                                        bean.commandName,
+                                        beanName
+                                )
+                                if (oldBeanName != null) {
+                                    LOGGER.warn(
+                                            "Command from class '$parent' have subcommands conflict " +
+                                                    "for name '${bean.commandName}'. " +
+                                                    "Conflicted beans: ['$beanName', '$oldBeanName']"
+                                    )
+                                }
+                                subCommandsParent.computeIfAbsent(beanName) { ArrayList() }.add(parent)
+                            }
                         }
                     }
         }
@@ -87,4 +101,8 @@ class SubCommandAnnotationBeanPostProcessor : BeanPostProcessor, PriorityOrdered
     }
 
     override fun getOrder(): Int = 0
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(SubCommandAnnotationBeanPostProcessor::class.java)
+    }
 }

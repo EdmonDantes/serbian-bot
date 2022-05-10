@@ -7,8 +7,8 @@ import ru.loginov.serbian.bot.telegram.command.impl.ComplexSubCommand
 
 @Component
 @SubCommand(parents = [PermissionBotCommand::class])
-@RequiredPermission("commands.permission.show")
-class SubCommandShowForPermission : ComplexSubCommand() {
-    override val commandName: String = "show"
-    override val shortDescription: String = "Show groups or permissions"
+@RequiredPermission("commands.permission.groups")
+class SubCommandGroupsForPermissions : ComplexSubCommand() {
+    override val commandName: String = "groups"
+    override val shortDescription: String = "Manage permissions groups"
 }
