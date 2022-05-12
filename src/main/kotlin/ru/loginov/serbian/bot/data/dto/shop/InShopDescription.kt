@@ -1,7 +1,6 @@
 package ru.loginov.serbian.bot.data.dto.shop
 
 import ru.loginov.serbian.bot.data.dto.category.CategoryDto
-import ru.loginov.serbian.bot.data.dto.category.SubCategoryDto
 import ru.loginov.serbian.bot.data.dto.product.ProductDto
 import javax.persistence.CascadeType
 import javax.persistence.Column
@@ -27,13 +26,6 @@ class InShopDescription {
     var categoryId: Int? = null
 
     @ManyToOne
-    @JoinColumn(name = "sub_category_id", insertable = false, updatable = false)
-    var subCategory: SubCategoryDto? = null
-
-    @Column(name = "sub_category_id", nullable = false)
-    var subCategoryId: Int? = null
-
-    @ManyToOne
     @JoinColumn(name = "product_id", insertable = false, updatable = false)
     var product: ProductDto? = null
 
@@ -54,5 +46,5 @@ class InShopDescription {
     var floor: Int? = null
 
     @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var comments: MutableList<InShopDescriptionComment>? = null
+    var comments: MutableList<ShopDescriptionCommentDto>? = null
 }

@@ -16,16 +16,29 @@ import javax.persistence.OneToMany
 @Entity
 class CategoryDto {
 
+    constructor() {}
+
+    constructor(id: Int) {
+        this.id = id
+    }
+
     @Id
     @GeneratedValue
     var id: Int? = null
+
+    @OneToMany(
+            mappedBy = "parent",
+            cascade = [CascadeType.REMOVE, CascadeType.REFRESH, CascadeType.DETACH],
+            orphanRemoval = true
+    )
+    var subCategories: MutableList<CategoryDto> = ArrayList()
 
     @ManyToOne(cascade = [CascadeType.REFRESH], optional = true)
     @JoinColumn(name = "parent_id", insertable = false, updatable = false)
     var parent: CategoryDto? = null
 
     @Column(name = "parent_id")
-    var parentId: Long? = null
+    var parentId: Int? = null
 
     @MapKey(name = "localizedId.locale")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)

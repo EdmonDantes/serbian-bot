@@ -1,5 +1,6 @@
 package ru.loginov.serbian.bot.data.manager.category
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.data.dto.category.CategoryDto
@@ -24,10 +25,12 @@ class DefaultCategoryManager : CategoryManager {
     @Autowired
     private lateinit var localizationManager: LocalizationManager
 
-    override fun getAllCategories(locale: String): List<String> = categoryDtoRepository
-            .findAllWithLocalization()
+    override fun getAllRootCategories(locale: String): List<String> = categoryDtoRepository
+            .findAllRootWithLocalization()
             .mapNotNull {
-                it.localization[locale] ?: it.localization[localizationManager.defaultLanguage] ?: it.localization.values.first()
+                it.localization[locale]
+                        ?: it.localization[localizationManager.defaultLanguage]
+                        ?: it.localization.values.firstOrNull()
             }.mapNotNull {
                 it.name
             }
@@ -35,19 +38,42 @@ class DefaultCategoryManager : CategoryManager {
     override fun findCategoryByName(name: String): List<CategoryDtoLocalization> =
             categoryDtoLocalizationSearchRepository.findAllByGeneralProperty(name)
 
-    override fun createNewCategory(names: Map<String, String>): CategoryDto {
+    override fun findCategoryById(categoryId: Int): CategoryDto? =
+            categoryDtoRepository.findByIdWithAllFields(categoryId).orElse(null)
+
+    override fun createNewCategory(names: Map<String, String>, parentId: Int?): CategoryDto {
         val notSupportLang = names.keys.filter { !localizationManager.languageIsSupport(it) }
         if (notSupportLang.isNotEmpty()) {
-            throw IllegalArgumentException("Not support language: '$notSupportLang'")
+            throw IllegalArgumentException("Not support languages: '$notSupportLang'")
         }
 
-        val category =  CategoryDto()
+        val category = CategoryDto()
+        category.parentId = parentId
         names.forEach { category.putLocalization(it.key, it.value) }
         try {
             return categoryDtoRepository.save(category)
         } catch (e: Exception) {
             throw IllegalStateException("Can not save category dao: '$category'", e)
         }
+    }
+
+    override fun changeLocalizationNameForCategory(categoryId: Int, language: String, value: String): Boolean {
+        if (!localizationManager.languageIsSupport(language)) {
+            throw IllegalArgumentException("Not support language: '$language'")
+        }
+
+        val localization = CategoryDtoLocalization(categoryId, language, value)
+        return try {
+            categoryDtoLocalizationRepository.save(localization)
+            true
+        } catch (e: Exception) {
+            LOGGER.warn("Can not save localization for category with id '$categoryId' and language '$language': '$value'")
+            false
+        }
+    }
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(DefaultCategoryManager::class.java)
     }
 
 }

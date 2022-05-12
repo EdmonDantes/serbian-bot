@@ -11,7 +11,7 @@ import ru.loginov.serbian.bot.configuration.ExecutorsConfiguration
 import ru.loginov.serbian.bot.configuration.InMemoryJdbcConfiguration
 
 @SpringBootTest(classes = [InMemoryJdbcConfiguration::class, ExecutorsConfiguration::class])
-@ComponentScan("ru.loginov.data")
+@ComponentScan("ru.loginov.data.manager.permission")
 @EnableJpaRepositories
 class PermissionManagerTest {
 

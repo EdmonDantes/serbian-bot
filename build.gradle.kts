@@ -16,26 +16,38 @@ repositories {
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter")
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
-	//implementation("org.springframework.boot:spring-boot-starter-web")
+	// --------- Kotlin --------- \\
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm")
 
+	// --------- Spring ---------- \\
+	implementation("org.springframework.boot:spring-boot-starter")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	//implementation("org.springframework.boot:spring-boot-starter-web")
+
+	// ------- JSON processing --- \\
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
+	// --------- Databases ------ \\
 	implementation("mysql:mysql-connector-java")
 	implementation("com.h2database:h2")
 
-	implementation(project(":kotlin-telegram-api"))
-
+	// --------- Search --------- \\
 	implementation("org.hibernate.search:hibernate-search-mapper-orm:6.1.4.Final")
 //	implementation("org.hibernate:hibernate-search-orm:5.11.10.Final")
 //	implementation("org.hibernate.search:hibernate-search-backend-elasticsearch:6.1.4.Final")
 	implementation("org.hibernate.search:hibernate-search-backend-lucene:6.1.4.Final")
 
+	// --------- Telegram ------- \\
+	implementation(project(":kotlin-telegram-api"))
+
+	// --------- Google ---------- \\
+	implementation("com.google.maps:google-maps-services:2.0.0")
+
+
+	// --------- TEST ------------ \\
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

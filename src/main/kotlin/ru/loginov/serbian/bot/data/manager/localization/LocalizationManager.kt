@@ -5,6 +5,7 @@ interface LocalizationManager {
     val allSupportLanguages: List<String>
     val defaultLanguage: String
 
-    fun languageIsSupport(language: String) : Boolean
+    fun languageIsSupport(language: String): Boolean
+    fun getLocalizationString(language: String?, str: String): String?
 
 }

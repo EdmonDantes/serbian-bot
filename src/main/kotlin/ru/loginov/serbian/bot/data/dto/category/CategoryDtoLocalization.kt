@@ -23,6 +23,9 @@ class CategoryDtoLocalization {
 
     constructor() {}
 
+    constructor(categoryId: Int, locale: String, name: String?)
+            : this(CategoryDto(categoryId), locale, name)
+
     constructor(entity: CategoryDto?, locale: String, name: String?) {
         this.localizedId = LocalizedId()
         this.localizedId!!.locale = locale

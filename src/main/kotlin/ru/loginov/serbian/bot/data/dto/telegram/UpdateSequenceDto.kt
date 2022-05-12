@@ -5,7 +5,7 @@ import javax.persistence.Entity
 import javax.persistence.Id
 
 @Entity
-class UpdateSequence() {
+class UpdateSequenceDto() {
     constructor(id: Long, seq: Long) : this() {
         this.id = id
         this.seq = seq

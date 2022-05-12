@@ -3,7 +3,6 @@ package ru.loginov.serbian.bot.data.dto.product
 import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
 import ru.loginov.serbian.bot.data.dto.category.CategoryDto
-import ru.loginov.serbian.bot.data.dto.category.SubCategoryDto
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -27,13 +26,6 @@ class ProductDto {
 
     @Column(name = "category_id", nullable = false)
     var categoryId: Int? = null
-
-    @ManyToOne
-    @JoinColumn(name = "sub_category_id", insertable = false, updatable = false)
-    var subCategory: SubCategoryDto? = null
-
-    @Column(name = "sub_category_id", nullable = false)
-    var subCategoryId: Int? = null
 
     @MapKey(name = "localizedId.locale")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)

@@ -5,8 +5,12 @@ import ru.loginov.serbian.bot.data.dto.category.CategoryDtoLocalization
 
 interface CategoryManager {
 
-    fun getAllCategories(locale: String): List<String>
+    fun getAllRootCategories(locale: String): List<String>
+
     fun findCategoryByName(name: String): List<CategoryDtoLocalization>
-    fun createNewCategory(names: Map<String, String>) : CategoryDto
+    fun findCategoryById(categoryId: Int): CategoryDto?
+
+    fun createNewCategory(names: Map<String, String>, parentId: Int? = null): CategoryDto
+    fun changeLocalizationNameForCategory(categoryId: Int, language: String, value: String): Boolean
 
 }

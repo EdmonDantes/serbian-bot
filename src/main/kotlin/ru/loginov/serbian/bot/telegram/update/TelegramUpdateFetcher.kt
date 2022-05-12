@@ -3,18 +3,13 @@ package ru.loginov.serbian.bot.telegram.update
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.hibernate.id.IdentifierGenerator
-import org.hibernate.id.IncrementGenerator
-import org.hibernate.id.enhanced.SequenceStyleGenerator
-import org.hibernate.id.factory.IdentifierGeneratorFactory
-import org.hibernate.id.factory.internal.DefaultIdentifierGeneratorFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import ru.loginov.serbian.bot.data.dto.telegram.UpdateSequence
+import ru.loginov.serbian.bot.data.dto.telegram.UpdateSequenceDto
 import ru.loginov.serbian.bot.data.repository.telegram.UpdateSequenceRepository
 import ru.loginov.serbian.bot.data.repository.telegram.UpdateSequenceRepository.Companion.DEFAULT_ID
 import ru.loginov.telegram.api.TelegramAPI
@@ -22,7 +17,6 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
-import javax.persistence.SequenceGenerator
 import kotlin.math.max
 
 @Service
@@ -44,10 +38,10 @@ class TelegramUpdateFetcher {
     @Qualifier("small_tasks")
     private lateinit var executor: Executor
 
-    @Value("\${bot.update.timeout.sec:5}")
+    @Value("\${bot.telegram.update.timeout.sec:5}")
     private var longPollingTimeoutSec: Long = 5
 
-    @Value("\${bot.update.enable:true}")
+    @Value("\${bot.telegram.update.enable:true}")
     private var enabled: Boolean = true
 
     private val isContinue = AtomicBoolean(true)
@@ -88,7 +82,7 @@ class TelegramUpdateFetcher {
             }
 
             if (newLastSeq != lastSeq) {
-                updateSequenceRepository.saveAndFlush(UpdateSequence(newLastSeq!!, DEFAULT_ID))
+                updateSequenceRepository.saveAndFlush(UpdateSequenceDto(newLastSeq!!, DEFAULT_ID))
             }
 
             if (isContinue.get()) {
