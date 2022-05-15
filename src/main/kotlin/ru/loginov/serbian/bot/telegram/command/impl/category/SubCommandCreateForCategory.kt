@@ -21,11 +21,11 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
     override val shortDescription: String? = "Create new category"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val categoryName = context.argumentManager.getNextArgument("Category name")
+        val categoryName = context.getNextArgument("Category name")
 
         if (categoryName.isNullOrEmpty()) {
             context.sendMessage {
-                buildText {
+                markdown2 {
                     append("Can not create new category with name '$categoryName'")
                 }
             }
@@ -33,7 +33,7 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
         }
 
         val lang = if (context.user.language == null) {
-            context.argumentManager.getNextArgument(
+            context.getNextArgument(
                     mapOf("Russian" to "ru", "English" to "en"),
                     "language of category name"
             )
@@ -41,14 +41,14 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
 
         if (lang.isNullOrEmpty() || lang.length != 2) {
             context.sendMessage {
-                buildText {
+                markdown2 {
                     append("Can not create new category, because we can not known which language used for naming")
                 }
             }
             return
         }
         context.sendMessage {
-            buildText {
+            markdown2 {
 
                 try {
                     categoryManager.createNewCategory(mapOf(lang to categoryName))

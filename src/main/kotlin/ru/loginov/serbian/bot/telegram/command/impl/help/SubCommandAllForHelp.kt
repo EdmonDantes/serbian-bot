@@ -8,6 +8,7 @@ import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
+import ru.loginov.serbian.bot.util.markdown2
 
 @Component
 @SubCommand(parents = [HelpCommand::class])
@@ -18,13 +19,12 @@ class SubCommandAllForHelp : AbstractSubCommand() {
     private lateinit var botCommandManager: BotCommandManager
 
     override val commandName: String = "all"
-    override val shortDescription: String = "Print all command`s descriptions"
+    override val shortDescription: String = "@{bot.command.help.all._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        context.telegram.sendMessage {
-            this.chatId = context.chatId
-            buildText {
-                append("Bots commands:\n")
+        context.sendMessage {
+            markdown2(context) {
+                append("@{bot.command.help.all._.bots.commands}:\n")
                 botCommandManager.getAllCommands().mapNotNull {
                     try {
                         it.getCommandName(context) to it.getDescription(context)

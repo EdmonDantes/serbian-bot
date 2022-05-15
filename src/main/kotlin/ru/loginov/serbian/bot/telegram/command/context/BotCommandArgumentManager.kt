@@ -1,24 +1,11 @@
-package ru.loginov.serbian.bot.telegram.command.context.arguments
+package ru.loginov.serbian.bot.telegram.command.context
 
-import ru.loginov.serbian.bot.spring.localization.annotation.Localized
-import ru.loginov.serbian.bot.spring.localization.context.LocalizationContext
-
-@Localized
 interface BotCommandArgumentManager {
 
     /**
      * Return next argument.
      */
     suspend fun getNextArgument(message: String?, optional: Boolean = false): String?
-
-    /**
-     * Return next argument
-     */
-    suspend fun getNextArgument(
-            localizationString: String?,
-            context: LocalizationContext,
-            optional: Boolean = false
-    ): String?
 
     /**
      * Return next argument

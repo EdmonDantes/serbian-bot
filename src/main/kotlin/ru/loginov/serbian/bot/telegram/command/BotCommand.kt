@@ -3,7 +3,7 @@ package ru.loginov.serbian.bot.telegram.command
 import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
+import ru.loginov.telegram.api.util.TelegramMessageTextBuilder
 import java.util.concurrent.CancellationException
 
 @PermissionCheck
@@ -14,36 +14,21 @@ interface BotCommand {
      */
     val commandName: String
 
-    /**
-     * Please only for internal usage (example: logs). Not for users
-     */
-    val shortDescription: String?
-
-    /**
-     * Please only for internal usage (example: logs). Not for users
-     */
-    val description: StringBuilderMarkdownV2?
-
-    /**
-     * Please only for internal usage (example: logs). Not for users
-     */
-    val usage: StringBuilderMarkdownV2?
-
     @PermissionCheck
     @Throws(HaveNotPermissionException::class)
     fun getCommandName(context: BotCommandExecuteContext) : String = commandName
 
     @PermissionCheck
     @Throws(HaveNotPermissionException::class)
-    fun getShortDescription(context: BotCommandExecuteContext) : String? = shortDescription
+    fun getShortDescription(context: BotCommandExecuteContext): String? = null
 
     @PermissionCheck
     @Throws(HaveNotPermissionException::class)
-    fun getDescription(context: BotCommandExecuteContext) : StringBuilderMarkdownV2? = description
+    fun getDescription(context: BotCommandExecuteContext): TelegramMessageTextBuilder? = null
 
     @PermissionCheck
     @Throws(HaveNotPermissionException::class)
-    fun getUsage(context: BotCommandExecuteContext) : StringBuilderMarkdownV2? = usage
+    fun getUsage(context: BotCommandExecuteContext): TelegramMessageTextBuilder? = null
 
     @PermissionCheck
     @Throws(CancellationException::class, HaveNotPermissionException::class)

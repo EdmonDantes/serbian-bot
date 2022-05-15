@@ -21,21 +21,21 @@ class SubCommandDeleteForGroups : AbstractSubCommand() {
     override val shortDescription: String = "Delete permission`s group"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val groupName = context.argumentManager.getNextArgument("Please write group name which will be delete")
+        val groupName = context.getNextArgument("Please write group name which will be delete")
         if (groupName.isNullOrEmpty()) {
             context.sendMessage {
-                buildText {
+                markdown2 {
                     append("Can not delete group without name")
                 }
             }
         }
 
-        val groupForReplace = context.argumentManager.getNextArgument("Please write group name for replace", true)
+        val groupForReplace = context.getNextArgument("Please write group name for replace", true)
 
         try {
             if (permissionManager.deleteGroup(groupName!!, groupForReplace)) {
                 context.sendMessage {
-                    buildText {
+                    markdown2 {
                         append("Successfully delete group with name '$groupName'")
                     }
                 }
@@ -46,7 +46,7 @@ class SubCommandDeleteForGroups : AbstractSubCommand() {
         }
 
         context.sendMessage {
-            buildText {
+            markdown2 {
                 append("Can not delete group with name '$groupName'")
             }
         }

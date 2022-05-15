@@ -21,7 +21,7 @@ class SubCommandPermissionsForShow : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.sendMessageWithoutLimit {
-            buildText {
+            markdown2 {
                 append("All registered permissions:")
                 permissionManager.getAllPermissions().forEach {
                     append('\n')

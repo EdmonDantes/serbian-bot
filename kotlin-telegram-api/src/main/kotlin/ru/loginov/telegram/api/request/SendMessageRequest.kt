@@ -7,7 +7,8 @@ import ru.loginov.telegram.api.entity.MessageEntity
 import ru.loginov.telegram.api.entity.ReplyKeyboardRemove
 import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupBuilder
 import ru.loginov.telegram.api.entity.builder.ReplyKeyboardMarkupBuilder
-import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
+import ru.loginov.telegram.api.util.TelegramMessageTextBuilder
+import ru.loginov.telegram.api.util.markdown2String
 
 /**
  * This object represents request for method [ru.loginov.telegram.api.TelegramAPI.sendMessage]
@@ -32,6 +33,7 @@ class SendMessageRequest {
      *
      * *Optional*
      */
+    //TODO: Change to enum
     @JsonProperty(value = "parse_mode", required = false)
     var parseMode: String? = null
 
@@ -93,12 +95,23 @@ class SendMessageRequest {
     @JsonProperty(value = "reply_markup", required = false)
     var keyboard: Any? = null
 
-    fun emptyText() : SendMessageRequest = apply {
+    fun emptyText(): SendMessageRequest = apply {
         text = ""
     }
 
-    fun buildText(block: StringBuilderMarkdownV2.() -> Unit): SendMessageRequest = apply {
-        val builder = StringBuilderMarkdownV2()
+    fun markdown2(): SendMessageRequest = apply {
+        parseMode = "MarkdownV2"
+    }
+
+    fun markdown2(block: TelegramMessageTextBuilder.() -> Unit): SendMessageRequest = apply {
+        text = markdown2String(block)
+        parseMode = "MarkdownV2"
+    }
+
+    fun markdown2(
+            builder: TelegramMessageTextBuilder,
+            block: TelegramMessageTextBuilder.() -> Unit
+    ): SendMessageRequest = apply {
         block(builder)
         text = builder.toMarkdownV2String()
         parseMode = "MarkdownV2"
@@ -108,7 +121,7 @@ class SendMessageRequest {
         disableNotification = true
     }
 
-    fun protect() : SendMessageRequest = apply {
+    fun protect(): SendMessageRequest = apply {
         protectContent = true
     }
 

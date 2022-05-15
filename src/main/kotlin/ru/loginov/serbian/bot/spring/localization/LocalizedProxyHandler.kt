@@ -104,7 +104,7 @@ class LocalizedProxyHandler(private val obj: Any?, private val clazz: Class<*>) 
             method: Method,
             parameterValue: String
     ): String {
-        val translated = context.findLocalizedString(parameterValue)
+        val translated = context.findLocalizedStringByKey(parameterValue)
         return if (translated == null) {
             LOGGER.warn(
                     "Can not translate params '${parameter.name}' from method '${method.name} " +

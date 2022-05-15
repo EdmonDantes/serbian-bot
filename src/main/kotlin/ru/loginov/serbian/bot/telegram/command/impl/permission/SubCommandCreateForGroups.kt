@@ -21,10 +21,10 @@ class SubCommandCreateForGroups : AbstractSubCommand() {
     override val shortDescription: String = "Create new permission`s group"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val groupName = context.argumentManager.getNextArgument("Group name")
+        val groupName = context.getNextArgument("Group name")
         if (groupName.isNullOrEmpty()) {
             context.sendMessage {
-                buildText {
+                markdown2 {
                     bold {
                         append("ERROR:\nCan not create group without name")
                     }
@@ -34,7 +34,7 @@ class SubCommandCreateForGroups : AbstractSubCommand() {
         try {
             permissionManager.createGroup(groupName!!.lowercase())
             context.sendMessage {
-                buildText {
+                markdown2 {
                     append("Successfully created new group with name '${groupName.lowercase()}'")
                 }
             }
@@ -42,7 +42,7 @@ class SubCommandCreateForGroups : AbstractSubCommand() {
             LOGGER.error("Can not create new group with name '${groupName?.lowercase()}'", e)
 
             context.sendMessage {
-                buildText {
+                markdown2 {
                     append("Can not create new group with name '$groupName'. Internal error.")
                 }
             }

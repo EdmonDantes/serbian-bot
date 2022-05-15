@@ -51,7 +51,7 @@ class CommandHandler : OnUpdateHandler {
             LOGGER.warn("Can not process update message, because message's sender is a bot: '$update'")
             telegram.sendMessage {
                 chatId = update.message!!.chat.id
-                buildText {
+                markdown2 {
                     append("This bot doesn't support messages from another bots")
                 }
             }
@@ -138,7 +138,7 @@ class CommandHandler : OnUpdateHandler {
     private suspend fun printCanNotFindCommand(chatId: Long, commandName: String) {
         telegram.sendMessage {
             this.chatId = chatId
-            buildText {
+            markdown2 {
                 append("Can not find command with name '$commandName'")
             }
         }

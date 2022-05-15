@@ -3,7 +3,7 @@ package ru.loginov.serbian.bot.telegram.command.context.impl
 import ru.loginov.serbian.bot.data.dto.user.UserDto
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
-import ru.loginov.serbian.bot.telegram.command.context.arguments.BotCommandArgumentManager
+import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
 import ru.loginov.telegram.api.TelegramAPI
 
 class DefaultBotCommandExecuteContext(
@@ -12,5 +12,12 @@ class DefaultBotCommandExecuteContext(
         telegram: TelegramAPI,
         permissionManager: PermissionManager,
         localizationManager: LocalizationManager,
-        override val argumentManager: BotCommandArgumentManager
-) : AbstractBotCommandExecuteContext(telegram, permissionManager, localizationManager)
+        callbackManager: TelegramCallbackManager,
+        messageWithoutCommand: String
+) : AbstractBotCommandExecuteContext(
+        telegram,
+        permissionManager,
+        localizationManager,
+        callbackManager,
+        messageWithoutCommand
+)

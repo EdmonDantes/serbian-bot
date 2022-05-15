@@ -6,6 +6,7 @@ interface LocalizationManager {
     val defaultLanguage: String
 
     fun languageIsSupport(language: String): Boolean
-    fun getLocalizationString(language: String?, str: String): String?
+    fun findLocalizedStringByKey(language: String?, key: String): String?
+    fun transformStringToLocalized(language: String?, str: String): String
 
 }

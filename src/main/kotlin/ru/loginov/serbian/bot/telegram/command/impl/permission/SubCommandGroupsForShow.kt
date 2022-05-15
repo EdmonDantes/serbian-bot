@@ -21,7 +21,7 @@ class SubCommandGroupsForShow : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.sendMessageWithoutLimit {
-            buildText {
+            markdown2 {
                 append("All saved groups:")
                 permissionManager.getAllGroups().forEach {
                     if (it.name != null) {

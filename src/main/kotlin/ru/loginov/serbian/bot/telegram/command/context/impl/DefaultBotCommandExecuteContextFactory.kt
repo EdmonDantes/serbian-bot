@@ -8,8 +8,6 @@ import ru.loginov.serbian.bot.data.manager.user.UserManager
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextFactory
-import ru.loginov.serbian.bot.telegram.command.context.arguments.impl.ParametersBotCommandArgumentManager
-import ru.loginov.serbian.bot.telegram.command.context.arguments.impl.TelegramBotCommandArgumentManager
 import ru.loginov.telegram.api.TelegramAPI
 
 @Component
@@ -50,16 +48,8 @@ class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
                 telegramApi,
                 permissionManager,
                 localizationManager,
-                ParametersBotCommandArgumentManager(
-                        TelegramBotCommandArgumentManager(
-                                null,
-                                callbackManager,
-                                telegramApi,
-                                charId,
-                                userId
-                        ),
-                        argumentsStr
-                )
+                callbackManager,
+                argumentsStr
         )
     }
 

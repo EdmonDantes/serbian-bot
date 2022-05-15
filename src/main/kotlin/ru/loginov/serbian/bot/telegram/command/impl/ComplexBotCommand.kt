@@ -6,29 +6,22 @@ import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.telegram.command.BotCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.telegram.api.util.StringBuilderMarkdownV2
-import ru.loginov.telegram.api.util.markdown2
+import ru.loginov.serbian.bot.util.markdown2
+import ru.loginov.telegram.api.util.TelegramMessageTextBuilder
 
 @PermissionCheck
 abstract class ComplexBotCommand : AbstractBotCommand() {
 
     private val LOGGER = LoggerFactory.getLogger(this.javaClass)
     private var _subCommands: Map<String, BotCommand>? = null
-        set(value) {
-            field = value
-            _subCommandsNames = value
-                    ?.values?.associate { (it.shortDescription ?: it.commandName) to (it.commandName) }
-                    ?: emptyMap()
-        }
-    private var _subCommandsNames: Map<String, String> = emptyMap()
 
     val subCommands: Map<String, BotCommand>
         get() = _subCommands ?: emptyMap()
 
     open val canExecuteWithoutSubCommand: Boolean = false
 
-    override fun getUsage(context: BotCommandExecuteContext): StringBuilderMarkdownV2? {
-        return markdown2 {
+    override fun getUsage(context: BotCommandExecuteContext): TelegramMessageTextBuilder? {
+        return markdown2(context) {
             if (canExecuteWithoutSubCommand) {
                 append("/$commandName\n")
             }
@@ -48,7 +41,7 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
             if (commands.isNotEmpty()) {
                 if (canExecuteWithoutSubCommand) {
                     bold {
-                        append("or")
+                        append("@{phases.or}")
                     }
                     append('\n')
                 }
@@ -56,7 +49,7 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
                 commands.forEach { (subCommandName, description, usage) ->
                     append('\n')
                     bold {
-                        append("Sub command '$subCommandName'")
+                        append("@{bot.complex.command.subcommand} '$subCommandName'")
                     }
                     append('\n')
 
@@ -78,10 +71,19 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
     }
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        if (_subCommandsNames.isEmpty()) {
-            executeWithoutSubCommands()
+        val menu = getSubCommandMenu(context)
+        if (menu.isEmpty()) {
+            if (canExecuteWithoutSubCommand) {
+                executeWithoutSubCommands()
+            } else {
+                context.sendMessage {
+                    markdown2(context) {
+                        append("@{bot.complex.command.can.not.find.subcommands}")
+                    }
+                }
+            }
         } else {
-            val commandName = context.argumentManager.getNextArgument(_subCommandsNames, "Please choose subcommand")
+            val commandName = context.getNextArgument(menu, "@{bot.complex.command.next.subcommand}")
 
             val command = subCommands[commandName]
             if (command != null) {
@@ -89,13 +91,24 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
             } else {
                 LOGGER.error("Can not find subcommand with '$commandName'")
                 context.sendMessage {
-                    buildText {
-                        append("Can not execute subcommand. Internal error")
+                    markdown2(context) {
+                        append("@{bot.complex.command.can.not.execute.subcommand}. @{phases.internal.error}")
                     }
                 }
             }
         }
     }
+
+    private fun getSubCommandMenu(context: BotCommandExecuteContext): Map<String, String> =
+            _subCommands?.values?.mapNotNull {
+                try {
+                    val commandName = it.getCommandName(context)
+                    val shortDescription = it.getShortDescription(context)
+                    (shortDescription ?: commandName) to commandName
+                } catch (e: Exception) {
+                    null
+                }
+            }?.toMap() ?: emptyMap()
 
     @IgnorePermissionCheck
     open fun executeWithoutSubCommands() {
