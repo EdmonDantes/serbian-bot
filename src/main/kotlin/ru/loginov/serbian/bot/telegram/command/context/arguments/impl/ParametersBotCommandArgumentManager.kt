@@ -1,11 +1,13 @@
 package ru.loginov.serbian.bot.telegram.command.context.arguments.impl
 
+import ru.loginov.serbian.bot.spring.localization.annotation.Localized
 import ru.loginov.serbian.bot.telegram.command.context.arguments.BotCommandArgumentManager
 
+@Localized
 class ParametersBotCommandArgumentManager(
         private val parent: BotCommandArgumentManager?,
         messageWithoutCommand: String
-) : BotCommandArgumentManager {
+) : AbstractBotCommandArgumentManager() {
 
     private val arguments: List<String>
     private var index: Int = 0

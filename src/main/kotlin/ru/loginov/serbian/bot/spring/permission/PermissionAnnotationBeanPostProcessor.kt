@@ -10,6 +10,8 @@ import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
 import ru.loginov.serbian.bot.spring.permission.annotation.RequiredPermission
 import ru.loginov.serbian.bot.spring.permission.annotation.scanner.FullyPermissionConditionalScanner
 import ru.loginov.serbian.bot.spring.permission.annotation.scanner.PermissionConditionalScanner
+import ru.loginov.serbian.bot.util.getAllInterfaces
+import ru.loginov.serbian.bot.util.getAnyAnnotations
 import ru.loginov.serbian.bot.util.tryToGetJavaMethods
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
@@ -27,12 +29,7 @@ class PermissionAnnotationBeanPostProcessor : BeanPostProcessor {
     override fun postProcessBeforeInitialization(bean: Any, beanName: String): Any? {
 
         val clazz = bean.javaClass
-        val classAnnotations: List<Annotation> =
-                if (clazz.isKotlinClass()) {
-                    clazz.kotlin.annotations
-                } else {
-                    clazz.annotations.toList()
-                }
+        val classAnnotations: List<Annotation> = clazz.getAnyAnnotations()
 
         if (classAnnotations.find { it is PermissionCheck || it is RequiredPermission } != null) {
             val scanner = FullyPermissionConditionalScanner(bean.javaClass)
@@ -62,8 +59,8 @@ class PermissionAnnotationBeanPostProcessor : BeanPostProcessor {
 
         val proxy = Proxy.newProxyInstance(
                 Thread.currentThread().contextClassLoader,
-                getAllInterfaces(clazz).toTypedArray(),
-                ProxyPermissionChecker(
+                clazz.getAllInterfaces().toTypedArray(),
+                PermissionCheckerProxyHandler(
                         bean,
                         clazz,
                         beanName,
@@ -72,16 +69,6 @@ class PermissionAnnotationBeanPostProcessor : BeanPostProcessor {
         )
 
         return proxy ?: bean
-    }
-
-    private fun getAllInterfaces(clazz: Class<*>): List<Class<*>> {
-        val result = ArrayList<Class<*>>()
-        var currentClass = clazz
-        while (currentClass != Any::class.java) {
-            result.addAll(currentClass.interfaces)
-            currentClass = currentClass.superclass
-        }
-        return result
     }
 
     private fun createConditionals(clazz: Class<*>, scanner: PermissionConditionalScanner): Map<Method, List<String>> {

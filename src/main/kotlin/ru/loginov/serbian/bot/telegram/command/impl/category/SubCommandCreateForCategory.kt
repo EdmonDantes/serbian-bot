@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.spring.permission.annotation.RequiredPermission
-import ru.loginov.serbian.bot.spring.subcommand.SubCommand
+import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 

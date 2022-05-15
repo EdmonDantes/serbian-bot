@@ -16,7 +16,7 @@ class TelegramBotCommandArgumentManager(
         private val telegram: TelegramAPI,
         private val _chatId: Long,
         private val _userId: Long?
-) : BotCommandArgumentManager {
+) : AbstractBotCommandArgumentManager() {
 
     override suspend fun getNextArgument(message: String?, optional: Boolean): String? {
         val telegramMessage = telegram.sendMessage {

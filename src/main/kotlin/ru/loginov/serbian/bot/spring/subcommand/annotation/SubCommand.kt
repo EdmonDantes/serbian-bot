@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.spring.subcommand
+package ru.loginov.serbian.bot.spring.subcommand.annotation
 
 import ru.loginov.serbian.bot.telegram.command.BotCommand
 import kotlin.reflect.KClass

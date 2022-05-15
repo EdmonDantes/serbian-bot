@@ -2,6 +2,7 @@ package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
 import ru.loginov.serbian.bot.data.manager.user.UserManager
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
@@ -10,7 +11,6 @@ import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextF
 import ru.loginov.serbian.bot.telegram.command.context.arguments.impl.ParametersBotCommandArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.arguments.impl.TelegramBotCommandArgumentManager
 import ru.loginov.telegram.api.TelegramAPI
-import javax.annotation.PostConstruct
 
 @Component
 class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
@@ -27,6 +27,9 @@ class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
     @Autowired
     private lateinit var permissionManager: PermissionManager
 
+    @Autowired
+    private lateinit var localizationManager: LocalizationManager
+
     override fun createContext(
             userId: Long,
             charId: Long,
@@ -37,11 +40,16 @@ class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
                 ?: userManager.createUser(userId, charId, lang)
                 ?: error("Can not save user")
 
+        if (user.language == null) {
+            user.language = lang
+        }
+
         return DefaultBotCommandExecuteContext(
+                charId,
+                user,
                 telegramApi,
                 permissionManager,
-                user,
-                charId,
+                localizationManager,
                 ParametersBotCommandArgumentManager(
                         TelegramBotCommandArgumentManager(
                                 null,

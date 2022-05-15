@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.core.PriorityOrdered
 import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.BotCommand
 import ru.loginov.serbian.bot.telegram.command.impl.ComplexBotCommand
 import kotlin.reflect.KClass

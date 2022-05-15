@@ -1,5 +1,6 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
+import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
 import ru.loginov.serbian.bot.spring.permission.exception.NotFoundPermissionException
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
@@ -16,7 +17,8 @@ import ru.loginov.telegram.api.request.SendMessageRequest
 
 abstract class AbstractBotCommandExecuteContext(
         override val telegram: TelegramAPI,
-        private val permissionManager: PermissionManager
+        private val permissionManager: PermissionManager,
+        private val localizationManager: LocalizationManager
 ) : BotCommandExecuteContext {
 
     override fun havePermission(permission: String): Boolean {
@@ -28,6 +30,9 @@ abstract class AbstractBotCommandExecuteContext(
         val tree = permissionManager.getPermissionsForUser(user) ?: throw NotFoundPermissionException(user)
         return permissions.all { tree.havePermission(it.lowercase()) }
     }
+
+    override fun findLocalizedString(str: String): String? =
+            localizationManager.getLocalizationString(user.language, str)
 
     override suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit) =
             telegram.answerCallbackQuery(request)

@@ -6,7 +6,7 @@ import ru.loginov.serbian.bot.spring.permission.exception.NotFoundPermissionExce
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 
-class ProxyPermissionChecker(
+class PermissionCheckerProxyHandler(
         private val bean: Any?,
         private val clazz: Class<*>,
         private val beanName: String,

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
-import ru.loginov.serbian.bot.spring.subcommand.SubCommand
+import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
