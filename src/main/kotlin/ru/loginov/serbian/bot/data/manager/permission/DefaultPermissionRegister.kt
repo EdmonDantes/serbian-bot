@@ -8,11 +8,11 @@ class DefaultPermissionRegister : PermissionRegister {
 
     private val register = HashSet<String>()
 
-    override fun getAllRegisteredPermissions(): List<String> {
-        synchronized(register) {
-            return register.toList()
-        }
-    }
+    override fun getAllRegisteredPermissions(): List<String> =
+            register.toList()
+
+    override fun hasPermission(permission: String) =
+            register.contains(permission)
 
     override fun registerPermission(permission: String) {
         synchronized(register) {

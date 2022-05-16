@@ -8,9 +8,11 @@ interface PermissionManager {
     fun getPermissionsForGroup(name: String): PermissionOwner?
     fun getPermissionsForUser(user: UserDto): PermissionOwner?
 
+    fun hasPermission(permission: String): Boolean
     fun addPermissionForGroup(groupName: String, permission: String): Boolean
     fun deletePermissionForGroup(groupName: String, permission: String): Boolean
 
+    fun hasGroup(name: String): Boolean
     fun createGroup(name: String): Boolean
     fun deleteGroup(name: String, forReplace: String?): Boolean
 

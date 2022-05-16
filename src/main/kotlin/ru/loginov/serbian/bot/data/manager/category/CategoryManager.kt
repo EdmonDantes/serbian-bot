@@ -7,7 +7,7 @@ interface CategoryManager {
 
     fun getAllRootCategories(locale: String): List<String>
 
-    fun findCategoryByName(name: String): List<CategoryDtoLocalization>
+    fun findCategoriesByName(name: String): List<CategoryDtoLocalization>
     fun findCategoryById(categoryId: Int): CategoryDto?
 
     fun createNewCategory(names: Map<String, String>, parentId: Int? = null): CategoryDto

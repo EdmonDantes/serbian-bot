@@ -35,7 +35,7 @@ class DefaultCategoryManager : CategoryManager {
                 it.name
             }
 
-    override fun findCategoryByName(name: String): List<CategoryDtoLocalization> =
+    override fun findCategoriesByName(name: String): List<CategoryDtoLocalization> =
             categoryDtoLocalizationSearchRepository.findAllByGeneralProperty(name)
 
     override fun findCategoryById(categoryId: Int): CategoryDto? =

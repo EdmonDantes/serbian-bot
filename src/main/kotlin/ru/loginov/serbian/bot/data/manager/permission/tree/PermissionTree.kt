@@ -172,6 +172,9 @@ class PermissionTree(rootNode: PermissionDto) : PermissionOwner {
 
     fun deletePermission(permission: String): PermissionsMutation? {
         val parts = splitPermissionToParts(permission) ?: return null
+        if (!isValidParts(parts)) {
+            return null
+        }
         var index = 0
         var currentNode: PermissionNodeTree = root
         while (index < parts.size) {
@@ -276,11 +279,31 @@ class PermissionTree(rootNode: PermissionDto) : PermissionOwner {
         }
     }
 
-    private fun splitPermissionToParts(str: String): List<String>? =
-            if (str.isEmpty()) null else str.split(SPLIT_STRING)
-
     companion object {
         const val SPLIT_STRING = "."
         const val ALL_PERMISSION_STRING = "*"
+
+        fun isValidPermission(permission: String): Boolean = splitPermissionToParts(permission)
+                ?.let { isValidParts(it) }
+                ?: false
+
+        private fun splitPermissionToParts(str: String): List<String>? =
+                if (str.isEmpty()) null else str.split(SPLIT_STRING)
+
+        private fun isValidParts(parts: List<String>): Boolean =
+                parts.all { part ->
+                    if (part.isEmpty()) {
+                        false
+                    } else {
+                        for (i in part.indices) {
+                            val ch = part[i]
+                            if (ch !in 'a'..'z' && ch !in 'A'..'Z'
+                                    || ch == '*' && i != part.lastIndex) {
+                                return@all false
+                            }
+                        }
+                        true
+                    }
+                }
     }
 }

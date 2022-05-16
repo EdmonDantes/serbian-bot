@@ -17,6 +17,15 @@ class SubCommandFindForCategory : AbstractSubCommand() {
     override val commandName: String = "find"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        //val name = context.argumentManager.getNextArgument()
+        val name = context.getNextArgument("Please write category name") ?: error("name can not be null")
+        context.sendMessage {
+            markdown2 {
+                categoryManager.findCategoriesByName(name).forEach {
+                    if (it.name != null && it.localizedId?.id != null) {
+                        append("$name -> ${it.localizedId!!.id}\n")
+                    }
+                }
+            }
+        }
     }
 }

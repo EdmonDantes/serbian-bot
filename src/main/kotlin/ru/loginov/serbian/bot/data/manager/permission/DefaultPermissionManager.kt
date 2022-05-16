@@ -43,7 +43,7 @@ class DefaultPermissionManager : PermissionManager {
 
     private val readWriteLock = ReentrantReadWriteLock()
 
-    private var permissions: MutableMap<String, PermissionTree> = HashMap()
+    private var groupPermissions: MutableMap<String, PermissionTree> = HashMap()
 
     @Value("\${bot.user.admin.ids}")
     fun setAdminIds(value: String?) {
@@ -60,7 +60,7 @@ class DefaultPermissionManager : PermissionManager {
 
     override fun getPermissionsForGroup(name: String): PermissionOwner? =
             readWriteLock.read {
-                permissions[name.lowercase()]
+                groupPermissions[name.lowercase()]
             }
 
     override fun getPermissionsForUser(user: UserDto): PermissionOwner? =
@@ -70,9 +70,12 @@ class DefaultPermissionManager : PermissionManager {
                 user.permissionGroup?.let { getPermissionsForGroup(it.lowercase()) }
             }
 
+    override fun hasPermission(permission: String): Boolean =
+            permissionRegister.hasPermission(permission)
+
     override fun addPermissionForGroup(groupName: String, permission: String): Boolean {
         flush()
-        val tree = readWriteLock.read { permissions[groupName.lowercase()] } ?: return false
+        val tree = readWriteLock.read { groupPermissions[groupName.lowercase()] } ?: return false
         val mutations = tree.addPermission(permission.lowercase()) ?: return false
         try {
             return processMutations(mutations)
@@ -83,7 +86,7 @@ class DefaultPermissionManager : PermissionManager {
 
     override fun deletePermissionForGroup(groupName: String, permission: String): Boolean {
         flush()
-        val tree = readWriteLock.read { permissions[groupName.lowercase()] } ?: return false
+        val tree = readWriteLock.read { groupPermissions[groupName.lowercase()] } ?: return false
         val mutations = tree.deletePermission(permission.lowercase()) ?: return false
         try {
             return processMutations(mutations)
@@ -91,6 +94,9 @@ class DefaultPermissionManager : PermissionManager {
             flush()
         }
     }
+
+    override fun hasGroup(name: String): Boolean =
+            groupPermissions.containsKey(name)
 
     override fun createGroup(name: String): Boolean {
         val group = GroupPermissionDto()
@@ -135,14 +141,14 @@ class DefaultPermissionManager : PermissionManager {
 
     private fun reloadPermissions() {
         readWriteLock.write {
-            permissions.clear()
+            groupPermissions.clear()
             val nodes = permissionNodeDtoRepository.findAll().associateBy { it.id }
             val groups = groupPermissionDtoRepository.findAll()
             groups.forEach {
                 it.name?.let { name ->
                     it.rootNode?.id?.let { rootNodeId ->
                         nodes[rootNodeId]?.let { rootNode ->
-                            permissions[name.lowercase()] = PermissionTree(rootNode)
+                            groupPermissions[name.lowercase()] = PermissionTree(rootNode)
                         }
                     }
                 }

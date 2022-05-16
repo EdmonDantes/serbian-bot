@@ -53,4 +53,18 @@ class DefaultUserManager : UserManager {
             data.value = value.toString()
         })
     }
+
+    override fun updateLanguage(userId: Long, language: String) {
+        userDtoRepository.save(UserDto().also {
+            it.id = userId
+            it.language = language
+        })
+    }
+
+    override fun updatePermissionGroup(userId: Long, group: String) {
+        userDtoRepository.save(UserDto().also {
+            it.id = userId
+            it.permissionGroup = group
+        })
+    }
 }

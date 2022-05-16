@@ -37,6 +37,8 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
             return
         }
 
+        //TODO: val parentCategoryId = context.getNextArgument("Parent category")
+
         val languageMenu = localizationManager.allSupportLanguages.associateBy { "@{language.$it}" }
 
         val lang = if (context.user.language == null) {

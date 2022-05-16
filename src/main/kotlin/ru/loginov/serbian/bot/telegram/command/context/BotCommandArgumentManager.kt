@@ -30,3 +30,24 @@ interface BotCommandArgumentManager {
             optional: Boolean = false
     ): String?
 }
+
+suspend fun BotCommandArgumentManager.getNextArgument(
+        message: String?,
+        invalidResultMessage: (String?) -> String?,
+        optional: Boolean = false,
+        validator: (String?) -> Boolean
+): String? {
+    var result = getNextArgument(message, optional)
+    while (!validator.invoke(result)) {
+        result = getNextArgument(invalidResultMessage(result), optional)
+    }
+    return result
+}
+
+suspend fun BotCommandArgumentManager.getNextArgument(
+        message: String?,
+        invalidResultMessage: String?,
+        optional: Boolean = false,
+        validator: (String?) -> Boolean
+): String? =
+        getNextArgument(message, { invalidResultMessage }, optional, validator)

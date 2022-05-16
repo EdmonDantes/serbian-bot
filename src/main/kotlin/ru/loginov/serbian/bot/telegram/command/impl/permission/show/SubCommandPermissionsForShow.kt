@@ -1,4 +1,4 @@
-package ru.loginov.serbian.bot.telegram.command.impl.permission
+package ru.loginov.serbian.bot.telegram.command.impl.permission.show
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component

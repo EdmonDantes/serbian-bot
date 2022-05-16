@@ -8,5 +8,5 @@ import ru.loginov.serbian.bot.telegram.command.impl.ComplexBotCommand
 @RequiredPermission("commands.permission")
 class PermissionBotCommand : ComplexBotCommand() {
     override val commandName: String = "permission"
-    override val shortDescription: String = "helps to manage permissions and permission groups"
+    override val shortDescription: String = "@{bot.command.permissions._shortDescription}"
 }
