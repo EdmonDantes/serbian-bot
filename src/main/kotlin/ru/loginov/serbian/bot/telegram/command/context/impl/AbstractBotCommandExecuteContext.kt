@@ -84,23 +84,58 @@ abstract class AbstractBotCommandExecuteContext(
 
     // BotCommandArgumentManager implementation
 
-    override suspend fun getNextArgument(message: String?, optional: Boolean): String? {
-        return getNextArgumentFromMessage()
-                ?: sendMessage {
-                    markdown2 {
-                        append(transformStringToLocalized(message ?: "@{bot.abstract.command.please.write.argument}"))
-                        buildInlineKeyboard {
-                            addUserActionButtons(optional)
+    override suspend fun getNextChooseArgument(message: String?): Boolean =
+            getNextArgumentFromMessage()?.toBooleanStrictOrNull()
+                    ?: sendMessage {
+                        markdown2 {
+                            append(
+                                    transformStringToLocalized(
+                                            message ?: "@{bot.abstract.command.please.choose.argument}"
+                                    )
+                            )
+                            buildInlineKeyboard {
+                                line {
+                                    add {
+                                        text = "\u2705"
+                                        callbackData(chatId!!, user.id, 1)
+                                    }
+                                    add {
+                                        text = "\u274C"
+                                        callbackData(chatId!!, user.id, 2)
+                                    }
+                                }
+                            }
+                        }
+                    }.let { msg ->
+                        try {
+                            waitResult()?.toIntOrNull() == 1
+                        } finally {
+                            removeMessage(msg)
                         }
                     }
-                }.let { msg ->
-                    try {
-                        waitResult()
-                    } finally {
-                        removeMessage(msg)
+
+
+    override suspend fun getNextArgument(message: String?, optional: Boolean): String? =
+            getNextArgumentFromMessage()
+                    ?: sendMessage {
+                        markdown2 {
+                            append(
+                                    transformStringToLocalized(
+                                            message ?: "@{bot.abstract.command.please.write.argument}"
+                                    )
+                            )
+                            buildInlineKeyboard {
+                                addUserActionButtons(optional)
+                            }
+                        }
+                    }.let { msg ->
+                        try {
+                            waitResult()
+                        } finally {
+                            removeMessage(msg)
+                        }
                     }
-                }
-    }
+
 
     override suspend fun getNextArgument(variants: List<String>, message: String?, optional: Boolean): String? {
         val result = getNextArgumentFromMessage()
@@ -114,7 +149,7 @@ abstract class AbstractBotCommandExecuteContext(
 
         val msg = sendMessage {
             markdown2 {
-                append(transformStringToLocalized(message ?: "@{bot.abstract.command.please.write.argument}"))
+                append(transformStringToLocalized(message ?: "@{bot.abstract.command.please.choose.argument}"))
                 buildInlineKeyboard {
                     variants.forEachIndexed { index, it ->
                         line {
@@ -153,7 +188,7 @@ abstract class AbstractBotCommandExecuteContext(
         val list = variants.toList()
         val msg = sendMessage {
             markdown2 {
-                append(transformStringToLocalized(message ?: "@{bot.abstract.command.please.write.argument}"))
+                append(transformStringToLocalized(message ?: "@{bot.abstract.command.please.choose.argument}"))
                 buildInlineKeyboard {
                     list.forEachIndexed { index, pair ->
                         line {

@@ -6,5 +6,5 @@ import ru.loginov.serbian.bot.telegram.command.impl.ComplexBotCommand
 @Component
 class CategoryBotCommand : ComplexBotCommand() {
     override val commandName: String = "category"
-    override val shortDescription: String = "helps to work with categories"
+    override val shortDescription: String = "@{bot.command.category._shortDescription}"
 }
