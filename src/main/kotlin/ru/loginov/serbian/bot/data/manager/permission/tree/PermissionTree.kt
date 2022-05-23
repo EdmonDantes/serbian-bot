@@ -3,6 +3,9 @@ package ru.loginov.serbian.bot.data.manager.permission.tree
 import ru.loginov.serbian.bot.data.dto.permission.PermissionDto
 import ru.loginov.serbian.bot.data.manager.permission.PermissionOwner
 
+/**
+ * Node for [PermissionTree]
+ */
 class PermissionNodeTree {
 
     val parent: PermissionNodeTree?
@@ -82,6 +85,9 @@ class PermissionNodeTree {
     }
 }
 
+/**
+ * Class for description which dto will delete, insert or update
+ */
 class PermissionsMutation(
         val forInsertOrUpdate: List<PermissionDto> = emptyList(),
         val forDelete: List<Int> = emptyList()
@@ -89,6 +95,10 @@ class PermissionsMutation(
     constructor(forInsertOrUpdate: PermissionDto) : this(listOf(forInsertOrUpdate))
 }
 
+/**
+ * Class for checking permissions.
+ * Allows saving, updating and checking permission like `a.b.c`
+ */
 class PermissionTree(rootNode: PermissionDto) : PermissionOwner {
 
     private val root: PermissionNodeTree

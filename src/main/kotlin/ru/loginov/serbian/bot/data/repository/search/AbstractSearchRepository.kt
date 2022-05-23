@@ -13,6 +13,7 @@ abstract class AbstractSearchRepository<E> : SearchRepository<E> {
     @Autowired
     @PersistenceContext
     private lateinit var entityManager: EntityManager
+
     protected abstract val generalPropertyName: String
     protected abstract val entityClass: Class<E>
 

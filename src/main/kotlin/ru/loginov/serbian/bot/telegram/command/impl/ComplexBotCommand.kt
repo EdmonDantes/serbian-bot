@@ -49,7 +49,7 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
                 commands.forEach { (subCommandName, description, usage) ->
                     append('\n')
                     bold {
-                        append("@{bot.complex.command.subcommand} '$subCommandName'")
+                        append("@{bot.complex.command.sub.command} '$subCommandName'")
                     }
                     append('\n')
 

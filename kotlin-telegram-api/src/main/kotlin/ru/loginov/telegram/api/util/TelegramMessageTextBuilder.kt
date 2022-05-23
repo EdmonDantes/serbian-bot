@@ -12,7 +12,7 @@ open class TelegramMessageTextBuilder {
     private val stringWithoutFormatting = StringBuilder()
     private val entities = ArrayList<MessageEntity>()
 
-    open fun append(obj: Any, clearFormatting: Boolean = true): TelegramMessageTextBuilder = this.apply {
+    open fun append(obj: Any, clearFormatting: Boolean = true): TelegramMessageTextBuilder = returnInstance().apply {
         if (obj is TelegramMessageTextBuilder) {
             val startPosition = stringWithoutFormatting.length
             stringBuilder.append(obj.stringBuilder)
@@ -26,27 +26,27 @@ open class TelegramMessageTextBuilder {
         }
     }
 
-    open fun bold(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = this.apply {
+    open fun bold(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = returnInstance().apply {
         processBlock(block, "*", MessageEntityType.BOLD)
     }
 
-    open fun italic(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = this.apply {
+    open fun italic(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = returnInstance().apply {
         processBlock(block, "_", MessageEntityType.ITALIC)
     }
 
-    open fun underline(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = this.apply {
+    open fun underline(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = returnInstance().apply {
         processBlock(block, "__", MessageEntityType.UNDERLINE)
     }
 
-    open fun strikethrough(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = this.apply {
+    open fun strikethrough(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = returnInstance().apply {
         processBlock(block, "~", MessageEntityType.STRIKETHROUGH)
     }
 
-    open fun spoiler(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = this.apply {
+    open fun spoiler(block: TelegramMessageTextBuilder.() -> Unit): TelegramMessageTextBuilder = returnInstance().apply {
         processBlock(block, "||", MessageEntityType.SPOILER)
     }
 
-    open fun url(url: URL): TelegramMessageTextBuilder = this.apply {
+    open fun url(url: URL): TelegramMessageTextBuilder = returnInstance().apply {
         val str = url.toString()
         stringBuilder.append(str)
 
@@ -54,7 +54,7 @@ open class TelegramMessageTextBuilder {
         stringWithoutFormatting.append(str)
     }
 
-    open fun link(name: String, url: URL): TelegramMessageTextBuilder = this.apply {
+    open fun link(name: String, url: URL): TelegramMessageTextBuilder = returnInstance().apply {
         stringBuilder.append("[").append(name).append("](").append(url).append(")")
 
         entities.add(
@@ -68,7 +68,7 @@ open class TelegramMessageTextBuilder {
         stringWithoutFormatting.append(name)
     }
 
-    open fun link(name: String, url: String): TelegramMessageTextBuilder = this.apply {
+    open fun link(name: String, url: String): TelegramMessageTextBuilder = returnInstance().apply {
         stringBuilder.append("[").append(name).append("](").append(url).append(")")
 
         entities.add(
@@ -82,7 +82,7 @@ open class TelegramMessageTextBuilder {
         stringWithoutFormatting.append(name)
     }
 
-    open fun mention(user: User): TelegramMessageTextBuilder = this.apply {
+    open fun mention(user: User): TelegramMessageTextBuilder = returnInstance().apply {
         if (user.username.isNullOrEmpty()) {
             return@apply
         }
@@ -98,7 +98,7 @@ open class TelegramMessageTextBuilder {
         stringWithoutFormatting.append("@").append(user.username)
     }
 
-    open fun hashtag(hashtag: String): TelegramMessageTextBuilder = this.apply {
+    open fun hashtag(hashtag: String): TelegramMessageTextBuilder = returnInstance().apply {
         stringBuilder.append("#").append(hashtag)
         entities.add(
                 MessageEntity(
@@ -134,7 +134,7 @@ open class TelegramMessageTextBuilder {
         stringWithoutFormatting.append(phoneNumber)
     }
 
-    open fun textMention(name: String, user: User): TelegramMessageTextBuilder = this.apply {
+    open fun textMention(name: String, user: User): TelegramMessageTextBuilder = returnInstance().apply {
         stringBuilder.append("[").append(name).append("](tg://user?id=").append(user.id).append(")")
         entities.add(
                 MessageEntity(
@@ -147,7 +147,7 @@ open class TelegramMessageTextBuilder {
         stringWithoutFormatting.append(name)
     }
 
-    open fun code(block: StringBuilder.() -> Unit): TelegramMessageTextBuilder = this.apply {
+    open fun code(block: StringBuilder.() -> Unit): TelegramMessageTextBuilder = returnInstance().apply {
         val codeBlockBuilder = StringBuilder()
         block(codeBlockBuilder)
 
@@ -160,11 +160,14 @@ open class TelegramMessageTextBuilder {
         stringWithoutFormatting.append(codeBlockBuilder)
     }
 
-    open fun codeBlock(block: StringBuilder.() -> Unit): TelegramMessageTextBuilder = this.apply {
+    open fun codeBlock(block: StringBuilder.() -> Unit): TelegramMessageTextBuilder = returnInstance().apply {
         codeBlock(null, block)
     }
 
-    open fun codeBlock(language: String?, block: StringBuilder.() -> Unit): TelegramMessageTextBuilder = this.apply {
+    open fun codeBlock(
+            language: String?,
+            block: StringBuilder.() -> Unit
+    ): TelegramMessageTextBuilder = returnInstance().apply {
         val codeBlockBuilder = StringBuilder()
         block(codeBlockBuilder)
 
@@ -221,6 +224,8 @@ open class TelegramMessageTextBuilder {
 
     open protected fun transformToWithoutFormatting(str: CharSequence, inCodeBlock: Boolean = false): String =
             str.replace(if (inCodeBlock) CODE_SYMBOLS else MARKDOWN_SYMBOLS) { mr -> "\\${mr.value}" }
+
+    open protected fun returnInstance(): TelegramMessageTextBuilder = this
 
 
     companion object {

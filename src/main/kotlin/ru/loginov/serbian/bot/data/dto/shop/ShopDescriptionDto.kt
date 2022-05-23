@@ -8,12 +8,12 @@ import javax.persistence.OneToMany
 
 @Entity
 class ShopDescriptionDto {
-
-    /**
-     * Google map ID
-     */
     @Id
-    var id: String? = null
+    var id: Int? = null
+
+    // This column has to can contain multiple null rows
+    @Column(nullable = true, unique = true)
+    var googleMapId: String? = null
 
     @Column(nullable = false)
     var shopName: String? = null

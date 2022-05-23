@@ -4,7 +4,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
-import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.spring.permission.annotation.RequiredPermission
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
@@ -18,9 +17,6 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
 
     @Autowired
     private lateinit var categoryManager: CategoryManager
-
-    @Autowired
-    private lateinit var localizationManager: LocalizationManager
 
     override val commandName: String = "create"
     override val shortDescription: String? = "@{bot.command.category.create._shortDescription}"
@@ -37,30 +33,39 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
             return
         }
 
-        //TODO: val parentCategoryId = context.getNextArgument("Parent category")
-
-        val languageMenu = localizationManager.allSupportLanguages.associateBy { "@{language.$it}" }
-
-        val lang = if (context.user.language == null) {
-            context.getNextArgument(languageMenu, "@{bot.command.category.create._argument.language}")
-        } else context.user.language!!
-
-        if (lang.isNullOrEmpty() || lang.length != 2) {
+        val parentCategoryIdStr = context.getNextArgument("@{bot.command.category.create._argument.parentId}", true)
+        val parentCategoryId = parentCategoryIdStr?.toIntOrNull()
+        if (parentCategoryIdStr != null
+                && (parentCategoryId == null || categoryManager.findById(parentCategoryId) == null)) {
             context.sendMessage {
                 markdown2(context) {
-                    append("@{bot.command.category.create._.can.not.create.category.unknown.language}")
+                    append("@{bot.command.category.create._error.parent.id.not.found}{$parentCategoryIdStr}")
                 }
             }
             return
         }
+
+        val lang = context.user.getInputLanguageOr(suspend {
+            context.getNextLanguageArgument("@{bot.command.category.create._argument.language}")
+        })
+
         context.sendMessage {
             markdown2(context) {
-                try {
-                    categoryManager.createNewCategory(mapOf(lang to categoryName))
-                    append("@{bot.command.category.create._.success}{$categoryName}")
-                } catch (e: Exception) {
-                    LOGGER.warn("Can not create new category with name '$categoryName'", e)
-                    append("@{bot.command.category.create._.can.not.create.category}{$categoryName}")
+                if (lang.isNullOrEmpty() || lang.length != 2) {
+                    append("@{bot.command.category.create._.can.not.create.category.unknown.language}")
+                } else {
+                    val category = try {
+                        categoryManager.create(mapOf(lang to categoryName), parentCategoryId)
+                    } catch (e: Exception) {
+                        LOGGER.warn("Can not create new category with name '$categoryName'", e)
+                        null
+                    }
+
+                    if (category != null) {
+                        append("@{bot.command.category.create._.success}{$categoryName}{${category.id}}")
+                    } else {
+                        append("@{bot.command.category.create._.can.not.create.category}{$categoryName}")
+                    }
                 }
             }
         }

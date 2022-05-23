@@ -2,9 +2,11 @@ package ru.loginov.serbian.bot.telegram.command
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.telegram.callback.CallbackData
 import ru.loginov.serbian.bot.telegram.callback.CallbackExecutor
@@ -15,12 +17,17 @@ import ru.loginov.serbian.bot.telegram.update.OnUpdateHandler
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Update
 import java.util.concurrent.CancellationException
+import javax.annotation.PostConstruct
+import kotlin.streams.toList
 
 @Component
 class CommandHandler : OnUpdateHandler {
 
     @Autowired
     private lateinit var botCommandManager: BotCommandManager
+
+    @Autowired
+    private lateinit var localizationManager: LocalizationManager
 
     @Autowired
     private lateinit var botCommandExecuteContextFactory: BotCommandExecuteContextFactory
@@ -30,6 +37,31 @@ class CommandHandler : OnUpdateHandler {
 
     @Autowired
     private lateinit var callbackExecutor: CallbackExecutor
+
+    @PostConstruct
+    fun postConstruct() {
+        runBlocking {
+            localizationManager.supportLanguages.map {
+                val emptyContext = botCommandExecuteContextFactory.createEmptyContext(it)
+                it to botCommandManager.getAllCommands().mapNotNull {
+                    try {
+                        it.getCommandName(emptyContext) to it.getShortDescription(emptyContext)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+            }.forEach { (lang, commands) ->
+                telegram.setMyCommands {
+                    this.commands = commands
+                            .stream()
+                            .limit(100)
+                            .map { ru.loginov.telegram.api.entity.BotCommand(it.first, it.second ?: "-") }
+                            .toList()
+                    this.language = lang
+                }
+            }
+        }
+    }
 
     override suspend fun onUpdate(update: Update) {
         coroutineScope {

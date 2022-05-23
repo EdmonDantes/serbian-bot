@@ -8,8 +8,8 @@ class DefaultPermissionRegister : PermissionRegister {
 
     private val register = HashSet<String>()
 
-    override fun getAllRegisteredPermissions(): List<String> =
-            register.toList()
+    override val permissions: List<String>
+        get() = register.toList()
 
     override fun hasPermission(permission: String) =
             register.contains(permission)

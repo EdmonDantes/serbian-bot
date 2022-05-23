@@ -2,7 +2,6 @@ package ru.loginov.serbian.bot.spring.permission
 
 import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
-import ru.loginov.serbian.bot.spring.permission.exception.NotFoundPermissionException
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 
@@ -45,14 +44,9 @@ class PermissionCheckerProxyHandler(
             return method.invoke(bean, *params)
         }
 
-        try {
-            if (methodPermissions.all { context.havePermission(it) }) {
-                return method.invoke(bean, *params)
-            } else {
-                throw HaveNotPermissionException()
-            }
-        } catch (e: NotFoundPermissionException) {
-            logger.warn(e.message)
+        if (methodPermissions.all { context.havePermission(it) }) {
+            return method.invoke(bean, *params)
+        } else {
             throw HaveNotPermissionException()
         }
     }

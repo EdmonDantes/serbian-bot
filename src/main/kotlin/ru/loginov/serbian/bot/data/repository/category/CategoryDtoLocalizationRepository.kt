@@ -6,8 +6,4 @@ import ru.loginov.serbian.bot.data.dto.category.CategoryDtoLocalization
 import ru.loginov.serbian.bot.data.dto.localization.LocalizedId
 
 @Repository
-interface CategoryDtoLocalizationRepository : CrudRepository<CategoryDtoLocalization, LocalizedId> {
-
-    fun findAllByNameLike(name: String): List<CategoryDtoLocalization>
-
-}
+interface CategoryDtoLocalizationRepository : CrudRepository<CategoryDtoLocalization, LocalizedId>

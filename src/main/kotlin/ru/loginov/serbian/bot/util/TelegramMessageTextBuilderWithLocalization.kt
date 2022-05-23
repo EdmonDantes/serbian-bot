@@ -10,6 +10,8 @@ class TelegramMessageTextBuilderWithLocalization(
     override fun appendString(str: String, clearFormatting: Boolean) {
         super.appendString(context.transformStringToLocalized(str), clearFormatting)
     }
+
+    override fun returnInstance(): TelegramMessageTextBuilder = this
 }
 
 suspend fun markdown2Coroutine(

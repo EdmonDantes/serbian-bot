@@ -9,6 +9,7 @@ import ru.loginov.telegram.api.request.DeleteMessageRequest
 import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
+import ru.loginov.telegram.api.request.SetMyCommandsRequest
 
 interface TelegramAPI {
 
@@ -20,8 +21,9 @@ interface TelegramAPI {
     suspend fun deleteMessage(request: DeleteMessageRequest.() -> Unit)
     suspend fun getMyCommands(request: GetMyCommandsRequest.() -> Unit): List<BotCommand>
     suspend fun getMe(): User?
-    suspend fun getUpdates(request: GetUpdatesRequest.() -> Unit) : List<Update>
-    suspend fun sendMessage(request: SendMessageRequest.() -> Unit) : Message?
+    suspend fun getUpdates(request: GetUpdatesRequest.() -> Unit): List<Update>
+    suspend fun setMyCommands(request: SetMyCommandsRequest.() -> Unit)
+    suspend fun sendMessage(request: SendMessageRequest.() -> Unit): Message?
     suspend fun sendMessageWithoutLimit(request: SendMessageRequest.() -> Unit) : List<Message>
 
 }

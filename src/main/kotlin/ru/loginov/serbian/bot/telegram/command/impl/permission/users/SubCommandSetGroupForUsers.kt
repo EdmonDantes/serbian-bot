@@ -33,6 +33,6 @@ class SubCommandSetGroupForUsers : AbstractSubCommand() {
                 { "@{bot.command.permissions.users.setgroup._.can.not.find.group}{$it}" }
         ) { it == null || permissionManager.hasGroup(it) }
 
-        userManager.updatePermissionGroup(userId, group ?: "")
+        userManager.update(userId, permissionGroup = group ?: "")
     }
 }

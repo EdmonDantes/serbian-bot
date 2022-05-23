@@ -1,70 +1,123 @@
 package ru.loginov.serbian.bot.data.manager.user
 
-import org.springframework.beans.factory.annotation.Autowired
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.data.dto.user.UserDataDto
 import ru.loginov.serbian.bot.data.dto.user.UserDto
+import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
+import ru.loginov.serbian.bot.data.manager.localization.exception.LanguageNotSupportedException
 import ru.loginov.serbian.bot.data.repository.user.UserDataDtoRepository
 import ru.loginov.serbian.bot.data.repository.user.UserDtoRepository
 
 @Service
-class DefaultUserManager : UserManager {
+class DefaultUserManager(
+        private val userDtoRepository: UserDtoRepository,
+        private val userDataDtoRepository: UserDataDtoRepository,
+        private val localizationManager: LocalizationManager
+) : UserManager {
 
-    @Autowired
-    private lateinit var userDtoRepository: UserDtoRepository
-
-    @Autowired
-    private lateinit var userDataDtoRepository: UserDataDtoRepository
-    override fun createUser(
+    override fun create(
             userId: Long,
-            charId: Long,
-            language: String?
-    ): UserDto? = userDtoRepository.save(UserDto().also { user ->
+            chatId: Long?,
+            language: String?,
+            canInputDifferentLanguages: Boolean?,
+            permissionGroup: String?
+    ): UserDto? {
+        val user = UserDto()
         user.id = userId
-        user.chatId = charId
+        user.chatId = chatId
+        user.language =
+                if (language == null || !localizationManager.isSupport(language))
+                    localizationManager.defaultLanguage
+                else
+                    language
+        user.canInputDifferentLanguages = canInputDifferentLanguages
+        user.permissionGroup = permissionGroup
+
+        return try {
+            userDtoRepository.save(user)
+        } catch (e: Exception) {
+            LOGGER.error("Can not save user '$user'", e)
+            null
+        }
+    }
+
+    override fun update(
+            userId: Long,
+            chatId: Long?,
+            language: String?,
+            canInputDifferentLanguages: Boolean?,
+            permissionGroup: String?
+    ): UserDto? {
+        if (language != null && !localizationManager.isSupport(language)) {
+            throw LanguageNotSupportedException(language)
+        }
+
+        val user = UserDto()
+
+        user.id = userId
+        user.chatId = chatId
         user.language = language
-    })
+        user.canInputDifferentLanguages = canInputDifferentLanguages
+        user.permissionGroup = permissionGroup
 
+        return try {
+            userDtoRepository.save(user)
+        } catch (e: Exception) {
+            LOGGER.warn("Can not update user '$user'", e)
+            null
+        }
+    }
 
-    override fun getUser(userId: Long): UserDto? = userDtoRepository.findById(userId).orElse(null)
+    override fun findById(userId: Long): UserDto? =
+            try {
+                userDtoRepository.findById(userId).orElse(null)
+            } catch (e: Exception) {
+                LOGGER.warn("Can not find user with id '$userId'", e)
+                null
+            }
 
-    override fun getUserWithData(userId: Long, additionalDataKeys: List<String>): UserDto? =
-            getUser(userId)?.also { dto ->
+    override fun findByIdWithData(userId: Long, additionalDataKeys: List<String>): UserDto? =
+            findById(userId)?.also { dto ->
                 if (additionalDataKeys.isNotEmpty()) {
-                    dto.additionalData = getAdditionalData(userId, additionalDataKeys)
+                    dto.additionalData = findAdditionalDataByUserId(userId, additionalDataKeys)
                 }
             }
 
-    override fun getAdditionalData(userId: Long, additionalDataKeys: List<String>): Map<String, String> =
-            userDataDtoRepository.findAllByUserIdAndKeyIn(userId, additionalDataKeys)
-                    .filter { data -> data.key != null && data.value != null }
-                    .associate { data -> data.key!! to data.value!! }
+    override fun findAdditionalDataByUserId(userId: Long, additionalDataKeys: List<String>): Map<String, String> =
+            try {
+                userDataDtoRepository.findAllByUserIdAndKeyIn(userId, additionalDataKeys)
+                        .filter { data -> data.key != null && data.value != null }
+                        .associate { data -> data.key!! to data.value!! }
+            } catch (e: Exception) {
+                LOGGER.warn("Can not get additional data for keys '$additionalDataKeys' and user with id '$userId'", e)
+                emptyMap()
+            }
 
-    override fun setAdditionalData(userId: Long, key: String, value: Any?) {
-
+    override fun setAdditionalDataByUserId(userId: Long, key: String, value: Any?): Boolean {
         if (value == null) {
             userDataDtoRepository.removeAllByUserIdAndKey(userId, key)
-            return
+            return true
         }
 
-        userDataDtoRepository.save(UserDataDto().also { data ->
-            data.userId = userId
-            data.key = key
-            data.value = value.toString()
-        })
+        if (!userDtoRepository.existsById(userId)) {
+            return false
+        }
+
+        return try {
+            userDataDtoRepository.save(UserDataDto().also { data ->
+                data.userId = userId
+                data.key = key
+                data.value = value.toString()
+            })
+            true
+        } catch (e: Exception) {
+            LOGGER.warn("Can not update additional data for user with id '$userId'", e)
+            false
+        }
     }
 
-    override fun updateLanguage(userId: Long, language: String) {
-        userDtoRepository.save(UserDto().also {
-            it.id = userId
-            it.language = language
-        })
-    }
-
-    override fun updatePermissionGroup(userId: Long, group: String) {
-        userDtoRepository.save(UserDto().also {
-            it.id = userId
-            it.permissionGroup = group
-        })
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(DefaultUserManager::class.java)
     }
 }

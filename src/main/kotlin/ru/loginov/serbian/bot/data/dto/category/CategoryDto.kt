@@ -18,7 +18,12 @@ class CategoryDto {
 
     constructor() {}
 
-    constructor(id: Int) {
+    constructor(id: Int?) {
+        this.id = id
+    }
+
+    constructor(parentId: Int?, id: Int?) {
+        this.parentId = parentId
         this.id = id
     }
 
@@ -53,5 +58,4 @@ class CategoryDto {
     fun putLocalization(locale: String, value: String) {
         localization[locale] = CategoryDtoLocalization(this, locale, value)
     }
-
 }

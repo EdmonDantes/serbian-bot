@@ -1,7 +1,6 @@
 package ru.loginov.serbian.bot.data.manager.permission
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -21,40 +20,30 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 
 @Component
-class DefaultPermissionManager : PermissionManager {
+class DefaultPermissionManager(
+        @Qualifier("scheduler") private val scheduler: ScheduledExecutorService,
+        private val groupPermissionDtoRepository: GroupPermissionDtoRepository,
+        private val permissionNodeDtoRepository: PermissionNodeDtoRepository,
+        private val permissionRegister: PermissionRegister,
+        private val userDtoRepository: UserDtoRepository,
+        @Value("\${bot.user.admin.ids}") adminsIds: String
+) : PermissionManager {
 
-    @Autowired
-    @Qualifier("scheduler")
-    private lateinit var scheduler: ScheduledExecutorService
-
-    @Autowired
-    private lateinit var groupPermissionDtoRepository: GroupPermissionDtoRepository
-
-    @Autowired
-    private lateinit var permissionNodeDtoRepository: PermissionNodeDtoRepository
-
-    @Autowired
-    private lateinit var permissionRegister: PermissionRegister
-
-    @Autowired
-    private lateinit var userDtoRepository: UserDtoRepository
-
-    private lateinit var adminIds: List<Long>
+    private val adminIds: List<Long> = adminsIds.split(';').mapNotNull { it.toLongOrNull() }
 
     private val readWriteLock = ReentrantReadWriteLock()
-
     private var groupPermissions: MutableMap<String, PermissionTree> = HashMap()
 
-    @Value("\${bot.user.admin.ids}")
-    fun setAdminIds(value: String?) {
-        if (!value.isNullOrEmpty()) {
-            adminIds = value.split(';').mapNotNull { it.toLongOrNull() }
-            LOGGER.info("Admins ids = '$adminIds'")
-        }
-    }
+    override val groups: List<GroupPermissionDto>
+        get() = groupPermissionDtoRepository.findAll()
+
+    override val permissions: List<String>
+        get() = permissionRegister.permissions
 
     @PostConstruct
     fun start() {
+        LOGGER.info("Admins ids = '$adminIds'")
+
         scheduler.scheduleAtFixedRate(this::reloadPermissions, 0, 60, TimeUnit.MINUTES)
     }
 
@@ -128,10 +117,6 @@ class DefaultPermissionManager : PermissionManager {
             flush()
         }
     }
-
-    override fun getAllGroups(): List<GroupPermissionDto> = groupPermissionDtoRepository.findAll()
-
-    override fun getAllPermissions(): List<String> = permissionRegister.getAllRegisteredPermissions()
 
     private fun flush() {
         if (readWriteLock.writeLock().tryLock()) {

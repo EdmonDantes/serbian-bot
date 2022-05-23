@@ -9,6 +9,12 @@ interface BotCommandArgumentManager {
     suspend fun getNextChooseArgument(message: String?): Boolean
 
     /**
+     * Show to user menu with supported language
+     * Return language code
+     */
+    suspend fun getNextLanguageArgument(message: String?, optional: Boolean = false): String?
+
+    /**
      * Return next argument.
      */
     suspend fun getNextArgument(message: String?, optional: Boolean = false): String?

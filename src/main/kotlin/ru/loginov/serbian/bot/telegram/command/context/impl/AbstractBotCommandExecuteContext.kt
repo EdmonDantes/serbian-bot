@@ -1,6 +1,7 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import io.ktor.utils.io.CancellationException
+import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
 import ru.loginov.serbian.bot.spring.permission.exception.NotFoundPermissionException
@@ -18,6 +19,7 @@ import ru.loginov.telegram.api.request.DeleteMessageRequest
 import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
+import ru.loginov.telegram.api.request.SetMyCommandsRequest
 
 // We can not split implementation for different classes, because class can extend only one another class
 abstract class AbstractBotCommandExecuteContext(
@@ -114,6 +116,16 @@ abstract class AbstractBotCommandExecuteContext(
                         }
                     }
 
+    override suspend fun getNextLanguageArgument(message: String?, optional: Boolean): String? {
+        val menu = localizationManager.supportLanguages.mapNotNull { lang ->
+            localizationManager.findLocalizedStringByKey(
+                    lang,
+                    "language.$lang"
+            )?.let { it to lang }
+        }.toMap()
+
+        return getNextArgument(menu, message, optional)
+    }
 
     override suspend fun getNextArgument(message: String?, optional: Boolean): String? =
             getNextArgumentFromMessage()
@@ -228,6 +240,9 @@ abstract class AbstractBotCommandExecuteContext(
     override suspend fun getUpdates(request: GetUpdatesRequest.() -> Unit): List<Update> =
             telegram.getUpdates(request)
 
+    override suspend fun setMyCommands(request: SetMyCommandsRequest.() -> Unit) =
+            telegram.setMyCommands(request)
+
     override suspend fun sendMessage(request: SendMessageRequest.() -> Unit): Message? {
         val _chatId = chatId
         return telegram.sendMessage {
@@ -268,15 +283,15 @@ abstract class AbstractBotCommandExecuteContext(
 
     private suspend fun removeMessage(message: Message?) {
         //FIXME: Should make an architecture for bot UI
-//            if (message != null) {
-//                try {
-//                    telegram.deleteMessage {
-//                        fromMessage(message)
-//                    }
-//                } catch (e: Exception) {
-//                    LOGGER.error("Can not delete message: '$message'", e)
-//                }
-//            }
+        if (message != null) {
+            try {
+                telegram.deleteMessage {
+                    fromMessage(message)
+                }
+            } catch (e: Exception) {
+                LOGGER.error("Can not delete message: '$message'", e)
+            }
+        }
     }
 
     private fun InlineKeyboardMarkupBuilder.addUserActionButtons(optional: Boolean) {
@@ -292,5 +307,9 @@ abstract class AbstractBotCommandExecuteContext(
                 }
             }
         }
+    }
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(AbstractBotCommandExecuteContext::class.java)
     }
 }

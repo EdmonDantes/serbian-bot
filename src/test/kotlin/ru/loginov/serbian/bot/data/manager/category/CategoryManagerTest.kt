@@ -24,11 +24,11 @@ class CategoryManagerTest {
     fun testCreateRootCategory() {
         val language = "en"
         val expectedValue = "Test category"
-        var categoryDto: CategoryDto? = manager.createNewCategory(mapOf(language to expectedValue), null)
+        var categoryDto: CategoryDto? = manager.create(mapOf(language to expectedValue), null)
 
         assertNotNull(categoryDto, "Category manager return null on creating new a root category")
         assertNotNull(categoryDto!!.id, "Category manager return new a root category with null in 'id' field")
-        categoryDto = manager.findCategoryById(categoryDto.id!!)
+        categoryDto = manager.findById(categoryDto.id!!)
 
         assertNotNull(categoryDto, "Category manager return null on finding category by id")
         assertNotNull(

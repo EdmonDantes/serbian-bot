@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 interface ShopDescriptionCommentDtoRepository : JpaRepository<ShopDescriptionCommentDto, Int> {
 
-    fun findTopByEntityIdAndCreatedTimeAfter(
+    fun findTop10ByEntityIdAndCreatedTimeAfter(
             entityId: String,
             createdTime: LocalDateTime
     ): List<ShopDescriptionCommentDto>

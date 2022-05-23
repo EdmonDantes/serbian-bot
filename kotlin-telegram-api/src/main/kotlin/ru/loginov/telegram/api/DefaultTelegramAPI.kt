@@ -14,6 +14,7 @@ import ru.loginov.telegram.api.request.DeleteMessageRequest
 import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
+import ru.loginov.telegram.api.request.SetMyCommandsRequest
 import ru.loginov.telegram.api.response.TelegramResponse
 import kotlin.math.min
 
@@ -47,6 +48,10 @@ class DefaultTelegramAPI(
                 request(it)
                 client.requestJson<List<Update>>(HttpMethod.Post, "getUpdates", it) ?: emptyList()
             }
+
+    override suspend fun setMyCommands(request: SetMyCommandsRequest.() -> Unit) {
+        client.requestJson<Boolean>(HttpMethod.Post, "setMyCommands", SetMyCommandsRequest().also(request))
+    }
 
     override suspend fun sendMessage(request: SendMessageRequest.() -> Unit): Message? =
             SendMessageRequest().let {

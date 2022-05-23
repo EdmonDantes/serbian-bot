@@ -1,7 +1,7 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.data.dto.user.UserDto
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
 import ru.loginov.serbian.bot.data.manager.user.UserManager
@@ -11,39 +11,34 @@ import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextF
 import ru.loginov.telegram.api.TelegramAPI
 
 @Component
-class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
-
-    @Autowired
-    private lateinit var telegramApi: TelegramAPI
-
-    @Autowired
-    private lateinit var userManager: UserManager
-
-    @Autowired
-    private lateinit var callbackManager: TelegramCallbackManager
-
-    @Autowired
-    private lateinit var permissionManager: PermissionManager
-
-    @Autowired
-    private lateinit var localizationManager: LocalizationManager
+class DefaultBotCommandExecuteContextFactory(
+        private val telegramApi: TelegramAPI,
+        private val userManager: UserManager,
+        private val callbackManager: TelegramCallbackManager,
+        private val permissionManager: PermissionManager,
+        private val localizationManager: LocalizationManager
+) : BotCommandExecuteContextFactory {
 
     override fun createContext(
             userId: Long,
-            charId: Long,
+            chatId: Long,
             lang: String?,
             argumentsStr: String
     ): BotCommandExecuteContext {
-        val user = userManager.getUser(userId)
-                ?: userManager.createUser(userId, charId, lang)
+        val user = userManager.findById(userId)
+                ?: userManager.create(userId, chatId, lang)
                 ?: error("Can not save user")
 
         if (user.language == null) {
             user.language = lang
         }
 
+        if (user.language == null || !localizationManager.isSupport(user.language!!)) {
+            user.language = localizationManager.defaultLanguage
+        }
+
         return DefaultBotCommandExecuteContext(
-                charId,
+                chatId,
                 user,
                 telegramApi,
                 permissionManager,
@@ -53,5 +48,19 @@ class DefaultBotCommandExecuteContextFactory : BotCommandExecuteContextFactory {
         )
     }
 
+    override fun createEmptyContext(lang: String?): BotCommandExecuteContext {
+        return object : AbstractBotCommandExecuteContext(
+                telegramApi,
+                permissionManager,
+                localizationManager,
+                callbackManager,
+                ""
+        ) {
+            override val user: UserDto = UserDto().also { it.language = lang }
+            override val chatId: Long = -1
+            override fun havePermission(permission: String): Boolean = false
+            override fun haveAllPermissions(permissions: List<String>): Boolean = false
+        }
+    }
 }
 
