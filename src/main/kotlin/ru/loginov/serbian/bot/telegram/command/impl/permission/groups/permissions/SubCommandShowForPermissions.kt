@@ -32,7 +32,7 @@ class SubCommandShowForPermissions : AbstractSubCommand() {
         try {
             val owner = permissionManager.getPermissionsForGroup(groupName)
                     ?: error("Permission owner for group with name '$groupName' can not be null")
-            val grantedPermissions = permissionManager.getAllPermissions().filter { owner.havePermission(it) }
+            val grantedPermissions = permissionManager.permissions.filter { owner.havePermission(it) }
 
             context.sendMessageWithoutLimit {
                 markdown2(context) {

@@ -24,7 +24,7 @@ class SubCommandGroupsForShow : AbstractSubCommand() {
         context.sendMessageWithoutLimit {
             markdown2 {
                 append("All saved groups:")
-                permissionManager.getAllGroups().forEach {
+                permissionManager.groups.forEach {
                     if (it.name != null) {
                         append('\n')
                         append(it.name!!)

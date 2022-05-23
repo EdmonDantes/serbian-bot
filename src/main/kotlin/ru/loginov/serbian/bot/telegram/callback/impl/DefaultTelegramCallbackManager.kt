@@ -1,6 +1,10 @@
 package ru.loginov.serbian.bot.telegram.callback.impl
 
-import org.springframework.beans.factory.annotation.Autowired
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.telegram.callback.CallbackData
@@ -17,11 +21,10 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Component
-class DefaultTelegramCallbackManager : TelegramCallbackManager, CallbackExecutor {
-
-    @Autowired
-    @Qualifier("small_tasks")
-    private lateinit var executor: Executor
+class DefaultTelegramCallbackManager(
+        @Qualifier("small_tasks") private val executor: Executor,
+        private val coroutineScope: CoroutineScope
+) : TelegramCallbackManager, CallbackExecutor {
 
     private val chatCallbacks = ConcurrentHashMap<Long, Queue<TelegramCallback>>()
     private val chatAndUserCallback = ConcurrentHashMap<Pair<Long, Long>, Queue<TelegramCallback>>()
@@ -69,10 +72,21 @@ class DefaultTelegramCallbackManager : TelegramCallbackManager, CallbackExecutor
         if (callbacks.isEmpty()) {
             return false
         }
+        coroutineScope {
+            val futures = ArrayList<Deferred<*>>()
 
-        while (callbacks.isNotEmpty()) {
-            val callback = callbacks.poll()
-            callback.invoke(data)
+            while (callbacks.isNotEmpty()) {
+                val callback = callbacks.poll()
+                futures.add(async(coroutineScope.coroutineContext) { callback.invoke(data) })
+            }
+
+            futures.forEach {
+                try {
+                    it.await()
+                } catch (e: Exception) {
+                    LOGGER.warn("Failed on execute callback for class ", e)
+                }
+            }
         }
 
         return true
@@ -91,6 +105,10 @@ class DefaultTelegramCallbackManager : TelegramCallbackManager, CallbackExecutor
         chatCallbacks.remove(chatId)
     } else {
         chatAndUserCallback.remove(chatId to userId)
+    }
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(DefaultTelegramCallbackManager::class.java)
     }
 
 }

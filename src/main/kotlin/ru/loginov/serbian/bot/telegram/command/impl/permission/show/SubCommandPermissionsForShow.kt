@@ -23,7 +23,7 @@ class SubCommandPermissionsForShow : AbstractSubCommand() {
         context.sendMessageWithoutLimit {
             markdown2 {
                 append("All registered permissions:")
-                permissionManager.getAllPermissions().forEach {
+                permissionManager.permissions.forEach {
                     append('\n')
                     append(it)
                 }
