@@ -27,9 +27,6 @@ class ProductDescriptionDtoLocalization {
     @JoinColumn(name = "id", insertable = false, updatable = false)
     var entity: ProductDescriptionDto? = null
 
-    @JoinColumn(name = "id", nullable = false)
-    var entityId: Int? = null
-
     @Column(nullable = false)
     @KeywordField
     var name: String? = null
