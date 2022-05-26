@@ -1,7 +1,7 @@
 package ru.loginov.serbian.bot.data.dto.shop
 
 import ru.loginov.serbian.bot.data.dto.category.CategoryDto
-import ru.loginov.serbian.bot.data.dto.product.ProductDto
+import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDto
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -27,7 +27,7 @@ class InShopDescription {
 
     @ManyToOne
     @JoinColumn(name = "product_id", insertable = false, updatable = false)
-    var product: ProductDto? = null
+    var product: ProductDescriptionDto? = null
 
     @Column(name = "product_id", nullable = false)
     var productId: Int? = null

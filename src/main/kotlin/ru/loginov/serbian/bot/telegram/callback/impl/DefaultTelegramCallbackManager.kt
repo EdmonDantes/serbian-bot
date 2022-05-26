@@ -1,6 +1,6 @@
 package ru.loginov.serbian.bot.telegram.callback.impl
 
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -23,7 +23,7 @@ import kotlin.coroutines.suspendCoroutine
 @Component
 class DefaultTelegramCallbackManager(
         @Qualifier("small_tasks") private val executor: Executor,
-        private val coroutineScope: CoroutineScope
+        private val dispatcher: CoroutineDispatcher
 ) : TelegramCallbackManager, CallbackExecutor {
 
     private val chatCallbacks = ConcurrentHashMap<Long, Queue<TelegramCallback>>()
@@ -77,7 +77,7 @@ class DefaultTelegramCallbackManager(
 
             while (callbacks.isNotEmpty()) {
                 val callback = callbacks.poll()
-                futures.add(async(coroutineScope.coroutineContext) { callback.invoke(data) })
+                futures.add(async(dispatcher) { callback.invoke(data) })
             }
 
             futures.forEach {

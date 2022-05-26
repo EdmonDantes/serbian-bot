@@ -14,7 +14,7 @@ import javax.persistence.MapKey
 import javax.persistence.OneToMany
 
 @Entity
-class ProductDto {
+class ProductDescriptionDto {
 
     @Id
     @GeneratedValue
@@ -30,5 +30,5 @@ class ProductDto {
     @MapKey(name = "localizedId.locale")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
     @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var localization: MutableMap<String, ProductDtoLocalization> = HashMap()
+    var localization: MutableMap<String, ProductDescriptionDtoLocalization> = HashMap()
 }

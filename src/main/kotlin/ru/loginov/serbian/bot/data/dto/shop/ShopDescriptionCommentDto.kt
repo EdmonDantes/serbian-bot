@@ -26,7 +26,7 @@ class ShopDescriptionCommentDto {
     var entity: ShopDescriptionDto? = null
 
     @Column(name = "entity_id", nullable = false)
-    var entityId: String? = null
+    var entityId: Int? = null
 
     @Column(nullable = false)
     var comment: String? = null

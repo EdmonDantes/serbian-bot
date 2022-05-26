@@ -84,6 +84,10 @@ class DefaultCategoryManager(
             throw LanguageNotSupportedException(language)
         }
 
+        if (!categoryDtoRepository.existsById(categoryId)) {
+            return false
+        }
+
         val localization = CategoryDtoLocalization(categoryId, language, value)
         return try {
             categoryDtoLocalizationRepository.save(localization)

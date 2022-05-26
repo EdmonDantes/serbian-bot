@@ -16,7 +16,7 @@ import javax.persistence.MapsId
 
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-class ProductDtoLocalization {
+class ProductDescriptionDtoLocalization {
 
     @EmbeddedId
     @DocumentId(identifierBridge = IdentifierBridgeRef(type = LocalizedIdFieldBridge::class))
@@ -25,7 +25,7 @@ class ProductDtoLocalization {
     @ManyToOne
     @MapsId("id")
     @JoinColumn(name = "id", insertable = false, updatable = false)
-    var entity: ProductDto? = null
+    var entity: ProductDescriptionDto? = null
 
     @JoinColumn(name = "id", nullable = false)
     var entityId: Int? = null

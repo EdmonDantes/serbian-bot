@@ -6,14 +6,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import ru.loginov.serbian.bot.configuration.ExecutorsConfiguration
 import ru.loginov.serbian.bot.configuration.InMemoryJdbcConfiguration
 import ru.loginov.serbian.bot.data.dto.category.CategoryDto
 
-@SpringBootTest(classes = [InMemoryJdbcConfiguration::class, ExecutorsConfiguration::class])
-@ComponentScan("ru.loginov.data.manager.category")
+@SpringBootTest(classes = [InMemoryJdbcConfiguration::class, CategoryManager::class])
 @EnableJpaRepositories
 class CategoryManagerTest {
 

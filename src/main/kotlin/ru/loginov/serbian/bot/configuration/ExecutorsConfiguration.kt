@@ -1,7 +1,8 @@
 package ru.loginov.serbian.bot.configuration
 
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -23,13 +24,17 @@ class ExecutorsConfiguration {
     @Bean
     @Qualifier("small_tasks")
     fun executorForSmallTasks(): Executor {
+        val logger = LoggerFactory.getLogger("ExecutorForSmallTasks")
         val result = ForkJoinPool(
                 Runtime.getRuntime().availableProcessors() * 2,
                 ForkJoinPool.defaultForkJoinWorkerThreadFactory,
                 { thread, exception ->
-                    exception.printStackTrace()
+                    logger.warn(
+                            "Executor on thread '${thread.name}' with id '${thread.id}' throw an exception",
+                            exception
+                    )
                 },
-                false
+                true // TODO: Need to investigate, should we use it or not?
         )
         executorForSmallTasks.set(result);
         return result
@@ -44,7 +49,7 @@ class ExecutorsConfiguration {
     }
 
     @Bean
-    fun coroutineScope(): CoroutineScope = CoroutineScope(executorForSmallTasks().asCoroutineDispatcher())
+    fun dispatcher(): CoroutineDispatcher = executorForSmallTasks().asCoroutineDispatcher()
 
     @PreDestroy
     fun preDestroy() {

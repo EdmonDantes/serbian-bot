@@ -3,12 +3,15 @@ package ru.loginov.serbian.bot.data.dto.shop
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.OneToMany
 
 @Entity
 class ShopDescriptionDto {
+
     @Id
+    @GeneratedValue
     var id: Int? = null
 
     // This column has to can contain multiple null rows

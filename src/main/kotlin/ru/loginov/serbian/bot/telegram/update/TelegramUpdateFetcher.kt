@@ -1,7 +1,7 @@
 package ru.loginov.serbian.bot.telegram.update
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -32,7 +32,7 @@ class TelegramUpdateFetcher {
     private lateinit var telegramService: TelegramAPI
 
     @Autowired
-    private lateinit var coroutine: CoroutineScope
+    private lateinit var dispatcher: CoroutineDispatcher
 
     @Autowired
     @Qualifier("small_tasks")
@@ -70,12 +70,14 @@ class TelegramUpdateFetcher {
                 }
             }.forEach { update ->
                 newLastSeq = max(newLastSeq ?: Long.MIN_VALUE, update.id + 1)
-                onUpdateHandlers.forEach { handler ->
-                    coroutine.launch {
-                        try {
-                            handler.onUpdate(update)
-                        } catch (e: Exception) {
-                            LOGGER.error("Can not execute 'onUpdate' for handler: ${handler.javaClass}", e)
+                runBlocking(dispatcher) {
+                    onUpdateHandlers.forEach { handler ->
+                        async(dispatcher) {
+                            try {
+                                handler.onUpdate(update)
+                            } catch (e: Exception) {
+                                LOGGER.error("Can not execute 'onUpdate' for handler: ${handler.javaClass}", e)
+                            }
                         }
                     }
                 }

@@ -6,8 +6,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngineFactory
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.forms.formData
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.request
 import io.ktor.client.request.url
@@ -16,7 +16,7 @@ import io.ktor.client.statement.readBytes
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 
-class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
+class HttpClient(engineFactory: HttpClientEngineFactory<*> = OkHttp) {
 
     private val mapper: ObjectMapper = ObjectMapper()
 
@@ -41,16 +41,27 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
             method: HttpMethod,
             url: String,
             body: ByteArray? = null,
-            queryParameters: Map<String, String> = emptyMap(),
-            contentType: ContentType? = null
+            queryParametersUser: Map<String, String> = emptyMap(),
+            contentType: ContentType? = null,
+            headersUser: Map<String, String> = emptyMap()
     ): HttpResponse = client.request {
         this.method = method
+
         this.url(url)
 
+        val queryParameters = queryParametersUser
         if (queryParameters.isNotEmpty()) {
-            formData {
-                queryParameters.forEach {
-                    parameter(it.key, it.value)
+            queryParameters.forEach {
+                parameter(it.key, it.value)
+            }
+        }
+
+        if (headersUser.isNotEmpty()) {
+            headers {
+                headersUser.forEach { (key, value) ->
+                    if (key.isNotEmpty()) {
+                        append(key, value)
+                    }
                 }
             }
         }

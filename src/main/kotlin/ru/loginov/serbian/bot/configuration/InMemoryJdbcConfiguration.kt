@@ -26,21 +26,29 @@ import javax.sql.DataSource
 
 
 @Configuration
-@ConditionalOnProperty(name = ["bot.database.jdbc.in.memory.enabled"])
+@ConditionalOnProperty("bot.database.jdbc.in.memory.enabled")
 @EnableJpaRepositories(basePackages = ["ru.loginov.serbian.bot.data.repository.*"])
 @EnableTransactionManagement
-@ComponentScan(basePackages = ["ru.loginov.serbian.bot.data.*"])
+@ComponentScan(basePackages = ["ru.loginov.serbian.bot.data.*", "ru.loginov.serbian.bot.configuration"])
 @EntityScan(basePackages = ["ru.loginov.serbian.bot.data.*"])
-@Import(InitSearchServices::class)
+@Import(SearchRepositoryConfiguration::class)
 class InMemoryJdbcConfiguration {
+
+    @Value("\${bot.database.jdbc.in.memory.enabled}")
+    private var isEnabled: Boolean = true
 
     @Value("\${bot.database.jdbc.mixed.mode.enabled:false}")
     private var startInMixedMode: Boolean = false
-    private var h2Server: Server? = null
 
+    private var h2Server: Server? = null
 
     @PostConstruct
     fun init() {
+        if (!isEnabled) {
+            LOGGER.debug("InMemoryJdbcConfiguration is not enabled")
+            return
+        }
+
         if (startInMixedMode) {
             try {
                 h2Server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists")
@@ -54,7 +62,8 @@ class InMemoryJdbcConfiguration {
     }
 
     @Bean
-    fun dataSource(): DataSource = DriverManagerDataSource().apply {
+    @Primary
+    fun dataSource(): DataSource? = if (!isEnabled) null else DriverManagerDataSource().apply {
         setDriverClassName("org.h2.Driver")
         url = if (startInMixedMode) {
             "jdbc:h2:${h2Server!!.url}/~/helloworld;DB_CLOSE_DELAY=-1"
@@ -66,14 +75,14 @@ class InMemoryJdbcConfiguration {
     }
 
     @Bean
-    fun transactionManager(): JpaTransactionManager = JpaTransactionManager().apply {
-        entityManagerFactory = entityManagerFactory()
+    fun transactionManager(entityManagerFactory: EntityManagerFactory): JpaTransactionManager = JpaTransactionManager().apply {
+        this.entityManagerFactory = entityManagerFactory
     }
 
     @Bean
-    fun entityManagerFactoryBean(): LocalContainerEntityManagerFactoryBean = LocalContainerEntityManagerFactoryBean().apply {
+    fun entityManagerFactoryBean(dataSource: DataSource): LocalContainerEntityManagerFactoryBean = LocalContainerEntityManagerFactoryBean().apply {
         jpaVendorAdapter = HibernateJpaVendorAdapter().apply { setShowSql(true) }
-        dataSource = dataSource()
+        this.dataSource = dataSource
         setPersistenceProviderClass(HibernatePersistenceProvider::class.java)
         setPackagesToScan(
                 "ru.loginov.serbian.bot.data.*"
@@ -87,8 +96,9 @@ class InMemoryJdbcConfiguration {
 
     @Bean
     @Primary
-    fun entityManagerFactory(): EntityManagerFactory = entityManagerFactoryBean().`object`
-            ?: error("Can not create bean 'entityManagerFactory' in class ${InMemoryJdbcConfiguration::class}")
+    fun entityManagerFactory(entityManagerFactoryBean: LocalContainerEntityManagerFactoryBean): EntityManagerFactory =
+            entityManagerFactoryBean.`object`
+                    ?: error("Can not create bean 'entityManagerFactory' in class ${InMemoryJdbcConfiguration::class}")
 
     @PreDestroy
     fun preDestroy() {
