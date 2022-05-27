@@ -36,7 +36,8 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
         val parentCategoryIdStr = context.getNextArgument("@{bot.command.category.create._argument.parentId}", true)
         val parentCategoryId = parentCategoryIdStr?.toIntOrNull()
         if (parentCategoryIdStr != null
-                && (parentCategoryId == null || categoryManager.findById(parentCategoryId) == null)) {
+                && (parentCategoryId == null || categoryManager.findById(parentCategoryId) == null)
+        ) {
             context.sendMessage {
                 markdown2(context) {
                     append("@{bot.command.category.create._error.parent.id.not.found}{$parentCategoryIdStr}")

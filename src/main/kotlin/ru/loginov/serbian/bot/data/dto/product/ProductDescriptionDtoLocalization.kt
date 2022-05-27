@@ -4,6 +4,7 @@ import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField
 import ru.loginov.serbian.bot.data.dto.localization.LocalizedId
 import ru.loginov.serbian.bot.data.dto.localization.LocalizedIdFieldBridge
@@ -15,6 +16,7 @@ import javax.persistence.ManyToOne
 import javax.persistence.MapsId
 
 @Entity
+@Indexed
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
 class ProductDescriptionDtoLocalization {
 

@@ -6,9 +6,8 @@ import com.google.maps.PlaceDetailsRequest
 import com.google.maps.PlacesApi
 import io.ktor.client.statement.readText
 import io.ktor.http.HttpMethod
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
+import org.springframework.data.jpa.domain.AbstractPersistable_
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.loginov.http.HttpClient
@@ -17,6 +16,8 @@ import ru.loginov.serbian.bot.data.dto.shop.ShopDescriptionDto
 import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionCommentDtoRepository
 import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionDtoRepository
 import ru.loginov.serbian.bot.util.google.suspendAndAwait
+import ru.loginov.serbian.bot.util.saveOr
+import ru.loginov.serbian.bot.util.useSuspend
 import java.time.LocalDateTime
 
 @Service
@@ -28,7 +29,7 @@ class DefaultShopDescriptionManager(
 ) : ShopDescriptionManager {
 
     override suspend fun create(googleMapLink: String, floor: Int?): ShopDescriptionDto? {
-        val name = parseNameFrom(googleMapLink)
+        val name = parseNameFrom(googleMapLink) ?: return null
 
         val results = try {
             PlacesApi.findPlaceFromText(
@@ -65,81 +66,46 @@ class DefaultShopDescriptionManager(
         dto.shopName = details.name
         dto.floor = floor
 
-        return try {
-            withContext(Dispatchers.IO) {
-                shopDescriptionDtoRepository.save(dto)
+        return shopDescriptionDtoRepository.useSuspend {
+            it.saveOr(dto) { e ->
+                LOGGER.warn(
+                        "Can not save shop description for place from google map link with place id '${candidate.placeId}'",
+                        e
+                )
+                null
             }
-        } catch (e: Exception) {
-            LOGGER.warn(
-                    "Can not save shop description for place from google map link with place id '${candidate.placeId}'",
-                    e
-            )
-            null
         }
     }
 
     override suspend fun create(name: String, address: String, floor: Int?): ShopDescriptionDto? {
-        val response =
-                try {
-                    PlacesApi.textSearchQuery(geoApiContext, "$name, $address").await()
-                } catch (e: Exception) {
-                    LOGGER.debug("Can not execute text search for {name:'$name';address:'$address'}", e)
-                    null
-                }
-
         val dto = ShopDescriptionDto()
         dto.shopName = name
         dto.address = address
-
-        if (response != null && response.results.size == 1) {
-            val result = response.results[0]
-            dto.googleMapId = result.placeId
-
-            val details = try {
-                PlacesApi.placeDetails(geoApiContext, result.placeId)
-                        .fields(
-                                PlaceDetailsRequest.FieldMask.NAME,
-                                PlaceDetailsRequest.FieldMask.URL,
-                                PlaceDetailsRequest.FieldMask.FORMATTED_ADDRESS
-                        )
-                        .await()
-            } catch (e: Exception) {
-                LOGGER.debug("Can not get place details for place with id '${result.placeId}'", e)
-                null
-            }
-
-            if (details != null) {
-                dto.shopName = details.name
-                dto.googleMapLink = details.url.toString()
-                dto.address = details.formattedAddress
-            }
-        }
-
         dto.floor = floor
 
-        return try {
-            shopDescriptionDtoRepository.save(dto)
-        } catch (e: Exception) {
-            LOGGER.warn("Can not save shop description for {name:'$name';address:'$address';floor:'$floor'}", e)
-            null
+        return shopDescriptionDtoRepository.useSuspend {
+            it.saveOr(dto) { e ->
+                LOGGER.warn("Can not save shop description for {name:'$name';address:'$address';floor:'$floor'}", e)
+                null
+            }
         }
     }
 
     override suspend fun findById(id: Int): ShopDescriptionDto? =
-            withContext(Dispatchers.IO) {
+            shopDescriptionDtoRepository.useSuspend {
                 try {
-                    shopDescriptionDtoRepository.findByIdOrNull(id)
+                    it.findByIdOrNull(id)
                 } catch (e: Exception) {
-                    LOGGER.warn("Can not get shop with id '$id'", e)
+                    LOGGER.warn("Can not get shop with id '${AbstractPersistable_.id}'", e)
                     null
                 }
             }
 
 
-    override suspend fun containsWithId(id: Int): Boolean =
-            withContext(Dispatchers.IO) {
+    override suspend fun existsById(id: Int): Boolean =
+            shopDescriptionDtoRepository.useSuspend {
                 try {
-                    shopDescriptionDtoRepository.existsById(id)
+                    it.existsById(id)
                 } catch (e: Exception) {
                     LOGGER.warn("Can not check existing for shop with id '$id'", e)
                     false
@@ -147,9 +113,9 @@ class DefaultShopDescriptionManager(
             }
 
     override suspend fun remove(id: Int): Boolean =
-            withContext(Dispatchers.IO) {
+            shopDescriptionDtoRepository.useSuspend {
                 try {
-                    shopDescriptionDtoRepository.deleteById(id)
+                    it.deleteById(id)
                     true
                 } catch (e: Exception) {
                     LOGGER.warn("Can not delete shop with id '$id'", e)
@@ -159,7 +125,7 @@ class DefaultShopDescriptionManager(
 
 
     override suspend fun addComment(shopId: Int, comment: String): Boolean {
-        if (!containsWithId(shopId)) {
+        if (!existsById(shopId)) {
             return false
         }
 
@@ -168,9 +134,9 @@ class DefaultShopDescriptionManager(
         dto.comment = comment
         dto.createdTime = LocalDateTime.now()
 
-        return withContext(Dispatchers.IO) {
+        return shopDescriptionCommentDtoRepository.useSuspend {
             try {
-                shopDescriptionCommentDtoRepository.save(dto)
+                it.save(dto)
                 true
             } catch (e: Exception) {
                 LOGGER.warn("Can not create new comment for shop with id '$shopId'", e)
@@ -180,9 +146,9 @@ class DefaultShopDescriptionManager(
     }
 
     override suspend fun getComments(shopId: Int, beforeDate: LocalDateTime?): List<ShopDescriptionCommentDto> =
-            withContext(Dispatchers.IO) {
+            shopDescriptionCommentDtoRepository.useSuspend {
                 try {
-                    shopDescriptionCommentDtoRepository.findTop10ByEntityIdAndCreatedTimeBefore(
+                    it.findTop10ByEntityIdAndCreatedTimeBeforeOrderByCreatedTimeDesc(
                             shopId,
                             beforeDate ?: LocalDateTime.now()
                     )
@@ -210,8 +176,9 @@ class DefaultShopDescriptionManager(
     }
 
     companion object {
-        private val DEFAULT_USER_AGENT = "Mozilla/5.0 (Linux; rv:47.0) Gecko/20100101 Firefox/47.0"
         private val LOGGER = LoggerFactory.getLogger(DefaultShopDescriptionManager::class.java)
+
+        private val DEFAULT_USER_AGENT = "Mozilla/5.0 (Linux; rv:47.0) Gecko/20100101 Firefox/47.0"
         private val NAME_META_CONTENT_REGEX = Regex("<meta\\s*content\\s*=\\s*\"((.(?!\"))*.?)\"\\s*property\\s*=\\s*\"og:title\"\\s*>")
     }
 }

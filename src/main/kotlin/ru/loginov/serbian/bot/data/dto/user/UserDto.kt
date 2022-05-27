@@ -41,11 +41,6 @@ class UserDto {
     @Transient // Will be set in manager, because we can save many data for different commands
     var additionalData: Map<String, String> = emptyMap()
 
-    fun getInputLanguageOr(supplier: () -> String?): String? =
-            if (language == null || canInputDifferentLanguages == true) {
-                supplier()
-            } else language
-
     suspend fun getInputLanguageOr(supplier: suspend () -> String?): String? =
             if (language == null || canInputDifferentLanguages == true) {
                 supplier()

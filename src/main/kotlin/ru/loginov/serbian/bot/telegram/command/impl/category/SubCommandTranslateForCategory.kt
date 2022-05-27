@@ -12,7 +12,7 @@ import ru.loginov.serbian.bot.util.markdown2
 
 @Component
 @SubCommand(parents = [CategoryBotCommand::class])
-@RequiredPermission("bot.command.category.translate")
+@RequiredPermission("commands.category.translate")
 class SubCommandTranslateForCategory : AbstractSubCommand() {
 
     @Autowired

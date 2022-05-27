@@ -8,6 +8,8 @@ import javax.persistence.Id
 import javax.persistence.OneToMany
 
 @Entity
+//TODO: Add location for better search
+//TODO: Split address for better search (address, city, country)
 class ShopDescriptionDto {
 
     @Id

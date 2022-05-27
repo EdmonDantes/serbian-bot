@@ -17,8 +17,8 @@ import javax.persistence.UniqueConstraint
 @Entity
 @Table(
         uniqueConstraints = [
-            UniqueConstraint(columnNames = ["shop_id, product_id"]),
-            UniqueConstraint(columnNames = ["shop_id, category_id"])
+            UniqueConstraint(columnNames = ["shop_id", "product_id"]),
+            UniqueConstraint(columnNames = ["shop_id", "category_id"])
         ]
 )
 class PriceDescriptionDto {
