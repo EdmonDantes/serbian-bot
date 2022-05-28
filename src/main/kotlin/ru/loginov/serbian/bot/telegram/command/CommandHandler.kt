@@ -1,10 +1,10 @@
 package ru.loginov.serbian.bot.telegram.command
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
@@ -16,34 +16,27 @@ import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
 import ru.loginov.serbian.bot.telegram.update.OnUpdateHandler
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Update
+import java.time.LocalDateTime
 import java.util.concurrent.CancellationException
 import javax.annotation.PostConstruct
 import kotlin.streams.toList
 
 @Component
-class CommandHandler : OnUpdateHandler {
-
-    @Autowired
-    private lateinit var botCommandManager: BotCommandManager
-
-    @Autowired
-    private lateinit var localizationManager: LocalizationManager
-
-    @Autowired
-    private lateinit var botCommandExecuteContextFactory: BotCommandExecuteContextFactory
-
-    @Autowired
-    private lateinit var telegram: TelegramAPI
-
-    @Autowired
-    private lateinit var callbackExecutor: CallbackExecutor
+class CommandHandler(
+        private val commandManager: BotCommandManager,
+        private val localizationManager: LocalizationManager,
+        private val commandContextFactory: BotCommandExecuteContextFactory,
+        private val callbackExecutor: CallbackExecutor,
+        private val telegram: TelegramAPI,
+        private val dispatcher: CoroutineDispatcher
+) : OnUpdateHandler {
 
     @PostConstruct
     fun postConstruct() {
         runBlocking {
             localizationManager.supportLanguages.map {
-                val emptyContext = botCommandExecuteContextFactory.createEmptyContext(it)
-                it to botCommandManager.getAllCommands().mapNotNull {
+                val emptyContext = commandContextFactory.createEmptyContext(it)
+                it to commandManager.getAllCommands().mapNotNull {
                     try {
                         it.getCommandName(emptyContext) to it.getShortDescription(emptyContext)
                     } catch (e: Exception) {
@@ -65,11 +58,15 @@ class CommandHandler : OnUpdateHandler {
 
     override suspend fun onUpdate(update: Update) {
         coroutineScope {
-            val first = update.message?.let { async { processUpdateMessage(update) } }
-            val second = update.callbackQuery?.let { async { processCallbackQuery(update) } }
+            LOGGER.trace("Start to execute onUpdate: ${LocalDateTime.now()}")
+            val first = update.message?.let { async(dispatcher) { processUpdateMessage(update) } }
+            val second = update.callbackQuery?.let { async(dispatcher) { processCallbackQuery(update) } }
+            LOGGER.trace("Started coroutines in onUpdate: ${LocalDateTime.now()}")
 
             second?.await()
             first?.await()
+
+            LOGGER.trace("Ended execute onUpdate: ${LocalDateTime.now()}")
         }
     }
 
@@ -103,7 +100,7 @@ class CommandHandler : OnUpdateHandler {
             text!!.substring(1, text.indexOf(' ').let { if (it < 0) text.length else it })
         }
 
-        val command = botCommandManager.getCommandByName(commandName)
+        val command = commandManager.getCommandByName(commandName)
         if (command == null) {
             LOGGER.debug("Can not find command with name '$commandName' for chat '$chatId' and user '$userId'")
             printCanNotFindCommand(chatId, commandName)
@@ -114,7 +111,7 @@ class CommandHandler : OnUpdateHandler {
         // Cancel callback, because we should execute another command, so we should cancel current command
         callbackExecutor.cancel(chatId, userId)
 
-        val context = botCommandExecuteContextFactory.createContext(userId, chatId, lang, argumentsStr)
+        val context = commandContextFactory.createContext(userId, chatId, lang, argumentsStr)
         try {
             command!!.execute(context)
         } catch (e: Exception) {

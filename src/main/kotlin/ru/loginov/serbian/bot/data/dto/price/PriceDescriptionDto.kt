@@ -7,6 +7,7 @@ import java.time.LocalDateTime
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.JoinColumn
@@ -27,21 +28,21 @@ class PriceDescriptionDto {
     @GeneratedValue
     var id: Int? = null
 
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
     var category: CategoryDto? = null
 
     @Column(name = "category_id")
     var categoryId: Int? = null
 
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", insertable = false, updatable = false)
     var product: ProductDescriptionDto? = null
 
     @Column(name = "product_id")
     var productId: Int? = null
 
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "shop_id", insertable = false, updatable = false)
     var shop: ShopDescriptionDto? = null
 

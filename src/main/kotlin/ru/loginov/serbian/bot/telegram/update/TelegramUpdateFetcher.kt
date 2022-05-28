@@ -1,105 +1,103 @@
 package ru.loginov.serbian.bot.telegram.update
 
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.async
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.data.dto.telegram.UpdateSequenceDto
 import ru.loginov.serbian.bot.data.repository.telegram.UpdateSequenceRepository
 import ru.loginov.serbian.bot.data.repository.telegram.UpdateSequenceRepository.Companion.DEFAULT_ID
 import ru.loginov.telegram.api.TelegramAPI
-import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
+import kotlin.concurrent.thread
 import kotlin.math.max
 
 @Service
-class TelegramUpdateFetcher {
-
-    @Autowired
-    private lateinit var onUpdateHandlers: List<OnUpdateHandler>
-
-    @Autowired
-    private lateinit var updateSequenceRepository: UpdateSequenceRepository
-
-    @Autowired
-    private lateinit var telegramService: TelegramAPI
-
-    @Autowired
-    private lateinit var dispatcher: CoroutineDispatcher
-
-    @Autowired
-    @Qualifier("small_tasks")
-    private lateinit var executor: Executor
-
-    @Value("\${bot.telegram.update.timeout.sec:5}")
-    private var longPollingTimeoutSec: Long = 5
-
-    @Value("\${bot.telegram.update.enable:true}")
-    private var enabled: Boolean = true
-
+class TelegramUpdateFetcher(
+        private val onUpdateHandlers: List<OnUpdateHandler>,
+        private val updateSequenceRepository: UpdateSequenceRepository,
+        private val telegram: TelegramAPI,
+        private val coroutineScope: CoroutineScope,
+        @Value("\${bot.telegram.update.timeout.sec:5}") private val longPollingTimeoutSec: Long = 5,
+        @Value("\${bot.telegram.update.enable:true}") private val enabled: Boolean = true
+) {
     private val isContinue = AtomicBoolean(true)
+    private val fetcherThread = thread(name = "Telegram Update Fetcher", start = false) {
+        var lastSeq: Long? = updateSequenceRepository.findById(DEFAULT_ID).orElse(null)?.seq
+        var i = 0
+        while (isContinue.get()) {
+            while (i < 1000) {
+                lastSeq = fetchUpdates(lastSeq)
+                i++
+            }
+        }
+    }
 
     @PostConstruct
     fun postConstruct() {
         if (enabled) {
-            val lastSeq = updateSequenceRepository.findById(DEFAULT_ID).orElse(null)?.seq
-
-            fetchUpdates(lastSeq)
+            fetcherThread.start()
         }
     }
 
-    private fun fetchUpdates(lastSeq: Long?) {
-        executor.execute {
-            var newLastSeq: Long? = lastSeq
-            runBlocking {
+    private fun fetchUpdates(lastSeq: Long?): Long? {
+        val updates =
                 try {
-                    telegramService.getUpdates {
-                        offset = lastSeq
-                        timeoutSec = longPollingTimeoutSec
+                    runBlocking {
+                        telegram.getUpdates {
+                            offset = lastSeq
+                            timeoutSec = longPollingTimeoutSec
+                        }
                     }
                 } catch (e: Exception) {
                     LOGGER.warn("Can not get updates for telegram bot", e)
                     emptyList()
                 }
-            }.forEach { update ->
-                newLastSeq = max(newLastSeq ?: Long.MIN_VALUE, update.id + 1)
-                runBlocking(dispatcher) {
-                    onUpdateHandlers.forEach { handler ->
-                        async(dispatcher) {
-                            try {
-                                handler.onUpdate(update)
-                            } catch (e: Exception) {
-                                LOGGER.error("Can not execute 'onUpdate' for handler: ${handler.javaClass}", e)
-                            }
-                        }
+
+        var newLastSeq: Long? = lastSeq
+
+        updates.forEach { update ->
+            newLastSeq = max(newLastSeq ?: Long.MIN_VALUE, update.id + 1)
+            onUpdateHandlers.forEach { handler ->
+                coroutineScope.launch {
+                    try {
+                        handler.onUpdate(update)
+                    } catch (e: Exception) {
+                        LOGGER.error("Can not execute 'onUpdate' for handler: ${handler.javaClass}", e)
                     }
                 }
             }
-
-            if (newLastSeq != lastSeq) {
-                updateSequenceRepository.saveAndFlush(UpdateSequenceDto(newLastSeq!!, DEFAULT_ID))
-            }
-
-            if (isContinue.get()) {
-                fetchUpdates(newLastSeq)
-            }
         }
+
+        if (newLastSeq != lastSeq) {
+            updateSequenceRepository.saveAndFlush(UpdateSequenceDto(newLastSeq!!, DEFAULT_ID))
+        }
+
+        return newLastSeq
     }
 
 
     @PreDestroy
     fun preDestroy() {
         isContinue.set(false)
+        try {
+            if (fetcherThread.isAlive) {
+                fetcherThread.interrupt()
+                fetcherThread.join(DEFAULT_TIMEOUT_INTERRUPT)
+            }
+        } catch (e: Exception) {
+            LOGGER.error("Can not stop fetcher thread", e)
+        }
     }
 
     companion object {
+        private const val DEFAULT_TIMEOUT_INTERRUPT: Long = 5000
+
         private val LOGGER: Logger = LoggerFactory.getLogger(TelegramUpdateFetcher::class.java)
     }
 }

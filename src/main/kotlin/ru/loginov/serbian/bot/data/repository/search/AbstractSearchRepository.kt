@@ -15,7 +15,6 @@ abstract class AbstractSearchRepository<E> : SearchRepository<E> {
     private lateinit var entityManager: EntityManager
 
     protected abstract val generalPropertyName: String
-    protected abstract val entityClass: Class<E>
 
     override fun findAllByGeneralProperty(obj: String): List<E> = findAllBy(listOf(generalPropertyName), obj)
 

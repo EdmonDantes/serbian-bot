@@ -7,6 +7,8 @@ import javax.transaction.Transactional
 @Repository
 @Transactional
 interface SearchRepository<E> {
-    fun findAllByGeneralProperty(obj: String) : List<E>
-    fun findAllBy(propertiesToSearch: List<String>, value: String) : List<E>
+    val entityClass: Class<E>
+
+    fun findAllByGeneralProperty(obj: String): List<E>
+    fun findAllBy(propertiesToSearch: List<String>, value: String): List<E>
 }

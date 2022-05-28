@@ -15,6 +15,7 @@ import ru.loginov.serbian.bot.data.dto.shop.ShopDescriptionCommentDto
 import ru.loginov.serbian.bot.data.dto.shop.ShopDescriptionDto
 import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionCommentDtoRepository
 import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionDtoRepository
+import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionDtoSearchRepository
 import ru.loginov.serbian.bot.util.google.suspendAndAwait
 import ru.loginov.serbian.bot.util.saveOr
 import ru.loginov.serbian.bot.util.useSuspend
@@ -24,6 +25,7 @@ import java.time.LocalDateTime
 class DefaultShopDescriptionManager(
         private val shopDescriptionDtoRepository: ShopDescriptionDtoRepository,
         private val shopDescriptionCommentDtoRepository: ShopDescriptionCommentDtoRepository,
+        private val searchRepo: ShopDescriptionDtoSearchRepository,
         private val httpClient: HttpClient,
         private val geoApiContext: GeoApiContext
 ) : ShopDescriptionManager {
@@ -100,6 +102,16 @@ class DefaultShopDescriptionManager(
                     null
                 }
             }
+
+    override suspend fun findByName(name: String): List<ShopDescriptionDto> {
+        if (name.isBlank()) {
+            return emptyList()
+        }
+
+        return searchRepo.useSuspend {
+            it.findAllByGeneralProperty(name)
+        }
+    }
 
 
     override suspend fun existsById(id: Int): Boolean =

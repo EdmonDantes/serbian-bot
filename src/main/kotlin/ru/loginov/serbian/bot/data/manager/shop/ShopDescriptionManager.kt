@@ -10,6 +10,7 @@ interface ShopDescriptionManager {
     suspend fun create(name: String, address: String, floor: Int? = null): ShopDescriptionDto?
 
     suspend fun findById(id: Int): ShopDescriptionDto?
+    suspend fun findByName(name: String): List<ShopDescriptionDto>
     suspend fun existsById(id: Int): Boolean
 
     suspend fun remove(id: Int): Boolean

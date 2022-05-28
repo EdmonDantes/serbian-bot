@@ -5,10 +5,10 @@ import ru.loginov.telegram.api.entity.KeyboardButtonPollType
 import ru.loginov.telegram.api.entity.PollType
 
 class KeyboardButtonBuilder : AbstractKeyboardButtonBuilder<KeyboardButton>() {
-    private var text: String? = null
-    private var requestContact: Boolean? = null
-    private var requestLocation: Boolean? = null
-    private var requestPoll: PollType? = null
+    var text: String? = null
+    var requestContact: Boolean? = null
+    var requestLocation: Boolean? = null
+    var requestPoll: PollType? = null
 
     fun text(text: CharSequence) {
         this.text = text.toString()

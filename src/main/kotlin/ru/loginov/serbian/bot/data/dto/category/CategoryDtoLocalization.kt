@@ -12,6 +12,7 @@ import ru.loginov.serbian.bot.data.dto.localization.LocalizedIdFieldBridge
 import javax.persistence.Column
 import javax.persistence.EmbeddedId
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.MapsId
@@ -38,7 +39,7 @@ class CategoryDtoLocalization {
     @DocumentId(identifierBridge = IdentifierBridgeRef(type = LocalizedIdFieldBridge::class))
     var localizedId: LocalizedId? = null
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("id")
     @JoinColumn(name = "id")
     @JsonIgnore

@@ -23,7 +23,7 @@ class DefaultProductDescriptionManager(
         private val localizationManager: LocalizationManager
 ) : ProductDescriptionManager {
     override suspend fun create(names: Map<String, String>, categoryId: Int?): ProductDescriptionDto? {
-        if (categoryId != null && !categoryManager.containsWithId(categoryId)) {
+        if (categoryId != null && !categoryManager.existsById(categoryId)) {
             return null
         }
 

@@ -15,10 +15,12 @@ class DefaultPermissionRegister : PermissionRegister {
             register.contains(permission)
 
     override fun registerPermission(permission: String) {
-        synchronized(register) {
+        val added = synchronized(register) {
             register.add(permission)
         }
-        LOGGER.debug("Registered permission: '$permission'")
+        if (added) {
+            LOGGER.debug("Registered permission: '$permission'")
+        }
     }
 
     companion object {

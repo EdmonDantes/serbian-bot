@@ -28,7 +28,7 @@ class SubCommandTranslateForCategory : AbstractSubCommand() {
         val categoryIdStr = context.getNextArgument("@{bot.command.category.translate._argument.categoryId}")
         val categoryId = categoryIdStr?.toIntOrNull()
 
-        if (categoryId == null || !categoryManager.containsWithId(categoryId)) {
+        if (categoryId == null || !categoryManager.existsById(categoryId)) {
             context.sendMessage {
                 markdown2(context) {
                     append("@{bot.command.category.translate._error.can.not.find.category}{$categoryId}")

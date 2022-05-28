@@ -23,7 +23,7 @@ class ShopDescriptionManagerTest {
     @Test
     fun testCreatingByGoogleLink() {
         if (System.getenv()["MAPS_API_KEY"].isNullOrEmpty()) {
-            println("Test 'testCreatingByGoogleLink' in class '${this.javaClass}' will be ignored, because env var 'MAPS_API_KEY' did not set")
+            System.err.println("Test 'testCreatingByGoogleLink' in class '${this.javaClass}' will be ignored, because env var 'MAPS_API_KEY' did not set")
             return
         }
 
@@ -39,11 +39,11 @@ class ShopDescriptionManagerTest {
     @Test
     fun testCreatingByNameAndAddress() {
         val shop = runBlocking {
-            shopDescriptionManager.create("For mind", "65 Lakeview, NewYork, USA")
+            shopDescriptionManager.create("For test", "65 Lakeview, NewYork, USA")
         }
 
         assertNotNull(shop)
-        assertEquals("For mind", shop!!.shopName)
+        assertEquals("For test", shop!!.shopName)
         assertEquals("65 Lakeview, NewYork, USA", shop.address)
     }
 
@@ -85,14 +85,28 @@ class ShopDescriptionManagerTest {
     @Test
     fun testGetComments() {
         val shopId = createShop("testGetComments").id!!
-        for (i in 1..10) {
+        for (i in 1..100) {
             assertTrue(runBlocking { shopDescriptionManager.addComment(shopId, "$i") })
+            Thread.sleep(5)
         }
 
-        val comments = runBlocking { shopDescriptionManager.getComments(shopId) }.mapNotNull { it.comment?.toIntOrNull() }
+        val comments = runBlocking { shopDescriptionManager.getComments(shopId) }
+        val commentsNumber = comments.mapNotNull { it.comment?.toIntOrNull() }
+        assertEquals(10, commentsNumber.size)
+        for (i in 91..100) {
+            assertTrue(commentsNumber.contains(i))
+        }
+
+        val newComments = runBlocking {
+            shopDescriptionManager.getComments(
+                    shopId,
+                    comments.mapNotNull { it.createdTime }.minOrNull()
+            )
+        }
+                .mapNotNull { it.comment?.toIntOrNull() }
         assertEquals(10, comments.size)
-        for (i in 1..10) {
-            assertTrue(comments.contains(i))
+        for (i in 81..90) {
+            assertTrue(newComments.contains(i))
         }
     }
 

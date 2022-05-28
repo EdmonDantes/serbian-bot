@@ -201,16 +201,16 @@ abstract class AbstractBotCommandExecuteContext(
         val msg = sendMessage {
             markdown2 {
                 append(transformStringToLocalized(message ?: "@{bot.abstract.command.please.choose.argument}"))
-                buildInlineKeyboard {
+                buildReplyKeyboard { //FIXME: Should we use this ???
                     list.forEachIndexed { index, pair ->
                         line {
                             add {
                                 text = transformStringToLocalized(pair.first)
-                                callbackData(chatId!!, user.id, index)
+                                //callbackData(chatId!!, user.id, index)
                             }
                         }
                     }
-                    addUserActionButtons(optional)
+                    //addUserActionButtons(optional)
                 }
             }
         }
@@ -266,6 +266,8 @@ abstract class AbstractBotCommandExecuteContext(
                 null
             }
 
+
+    //TODO: Add timeout ???
     private suspend fun waitResult(): String? {
         val data = callbackManager.waitCallback(chatId, user.id)
         return when (data.dataFromCallback) {

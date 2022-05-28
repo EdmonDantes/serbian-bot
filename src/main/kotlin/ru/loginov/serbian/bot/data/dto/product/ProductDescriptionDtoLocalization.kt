@@ -1,5 +1,6 @@
 package ru.loginov.serbian.bot.data.dto.product
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef
@@ -11,6 +12,7 @@ import ru.loginov.serbian.bot.data.dto.localization.LocalizedIdFieldBridge
 import javax.persistence.Column
 import javax.persistence.EmbeddedId
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.MapsId
@@ -24,9 +26,10 @@ class ProductDescriptionDtoLocalization {
     @DocumentId(identifierBridge = IdentifierBridgeRef(type = LocalizedIdFieldBridge::class))
     var localizedId: LocalizedId = LocalizedId()
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("id")
     @JoinColumn(name = "id", insertable = false, updatable = false)
+    @JsonIgnore
     var entity: ProductDescriptionDto? = null
 
     @Column(nullable = false)

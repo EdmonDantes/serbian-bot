@@ -27,7 +27,7 @@ class DefaultCategoryManager(
     override fun findById(categoryId: Int): CategoryDto? =
             categoryDtoRepository.findByIdWithAllFields(categoryId).orElse(null)
 
-    override fun containsWithId(categoryId: Int): Boolean =
+    override fun existsById(categoryId: Int): Boolean =
             categoryDtoRepository.existsById(categoryId)
 
     override fun findLocalizedNameFor(categoryDto: CategoryDto, language: String?): String? {

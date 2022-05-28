@@ -6,7 +6,9 @@ import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngineFactory
-import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.features.HttpTimeout
+import io.ktor.client.features.timeout
 import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.request
@@ -16,7 +18,7 @@ import io.ktor.client.statement.readBytes
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 
-class HttpClient(engineFactory: HttpClientEngineFactory<*> = OkHttp) {
+class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
 
     private val mapper: ObjectMapper = ObjectMapper()
 
@@ -35,41 +37,63 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = OkHttp) {
 
     private val client: HttpClient = HttpClient(engineFactory) {
         expectSuccess = false
+        install(HttpTimeout)
     }
 
     suspend fun request(
             method: HttpMethod,
             url: String,
             body: ByteArray? = null,
-            queryParametersUser: Map<String, String> = emptyMap(),
+            queryParameters: Map<String, String> = emptyMap(),
             contentType: ContentType? = null,
-            headersUser: Map<String, String> = emptyMap()
-    ): HttpResponse = client.request {
-        this.method = method
+            headersUser: Map<String, String> = emptyMap(),
+            connectionTimeout: Long? = null,
+            requestTimeout: Long? = null
+    ): HttpResponse = try {
+        client.request {
+            this.method = method
 
-        this.url(url)
+            this.url(url)
 
-        val queryParameters = queryParametersUser
-        if (queryParameters.isNotEmpty()) {
-            queryParameters.forEach {
-                parameter(it.key, it.value)
+            if (queryParameters.isNotEmpty()) {
+                queryParameters.forEach {
+                    parameter(it.key, it.value)
+                }
             }
-        }
 
-        if (headersUser.isNotEmpty()) {
-            headers {
-                headersUser.forEach { (key, value) ->
-                    if (key.isNotEmpty()) {
-                        append(key, value)
+            if (headersUser.isNotEmpty()) {
+                headers {
+                    headersUser.forEach { (key, value) ->
+                        if (key.isNotEmpty()) {
+                            append(key, value)
+                        }
                     }
                 }
             }
-        }
 
-        if (body != null) {
-            this.body = CustomOutgoingContext(contentType, body)
+            if (body != null) {
+                this.body = CustomOutgoingContext(contentType, body)
+            }
+
+            timeout {
+                requestTimeoutMillis = requestTimeout ?: DEFAULT_REQUEST_TIMEOUT
+                connectTimeoutMillis = connectionTimeout ?: DEFAULT_CONNECTION_TIMEOUT
+                socketTimeoutMillis =
+                        (requestTimeout ?: DEFAULT_REQUEST_TIMEOUT) + (connectionTimeout
+                                ?: DEFAULT_CONNECTION_TIMEOUT)
+            }
         }
+    } catch (e: Exception) {
+        throw IllegalStateException(
+                "Can not execute request by method '$method' to url '$url' " +
+                        "${if (body == null) "without" else "with"} body" +
+                        "${if (contentType != null) " with content type '$contentType'" else ""}," +
+                        " query parameters '$queryParameters'," +
+                        " headers '$headersUser'",
+                e
+        )
     }
+
 
     suspend fun <T> requestWithJsonResponse(
             method: HttpMethod,
@@ -111,6 +135,12 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = OkHttp) {
                     queryParameters,
                     ContentType.Application.Json
             )
+
+
+    companion object {
+        private val DEFAULT_CONNECTION_TIMEOUT: Long = 2_000L
+        private val DEFAULT_REQUEST_TIMEOUT: Long = 10_000L
+    }
 }
 
 suspend inline fun <reified T> ru.loginov.http.HttpClient.requestWithJsonResponse(

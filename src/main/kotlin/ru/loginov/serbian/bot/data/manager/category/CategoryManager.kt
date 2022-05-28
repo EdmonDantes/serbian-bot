@@ -24,7 +24,7 @@ interface CategoryManager {
     /**
      * Try to find category with [categoryId]. Load additional data for category
      *
-     * If you want only check existing please use method [containsWithId]
+     * If you want only check existing please use method [existsById]
      * @return If found return [CategoryDto] else null
      */
     fun findById(categoryId: Int): CategoryDto?
@@ -33,7 +33,7 @@ interface CategoryManager {
      * Check if application have category with [categoryId]
      * @return True if application have category, else false
      */
-    fun containsWithId(categoryId: Int): Boolean
+    fun existsById(categoryId: Int): Boolean
 
     /**
      * Try to get localized name for [categoryDto]. If necessary manager will load additional data
