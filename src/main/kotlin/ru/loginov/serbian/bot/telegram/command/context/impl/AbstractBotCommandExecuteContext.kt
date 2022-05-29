@@ -1,6 +1,5 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
-import io.ktor.utils.io.CancellationException
 import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
@@ -9,6 +8,7 @@ import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.BotCommand
+import ru.loginov.telegram.api.entity.Location
 import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.Update
 import ru.loginov.telegram.api.entity.User
@@ -20,6 +20,9 @@ import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
 import ru.loginov.telegram.api.request.SetMyCommandsRequest
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 // We can not split implementation for different classes, because class can extend only one another class
 abstract class AbstractBotCommandExecuteContext(
@@ -127,6 +130,39 @@ abstract class AbstractBotCommandExecuteContext(
         return getNextArgument(menu, message, optional)
     }
 
+    override suspend fun getNextLocationArgument(message: String?, optional: Boolean): Pair<Double, Double>? =
+            getNextArgumentFromMessage()?.toDoubleOrNull()?.let { first ->
+                getNextArgumentFromMessage()?.toDoubleOrNull()?.let { second ->
+                    first to second
+                }
+            } ?: sendMessage {
+                markdown2 {
+                    append(transformStringToLocalized(message ?: "@{bot.abstract.command.please.write.argument}"))
+                    buildInlineKeyboard {
+                        addUserActionButtons(optional)
+                    }
+                }
+            }.let { msg ->
+                try {
+                    val location = suspendCoroutine<Location> { continuation ->
+                        callbackManager.addCallback(chatId, user.id, 360_000, null) { data ->
+                            if (data == null) {
+                                continuation.resumeWithException(CancellationException("Callback is canceled", null))
+                                true
+                            } else if (data.location != null) {
+                                continuation.resumeWith(Result.success(data.location))
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                    }
+                    location.latitude to location.longitude
+                } finally {
+                    removeMessage(msg)
+                }
+            }
+
     override suspend fun getNextArgument(message: String?, optional: Boolean): String? =
             getNextArgumentFromMessage()
                     ?: sendMessage {
@@ -201,16 +237,16 @@ abstract class AbstractBotCommandExecuteContext(
         val msg = sendMessage {
             markdown2 {
                 append(transformStringToLocalized(message ?: "@{bot.abstract.command.please.choose.argument}"))
-                buildReplyKeyboard { //FIXME: Should we use this ???
+                buildInlineKeyboard {
                     list.forEachIndexed { index, pair ->
                         line {
                             add {
                                 text = transformStringToLocalized(pair.first)
-                                //callbackData(chatId!!, user.id, index)
+                                callbackData(chatId!!, user.id, index)
                             }
                         }
                     }
-                    //addUserActionButtons(optional)
+                    addUserActionButtons(optional)
                 }
             }
         }
@@ -266,10 +302,9 @@ abstract class AbstractBotCommandExecuteContext(
                 null
             }
 
-
-    //TODO: Add timeout ???
     private suspend fun waitResult(): String? {
-        val data = callbackManager.waitCallback(chatId, user.id)
+        //TODO: Extract timeout to constant and add time unit
+        val data = callbackManager.waitCallback(chatId, user.id, 360_000)
         return when (data.dataFromCallback) {
             InlineKeyboardMarkupButtonBuilder.CANCEL_CALLBACK -> {
                 throw CancellationException()

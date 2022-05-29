@@ -7,15 +7,16 @@ import com.google.maps.PlacesApi
 import io.ktor.client.statement.readText
 import io.ktor.http.HttpMethod
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.domain.AbstractPersistable_
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.loginov.http.HttpClient
 import ru.loginov.serbian.bot.data.dto.shop.ShopDescriptionCommentDto
 import ru.loginov.serbian.bot.data.dto.shop.ShopDescriptionDto
+import ru.loginov.serbian.bot.data.repository.search.SearchRepository
 import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionCommentDtoRepository
 import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionDtoRepository
-import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionDtoSearchRepository
 import ru.loginov.serbian.bot.util.google.suspendAndAwait
 import ru.loginov.serbian.bot.util.saveOr
 import ru.loginov.serbian.bot.util.useSuspend
@@ -25,7 +26,7 @@ import java.time.LocalDateTime
 class DefaultShopDescriptionManager(
         private val shopDescriptionDtoRepository: ShopDescriptionDtoRepository,
         private val shopDescriptionCommentDtoRepository: ShopDescriptionCommentDtoRepository,
-        private val searchRepo: ShopDescriptionDtoSearchRepository,
+        private val searchRepo: SearchRepository<ShopDescriptionDto>,
         private val httpClient: HttpClient,
         private val geoApiContext: GeoApiContext
 ) : ShopDescriptionManager {
@@ -54,7 +55,8 @@ class DefaultShopDescriptionManager(
             PlacesApi.placeDetails(geoApiContext, candidate.placeId).fields(
                     PlaceDetailsRequest.FieldMask.NAME,
                     PlaceDetailsRequest.FieldMask.URL,
-                    PlaceDetailsRequest.FieldMask.FORMATTED_ADDRESS
+                    PlaceDetailsRequest.FieldMask.FORMATTED_ADDRESS,
+                    PlaceDetailsRequest.FieldMask.GEOMETRY,
             ).suspendAndAwait()
         } catch (e: Exception) {
             LOGGER.warn("Can not get place default from places api for place with id '${candidate.placeId}'", e)
@@ -67,6 +69,10 @@ class DefaultShopDescriptionManager(
         dto.googleMapId = candidate.placeId
         dto.shopName = details.name
         dto.floor = floor
+        if (details.geometry?.location != null) {
+            dto.latitude = details.geometry.location.lat
+            dto.longitude = details.geometry.location.lng
+        }
 
         return shopDescriptionDtoRepository.useSuspend {
             it.saveOr(dto) { e ->
@@ -79,11 +85,19 @@ class DefaultShopDescriptionManager(
         }
     }
 
-    override suspend fun create(name: String, address: String, floor: Int?): ShopDescriptionDto? {
+    override suspend fun create(
+            name: String,
+            address: String,
+            floor: Int?,
+            latitude: Double?,
+            longitude: Double?
+    ): ShopDescriptionDto? {
         val dto = ShopDescriptionDto()
         dto.shopName = name
         dto.address = address
         dto.floor = floor
+        dto.latitude = latitude
+        dto.longitude = longitude
 
         return shopDescriptionDtoRepository.useSuspend {
             it.saveOr(dto) { e ->
@@ -110,6 +124,12 @@ class DefaultShopDescriptionManager(
 
         return searchRepo.useSuspend {
             it.findAllByGeneralProperty(name)
+        }
+    }
+
+    override suspend fun findNearest(latitude: Double, longitude: Double): List<ShopDescriptionDto> {
+        return shopDescriptionDtoRepository.useSuspend {
+            it.findTopByLocation(PageRequest.ofSize(20), latitude, longitude)
         }
     }
 

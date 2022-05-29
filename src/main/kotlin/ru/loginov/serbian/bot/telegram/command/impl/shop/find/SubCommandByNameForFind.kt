@@ -1,0 +1,51 @@
+package ru.loginov.serbian.bot.telegram.command.impl.shop.find
+
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.data.manager.shop.ShopDescriptionManager
+import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
+import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
+import ru.loginov.serbian.bot.util.markdown2
+
+@Component
+@SubCommand([SubCommandFindForShop::class])
+class SubCommandByNameForFind(
+        private val shopManager: ShopDescriptionManager
+) : AbstractSubCommand() {
+    override val commandName: String = "byName"
+    override val shortDescription: String = "@{bot.command.shop.find.byname._shopDescription}"
+
+    override suspend fun execute(context: BotCommandExecuteContext) {
+        val name = context.getNextArgument("@{bot.command.shop.find.byname._argument.name}")
+                ?: error("Name can not be null")
+
+        try {
+            val shops = shopManager.findByName(name)
+            context.sendMessage {
+                markdown2(context) {
+                    if (shops.isEmpty()) {
+                        append("@{bot.command.shop.find.byname._.not.found.any.shops}{$name}")
+                    } else {
+                        append("@{bot.command.shop.find.byname._success}")
+                        shops.forEach {
+                            append("\n")
+                            append("@{bot.command.shop.find.byname._success.shop.description}{${it.id}}{${it.shopName}}{${it.address}}")
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            LOGGER.warn("Can not find shops by name '$name'", e)
+            context.sendMessage {
+                markdown2(context) {
+                    append("@{bot.command.shop.find.byname._error}")
+                }
+            }
+        }
+    }
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(SubCommandByNameForFind::class.java)
+    }
+}

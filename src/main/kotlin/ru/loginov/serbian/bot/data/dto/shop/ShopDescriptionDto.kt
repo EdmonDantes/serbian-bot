@@ -34,6 +34,10 @@ class ShopDescriptionDto {
 
     var floor: Int? = null
 
+    var latitude: Double? = null
+
+    var longitude: Double? = null
+
     @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
     var comments: MutableList<ShopDescriptionCommentDto>? = null
 }

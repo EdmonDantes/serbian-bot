@@ -48,6 +48,25 @@ class ShopDescriptionManagerTest {
     }
 
     @Test
+    fun testNearFind() {
+        for (i in 1..20) {
+            val shop = runBlocking {
+                shopDescriptionManager.create("$i", "$i", latitude = i.toDouble(), longitude = i.toDouble())
+            }
+
+            assertNotNull(shop, "Can not save shop with i=$i")
+        }
+
+        val nearest = runBlocking {
+            shopDescriptionManager.findNearest(10.0, 10.0)
+        }.sortedWith { a, b -> a.latitude!!.compareTo(b.latitude!!) }.map { it.shopName!!.toIntOrNull()!! }
+
+        for (i in 6..15) {
+            assertTrue(nearest.contains(i))
+        }
+    }
+
+    @Test
     fun testExistsByIdPositive() {
         assertTrue(runBlocking { shopDescriptionManager.existsById(createShop("testExistsByIdPositive").id!!) })
     }

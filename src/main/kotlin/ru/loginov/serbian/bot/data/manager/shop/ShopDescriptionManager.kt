@@ -7,10 +7,17 @@ import java.time.LocalDateTime
 interface ShopDescriptionManager {
 
     suspend fun create(googleMapLink: String, floor: Int? = null): ShopDescriptionDto?
-    suspend fun create(name: String, address: String, floor: Int? = null): ShopDescriptionDto?
+    suspend fun create(
+            name: String,
+            address: String,
+            floor: Int? = null,
+            latitude: Double? = null,
+            longitude: Double? = null,
+    ): ShopDescriptionDto?
 
     suspend fun findById(id: Int): ShopDescriptionDto?
     suspend fun findByName(name: String): List<ShopDescriptionDto>
+    suspend fun findNearest(latitude: Double, longitude: Double): List<ShopDescriptionDto>
     suspend fun existsById(id: Int): Boolean
 
     suspend fun remove(id: Int): Boolean

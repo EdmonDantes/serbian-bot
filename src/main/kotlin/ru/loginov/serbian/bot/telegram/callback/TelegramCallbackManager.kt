@@ -1,15 +1,19 @@
 package ru.loginov.serbian.bot.telegram.callback
 
 import java.util.concurrent.CancellationException
-
-typealias TelegramCallback = suspend (CallbackData?) -> Unit
+import java.util.concurrent.TimeUnit
 
 interface TelegramCallbackManager {
 
-    fun addCallback(chatId: Long, userId: Long, block: TelegramCallback): Boolean
-    fun addCallback(chatId: Long, block: TelegramCallback): Boolean
+    fun addCallback(
+            chatId: Long,
+            userId: Long? = null,
+            timeout: Long? = null,
+            unit: TimeUnit? = null,
+            block: TelegramCallback
+    ): Boolean
 
     @Throws(CancellationException::class)
-    suspend fun waitCallback(chatId: Long, userId: Long?): CallbackData
+    suspend fun waitCallback(chatId: Long, userId: Long?, timeout: Long? = null, unit: TimeUnit? = null): CallbackData
 
 }

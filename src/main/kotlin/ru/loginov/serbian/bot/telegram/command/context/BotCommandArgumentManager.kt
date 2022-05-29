@@ -15,6 +15,11 @@ interface BotCommandArgumentManager {
     suspend fun getNextLanguageArgument(message: String?, optional: Boolean = false): String?
 
     /**
+     * Waiting for location from user
+     */
+    suspend fun getNextLocationArgument(message: String?, optional: Boolean = false): Pair<Double, Double>?
+
+    /**
      * Return next argument.
      */
     suspend fun getNextArgument(message: String?, optional: Boolean = false): String?

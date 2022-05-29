@@ -3,6 +3,7 @@ package ru.loginov.serbian.bot.configuration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import org.slf4j.LoggerFactory
@@ -58,7 +59,7 @@ class ExecutorsConfiguration {
 
     @Bean
     fun coroutineScope(coroutineDispatcher: CoroutineDispatcher): CoroutineScope {
-        coroutineScope = CoroutineScope(coroutineDispatcher)
+        coroutineScope = CoroutineScope(SupervisorJob() + coroutineDispatcher)
         return coroutineScope!!
     }
 

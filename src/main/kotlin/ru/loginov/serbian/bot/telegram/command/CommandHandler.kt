@@ -92,7 +92,8 @@ class CommandHandler(
         val lang = update.message!!.from!!.languageTag
 
         if (!update.message!!.text!!.startsWith('/')) {
-            callbackExecutor.invoke(chatId, userId, CallbackData(update.message?.text, null))
+            val data = CallbackData(dataFromMessage = update.message?.text, location = update.message?.location)
+            callbackExecutor.invoke(chatId, userId, data)
             return
         }
 
@@ -147,7 +148,7 @@ class CommandHandler(
             return
         }
 
-        callbackExecutor.invoke(chatId, userId, CallbackData(null, dataStr))
+        callbackExecutor.invoke(chatId, userId, CallbackData(dataFromCallback = dataStr))
     }
 
 
