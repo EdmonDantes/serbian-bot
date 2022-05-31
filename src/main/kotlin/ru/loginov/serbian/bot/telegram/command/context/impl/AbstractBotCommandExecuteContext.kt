@@ -145,6 +145,7 @@ abstract class AbstractBotCommandExecuteContext(
             }.let { msg ->
                 try {
                     val location = suspendCoroutine<Location> { continuation ->
+                        //TODO: Extract timeout to constant and add unit
                         callbackManager.addCallback(chatId, user.id, 360_000, null) { data ->
                             if (data == null) {
                                 continuation.resumeWithException(CancellationException("Callback is canceled", null))

@@ -38,7 +38,7 @@ class SubCommandLinkForCreate(
             if (shop != null) {
                 context.sendMessage {
                     markdown2(context) {
-                        append("@{bot.command.shop.create.link._success}{${shop.shopName}{${shop.id}")
+                        append("@{bot.command.shop.create.link._success}{${shop.shopName}}{${shop.id}}")
                     }
                 }
                 return

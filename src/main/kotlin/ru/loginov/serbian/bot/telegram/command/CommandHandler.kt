@@ -71,8 +71,8 @@ class CommandHandler(
     }
 
     private suspend fun processUpdateMessage(update: Update) {
-        if (update.message?.from == null || update.message?.text == null) {
-            LOGGER.warn("Can not process update message, because message haven't sender or/and text: '$update'")
+        if (update.message?.from == null) {
+            LOGGER.warn("Can not process update message, because message haven't sender: '$update'")
             return
         }
 
@@ -91,7 +91,7 @@ class CommandHandler(
         val chatId = update.message!!.chat.id
         val lang = update.message!!.from!!.languageTag
 
-        if (!update.message!!.text!!.startsWith('/')) {
+        if (update.message!!.text?.startsWith('/') != true) {
             val data = CallbackData(dataFromMessage = update.message?.text, location = update.message?.location)
             callbackExecutor.invoke(chatId, userId, data)
             return

@@ -58,7 +58,7 @@ class DefaultCommandRegister : CommandRegister {
 
     override fun injectBean(beanName: String, bean: BotCommand) {
         subCommandParents[beanName]?.forEach { parent ->
-            subCommands[parent]?.put(bean.commandName, bean)
+            subCommands.computeIfAbsent(parent) { HashMap() }[bean.commandName] = bean
         }
     }
 

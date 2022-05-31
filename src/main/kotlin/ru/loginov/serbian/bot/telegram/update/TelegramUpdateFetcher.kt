@@ -1,6 +1,7 @@
 package ru.loginov.serbian.bot.telegram.update
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger
@@ -26,6 +27,7 @@ class TelegramUpdateFetcher(
         @Value("\${bot.telegram.update.timeout.sec:5}") private val longPollingTimeoutSec: Long = 5,
         @Value("\${bot.telegram.update.enable:true}") private val enabled: Boolean = true
 ) {
+    private val fetcherThreadContext = Job()
     private val isContinue = AtomicBoolean(true)
     private val fetcherThread = thread(name = "Telegram Update Fetcher", start = false) {
         var lastSeq: Long? = updateSequenceRepository.findById(DEFAULT_ID).orElse(null)?.seq
@@ -48,7 +50,7 @@ class TelegramUpdateFetcher(
     private fun fetchUpdates(lastSeq: Long?): Long? {
         val updates =
                 try {
-                    runBlocking {
+                    runBlocking(fetcherThreadContext) {
                         telegram.getUpdates {
                             offset = lastSeq
                             timeoutSec = longPollingTimeoutSec
@@ -64,7 +66,7 @@ class TelegramUpdateFetcher(
         updates.forEach { update ->
             newLastSeq = max(newLastSeq ?: Long.MIN_VALUE, update.id + 1)
             onUpdateHandlers.forEach { handler ->
-                coroutineScope.launch {
+                coroutineScope.launch(fetcherThreadContext) {
                     try {
                         handler.onUpdate(update)
                     } catch (e: Exception) {
@@ -87,6 +89,7 @@ class TelegramUpdateFetcher(
         isContinue.set(false)
         try {
             if (fetcherThread.isAlive) {
+                fetcherThread.join(DEFAULT_TIMEOUT_STOPPING)
                 fetcherThread.interrupt()
                 fetcherThread.join(DEFAULT_TIMEOUT_INTERRUPT)
             }
@@ -96,6 +99,7 @@ class TelegramUpdateFetcher(
     }
 
     companion object {
+        private const val DEFAULT_TIMEOUT_STOPPING: Long = 5000
         private const val DEFAULT_TIMEOUT_INTERRUPT: Long = 5000
 
         private val LOGGER: Logger = LoggerFactory.getLogger(TelegramUpdateFetcher::class.java)
