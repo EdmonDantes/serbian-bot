@@ -1,5 +1,6 @@
 package ru.loginov.serbian.bot.data.repository.search
 
+import org.hibernate.search.engine.search.query.SearchResult
 import org.hibernate.search.mapper.orm.Search
 import org.springframework.beans.factory.annotation.Autowired
 import javax.persistence.EntityManager
@@ -16,9 +17,13 @@ abstract class AbstractSearchRepository<E> : SearchRepository<E> {
 
     protected abstract val generalPropertyName: String
 
-    override fun findAllByGeneralProperty(obj: String): List<E> = findAllBy(listOf(generalPropertyName), obj)
+    override fun findAllByGeneralProperty(obj: String): List<E> =
+            createSearchQuery(listOf(generalPropertyName), obj).hits() as List<E>
 
     override fun findAllBy(propertiesToSearch: List<String>, value: String): List<E> =
+            createSearchQuery(propertiesToSearch, value).hits() as List<E>
+
+    private fun createSearchQuery(propertiesToSearch: List<String>, value: String): SearchResult<*> =
             Search.session(entityManager).search(entityClass).where {
                 it.match().let { match ->
                     when {
@@ -36,5 +41,4 @@ abstract class AbstractSearchRepository<E> : SearchRepository<E> {
                 }
             }
                     .fetch(20)
-                    .hits() as List<E>
 }

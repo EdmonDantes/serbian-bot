@@ -1,6 +1,7 @@
 package ru.loginov.serbian.bot.data.manager.price
 
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.dto.price.PriceDescriptionDto
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.data.manager.shop.ShopDescriptionManager
@@ -9,6 +10,7 @@ import ru.loginov.serbian.bot.util.saveOr
 import ru.loginov.serbian.bot.util.useSuspend
 import java.time.LocalDateTime
 
+@Component
 class DefaultPriceDescriptionManager(
         private val categoryManager: CategoryManager,
         private val shopManager: ShopDescriptionManager,
@@ -24,14 +26,21 @@ class DefaultPriceDescriptionManager(
             return null
         }
 
-        val dto = PriceDescriptionDto()
-        dto.categoryId = categoryId
-        dto.shopId = shopId
-        dto.createdDateTime = LocalDateTime.now()
-        dto.lastUpdatedDateTime = dto.createdDateTime
+        val dto = repo.useSuspend {
+            repo.findByCategoryIdAndShopId(categoryId, shopId).orElseGet {
+                PriceDescriptionDto().also {
+                    it.createdDateTime = LocalDateTime.now()
+                }
+            }
+        }
 
-        dto.minPrice = if (minPrice <= maxPrice) minPrice else maxPrice
-        dto.maxPrice = if (maxPrice >= minPrice) maxPrice else minPrice
+        dto.lastUpdatedDateTime = LocalDateTime.now()
+
+        val realMinPrice = if (minPrice <= maxPrice) minPrice else maxPrice
+        val realMaxPrice = if (maxPrice >= minPrice) maxPrice else minPrice
+
+        dto.minPrice = dto.minPrice?.coerceAtMost(realMinPrice) ?: realMinPrice
+        dto.maxPrice = dto.maxPrice?.coerceAtLeast(realMaxPrice) ?: realMaxPrice
 
         return repo.useSuspend {
             it.saveOr(dto) { e ->
