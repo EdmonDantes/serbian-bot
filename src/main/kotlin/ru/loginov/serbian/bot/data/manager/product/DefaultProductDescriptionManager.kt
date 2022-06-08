@@ -2,6 +2,7 @@ package ru.loginov.serbian.bot.data.manager.product
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.hibernate.Hibernate
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -93,6 +94,36 @@ class DefaultProductDescriptionManager(
                     false
                 }
             }
+
+    override fun findLocalizedNameFor(dto: ProductDescriptionDto, language: String?): String? {
+        if (language != null && !localizationManager.isSupport(language)) {
+            throw LanguageNotSupportedException(language)
+        }
+
+        val lang = language ?: localizationManager.defaultLanguage
+
+        val localizations = if (Hibernate.isInitialized(dto.localization)) {
+            dto.localization
+        } else if (dto.id != null) {
+            productDescriptionDtoRepository.findByIdWithLocalization(dto.id!!).orElse(null)?.localization
+        } else {
+            null
+        }
+
+        if (localizations == null) {
+            error("Can not get localizations for product with id '${dto.id}'")
+        }
+
+        if (!Hibernate.isInitialized(localizations)) {
+            error("Can not get initialized localizations for product with id '${dto.id}'")
+        }
+
+        val localization = localizations[lang]
+                ?: localizations[localizationManager.defaultLanguage]
+                ?: localizations.values.firstOrNull()
+
+        return localization?.name
+    }
 
     override suspend fun remove(id: Int): Boolean =
             withContext(Dispatchers.IO) {

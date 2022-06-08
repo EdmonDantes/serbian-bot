@@ -8,7 +8,11 @@ class TelegramMessageTextBuilderWithLocalization(
         private val context: LocalizationContext
 ) : TelegramMessageTextBuilder() {
     override fun appendString(str: String, clearFormatting: Boolean) {
-        super.appendString(context.transformStringToLocalized(str), clearFormatting)
+        if (str.length < 4) {
+            super.appendString(str, clearFormatting)
+        } else {
+            super.appendString(context.transformStringToLocalized(str), clearFormatting)
+        }
     }
 
     override fun returnInstance(): TelegramMessageTextBuilder = this
