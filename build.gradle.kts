@@ -1,8 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+	application
 	id("org.springframework.boot") version "2.6.6"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
+	id("com.palantir.docker") version "0.33.0"
 	kotlin("jvm") version "1.6.10"
 	kotlin("plugin.spring") version "1.6.10"
 }
@@ -51,13 +53,24 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
-tasks.withType<KotlinCompile> {
-	kotlinOptions {
-		freeCompilerArgs = listOf("-Xjsr305=strict")
-		jvmTarget = "11"
+tasks {
+	withType<KotlinCompile> {
+		kotlinOptions {
+			freeCompilerArgs = listOf("-Xjsr305=strict")
+			jvmTarget = "11"
+		}
+	}
+	withType<Test> {
+		useJUnitPlatform()
+	}
+	named<Copy>("dockerPrepare") {
+		val distTarTask = findByName("distTar")
+		if (distTarTask != null) {
+			dependsOn(distTarTask)
+		}
 	}
 }
 
-tasks.withType<Test> {
-	useJUnitPlatform()
+application {
+	mainClass.set("ru.loginov.serbian.bot.SerbianBotApplicationKt")
 }
