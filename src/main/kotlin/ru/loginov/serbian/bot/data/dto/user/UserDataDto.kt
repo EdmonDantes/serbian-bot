@@ -24,9 +24,10 @@ class UserDataDto {
     @Column(name = "user_id", nullable = false)
     var userId: Long? = null
 
-    @Column(nullable = false)
+    @Column(name = "data_key", nullable = false)
     var key: String? = null
 
+    @Column(name = "data_value", nullable = false)
     var value: String? = null
 
 }
