@@ -1,5 +1,6 @@
 package ru.loginov.serbian.bot.telegram.command.impl
 
+import kotlinx.coroutines.CancellationException
 import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.spring.permission.annotation.IgnorePermissionCheck
 import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
@@ -99,7 +100,12 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
                 try {
                     command.execute(context)
                 } catch (e: Exception) {
-                    LOGGER.error(
+                    if (e is CancellationException) {
+                        LOGGER.debug("Subcommand with name '$commandName' in command '${this.commandName} was cancelled")
+                        return
+                    }
+
+                    LOGGER.warn(
                             "Can not execute subcommand with name '$commandName' in command '${this.commandName}'",
                             e
                     )
