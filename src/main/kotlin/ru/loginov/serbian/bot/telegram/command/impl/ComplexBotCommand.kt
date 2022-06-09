@@ -74,7 +74,16 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
         val menu = getSubCommandMenu(context)
         if (menu.isEmpty()) {
             if (canExecuteWithoutSubCommand) {
-                executeWithoutSubCommands()
+                try {
+                    executeWithoutSubCommands()
+                } catch (e: Exception) {
+                    LOGGER.warn("Can not execute command '${this.commandName}'", e)
+                    context.sendMessage {
+                        markdown2(context) {
+                            append("@{bot.complex.command.can.execute.command}")
+                        }
+                    }
+                }
             } else {
                 context.sendMessage {
                     markdown2(context) {
@@ -87,7 +96,19 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
 
             val command = subCommands[commandName]
             if (command != null) {
-                command.execute(context)
+                try {
+                    command.execute(context)
+                } catch (e: Exception) {
+                    LOGGER.error(
+                            "Can not execute subcommand with name '$commandName' in command '${this.commandName}'",
+                            e
+                    )
+                    context.sendMessage {
+                        markdown2(context) {
+                            append("@{bot.complex.command.can.not.execute.subcommand}. @{phases.internal.error}")
+                        }
+                    }
+                }
             } else {
                 LOGGER.error("Can not find subcommand with '$commandName'")
                 context.sendMessage {

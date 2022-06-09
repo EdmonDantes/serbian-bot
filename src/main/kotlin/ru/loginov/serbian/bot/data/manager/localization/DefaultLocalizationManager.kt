@@ -60,16 +60,16 @@ class DefaultLocalizationManager(
             throw LanguageNotSupportedException(language)
         }
 
-        return str?.replace(STRING_FOR_LOCALIZATION) { match ->
-            val str = match.value
-            if (str.isEmpty()) {
-                str
-            } else if (str[0] == '\\') {
-                str.substring(1)
+        return str.replace(STRING_FOR_LOCALIZATION) { match ->
+            val foundStr = match.value
+            if (foundStr.isEmpty()) {
+                foundStr
+            } else if (foundStr[0] == '\\') {
+                foundStr.substring(1)
             } else {
-                val forLocalizationDefinition = splitArguments(str, 1)
+                val forLocalizationDefinition = splitArguments(foundStr, 1)
                 if (forLocalizationDefinition.isEmpty()) {
-                    str
+                    return@replace foundStr
                 }
                 val localizationKey = forLocalizationDefinition[0]
 
@@ -77,12 +77,12 @@ class DefaultLocalizationManager(
                 findLocalizedStringByKey(language, localizationKey)?.let {
                     var index = 0
                     it.replace(ARGUMENTS_FOR_STRING_FOR_LOCALIZATION) { matchForArg ->
-                        val str = matchForArg.value
+                        val foundArgStr = matchForArg.value
                         when {
-                            str.isEmpty() -> str
-                            str.startsWith('\\') -> str.substring(1)
+                            foundArgStr.isEmpty() -> foundArgStr
+                            foundArgStr.startsWith('\\') -> foundArgStr.substring(1)
                             else -> {
-                                val i = str.substring(1, str.length - 1).toIntOrNull() ?: index++
+                                val i = foundArgStr.substring(1, foundArgStr.length - 1).toIntOrNull() ?: index++
                                 arguments[i]
                             }
                         }

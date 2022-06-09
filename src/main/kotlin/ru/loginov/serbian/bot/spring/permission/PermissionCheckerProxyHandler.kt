@@ -44,7 +44,13 @@ class PermissionCheckerProxyHandler(
             return method.invoke(bean, *params)
         }
 
-        if (methodPermissions.all { context.havePermission(it) }) {
+        val isHavePermissions = try {
+            context.haveAllPermissions(methodPermissions)
+        } catch (e: Exception) {
+            throw HaveNotPermissionException(e)
+        }
+
+        if (isHavePermissions) {
             return method.invoke(bean, *params)
         } else {
             throw HaveNotPermissionException()
