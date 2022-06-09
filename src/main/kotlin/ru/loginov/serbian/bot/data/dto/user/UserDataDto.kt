@@ -10,7 +10,7 @@ import javax.persistence.Table
 import javax.persistence.UniqueConstraint
 
 @Entity
-@Table(uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "key"])])
+@Table(uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "data_key"])])
 class UserDataDto {
 
     @Id
