@@ -4,7 +4,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
-import ru.loginov.serbian.bot.spring.permission.annotation.RequiredPermission
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
@@ -12,7 +11,7 @@ import ru.loginov.serbian.bot.util.markdown2
 
 @Component
 @SubCommand(parents = [CategoryBotCommand::class])
-@RequiredPermission("commands.category.create")
+//@RequiredPermission("commands.category.create")
 class SubCommandCreateForCategory : AbstractSubCommand() {
 
     @Autowired
