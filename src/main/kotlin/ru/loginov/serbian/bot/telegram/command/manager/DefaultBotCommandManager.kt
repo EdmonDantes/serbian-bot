@@ -14,7 +14,7 @@ class DefaultBotCommandManager : BotCommandManager {
 
     @Autowired
     fun initCommands(commands: List<BotCommand>) {
-        val botCommands = commands.filter { it !is SubCommand }
+        val botCommands = commands.filter { it !is SubCommand && it.commandName != "start" }
         this.commands.addAll(botCommands)
         this.commands.sortBy { it.commandName }
 

@@ -105,6 +105,7 @@ class CommandHandler(
         if (command == null) {
             LOGGER.debug("Can not find command with name '$commandName' for chat '$chatId' and user '$userId'")
             printCanNotFindCommand(chatId, commandName)
+            return
         }
 
         val argumentsStr = update.message!!.text!!.substring(commandName.length + 1)
@@ -114,9 +115,9 @@ class CommandHandler(
 
         val context = commandContextFactory.createContext(userId, chatId, lang, argumentsStr)
         try {
-            command!!.execute(context)
+            command.execute(context)
         } catch (e: Exception) {
-            processFailedReason(context, command!!, e)
+            processFailedReason(context, command, e)
         }
     }
 
