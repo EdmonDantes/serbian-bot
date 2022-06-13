@@ -2,9 +2,8 @@ package ru.loginov.serbian.bot
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import java.util.ResourceBundle
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = ["ru.loginov"])
 class SerbianBotApplication
 
 fun main(args: Array<String>) {

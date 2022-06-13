@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
@@ -18,7 +19,6 @@ import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter
 import org.springframework.transaction.annotation.EnableTransactionManagement
-import java.util.Properties
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 import javax.persistence.EntityManagerFactory
@@ -80,18 +80,22 @@ class InMemoryJdbcConfiguration {
     }
 
     @Bean
-    fun entityManagerFactoryBean(dataSource: DataSource): LocalContainerEntityManagerFactoryBean = LocalContainerEntityManagerFactoryBean().apply {
+    fun entityManagerFactoryBean(
+            dataSource: DataSource,
+            properties: JpaProperties
+    ): LocalContainerEntityManagerFactoryBean = LocalContainerEntityManagerFactoryBean().apply {
         jpaVendorAdapter = HibernateJpaVendorAdapter().apply { setShowSql(true) }
         this.dataSource = dataSource
         setPersistenceProviderClass(HibernatePersistenceProvider::class.java)
         setPackagesToScan(
-                "ru.loginov.serbian.bot.data.*"
+                "ru.loginov.serbian.bot.data.*",
+                "ru.loginov.simple.permissions.spring.data.*"
         )
-        setJpaProperties(Properties().apply {
-            put(AvailableSettings.HBM2DDL_AUTO, "create-drop")
-            put(AvailableSettings.DIALECT, "org.hibernate.dialect.H2Dialect")
-            put("hibernate.search.backend.directory.root", "./search_index") //Need for hibernate search + lucene
-        })
+
+        val additionalProperties = mapOf(
+                AvailableSettings.DIALECT to "org.hibernate.dialect.H2Dialect"
+        )
+        setJpaPropertyMap(properties.properties.plus(additionalProperties))
     }
 
     @Bean

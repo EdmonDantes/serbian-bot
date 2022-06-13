@@ -1,12 +1,12 @@
 package ru.loginov.serbian.bot.telegram.command
 
-import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
-import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
+import ru.loginov.simple.permissions.annotation.ForcePermissionCheck
+import ru.loginov.simple.permissions.exception.AccessDeniedException
 import ru.loginov.telegram.api.util.TelegramMessageTextBuilder
 import java.util.concurrent.CancellationException
 
-@PermissionCheck
+@ForcePermissionCheck
 interface BotCommand {
 
     /**
@@ -14,23 +14,23 @@ interface BotCommand {
      */
     val commandName: String
 
-    @PermissionCheck
-    @Throws(HaveNotPermissionException::class)
-    fun getCommandName(context: BotCommandExecuteContext) : String = commandName
+    @ForcePermissionCheck
+    @Throws(AccessDeniedException::class)
+    fun getCommandName(context: BotCommandExecuteContext): String = commandName
 
-    @PermissionCheck
-    @Throws(HaveNotPermissionException::class)
+    @ForcePermissionCheck
+    @Throws(AccessDeniedException::class)
     fun getShortDescription(context: BotCommandExecuteContext): String? = null
 
-    @PermissionCheck
-    @Throws(HaveNotPermissionException::class)
+    @ForcePermissionCheck
+    @Throws(AccessDeniedException::class)
     fun getDescription(context: BotCommandExecuteContext): TelegramMessageTextBuilder? = null
 
-    @PermissionCheck
-    @Throws(HaveNotPermissionException::class)
+    @ForcePermissionCheck
+    @Throws(AccessDeniedException::class)
     fun getUsage(context: BotCommandExecuteContext): TelegramMessageTextBuilder? = null
 
-    @PermissionCheck
-    @Throws(CancellationException::class, HaveNotPermissionException::class)
+    @ForcePermissionCheck
+    @Throws(CancellationException::class, AccessDeniedException::class)
     suspend fun execute(context: BotCommandExecuteContext)
 }

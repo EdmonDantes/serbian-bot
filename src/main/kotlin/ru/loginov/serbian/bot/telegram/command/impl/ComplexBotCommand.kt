@@ -2,15 +2,15 @@ package ru.loginov.serbian.bot.telegram.command.impl
 
 import kotlinx.coroutines.CancellationException
 import org.slf4j.LoggerFactory
-import ru.loginov.serbian.bot.spring.permission.annotation.IgnorePermissionCheck
-import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
-import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.telegram.command.BotCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.util.markdown2
+import ru.loginov.simple.permissions.annotation.ForcePermissionCheck
+import ru.loginov.simple.permissions.annotation.IgnorePermissionCheck
+import ru.loginov.simple.permissions.exception.AccessDeniedException
 import ru.loginov.telegram.api.util.TelegramMessageTextBuilder
 
-@PermissionCheck
+@ForcePermissionCheck
 abstract class ComplexBotCommand : AbstractBotCommand() {
 
     private val LOGGER = LoggerFactory.getLogger(this.javaClass)
@@ -34,7 +34,7 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
                             it.value.getDescription(context),
                             it.value.getUsage(context)
                     )
-                } catch (e: HaveNotPermissionException) {
+                } catch (e: AccessDeniedException) {
                     null
                 }
             }
@@ -66,7 +66,7 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
                     }
                 }
             } else if (!_subCommands.isNullOrEmpty()) {
-                throw HaveNotPermissionException()
+                throw AccessDeniedException()
             }
         }
     }

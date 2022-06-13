@@ -9,6 +9,7 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import ru.loginov.serbian.bot.configuration.ExecutorsConfiguration
 import ru.loginov.serbian.bot.configuration.InMemoryJdbcConfiguration
+import ru.loginov.simple.permissions.manager.PermissionManager
 
 @SpringBootTest(classes = [InMemoryJdbcConfiguration::class, ExecutorsConfiguration::class])
 @ComponentScan("ru.loginov.data.manager.permission")
@@ -16,17 +17,17 @@ import ru.loginov.serbian.bot.configuration.InMemoryJdbcConfiguration
 class PermissionManagerTest {
 
     @Autowired
-    private lateinit var permissionManager: DefaultPermissionManager
+    private lateinit var permissionManager: PermissionManager
 
     @Test
     fun testAddSimplePermission() {
         val groupName = "testAddSimplePermission"
         assertTrue(permissionManager.createGroup(groupName))
         assertTrue(permissionManager.addPermissionForGroup(groupName, SIMPLE_PERMISSION))
-        val tree = permissionManager.getPermissionsForGroup(groupName)!!
-        assertTrue(tree.havePermission(SIMPLE_PERMISSION))
-        assertFalse(tree.havePermission(SIMPLE_PERMISSION_2))
-        assertFalse(tree.havePermission(LONG_SIMPLE_PERMISSION))
+        val tree = permissionManager.getOwnerForGroup(groupName)!!
+        assertTrue(tree.checkPermission(SIMPLE_PERMISSION))
+        assertFalse(tree.checkPermission(SIMPLE_PERMISSION_2))
+        assertFalse(tree.checkPermission(LONG_SIMPLE_PERMISSION))
     }
 
     @Test
@@ -34,10 +35,10 @@ class PermissionManagerTest {
         val groupName = "testAddAllPermissionFromGroup"
         assertTrue(permissionManager.createGroup(groupName))
         assertTrue(permissionManager.addPermissionForGroup(groupName, ALL_PERMISSION_GROUP))
-        val tree = permissionManager.getPermissionsForGroup(groupName)!!
-        assertTrue(tree.havePermission(SIMPLE_PERMISSION))
-        assertTrue(tree.havePermission(SIMPLE_PERMISSION_2))
-        assertTrue(tree.havePermission(LONG_SIMPLE_PERMISSION))
+        val tree = permissionManager.getOwnerForGroup(groupName)!!
+        assertTrue(tree.checkPermission(SIMPLE_PERMISSION))
+        assertTrue(tree.checkPermission(SIMPLE_PERMISSION_2))
+        assertTrue(tree.checkPermission(LONG_SIMPLE_PERMISSION))
     }
 
     @Test
@@ -46,12 +47,12 @@ class PermissionManagerTest {
         assertTrue(permissionManager.createGroup(groupName))
         assertTrue(permissionManager.addPermissionForGroup(groupName, ALL_PERMISSION_GROUP))
         assertTrue(permissionManager.deletePermissionForGroup(groupName, SIMPLE_PERMISSION))
-        val tree = permissionManager.getPermissionsForGroup(groupName)!!
+        val tree = permissionManager.getOwnerForGroup(groupName)!!
 
-        assertFalse(tree.havePermission(SIMPLE_PERMISSION))
-        assertTrue(tree.havePermission(SIMPLE_PERMISSION_2))
-        assertFalse(tree.havePermission(LONG_SIMPLE_PERMISSION))
-        assertTrue(tree.havePermission(LONG_SIMPLE_PERMISSION_2))
+        assertFalse(tree.checkPermission(SIMPLE_PERMISSION))
+        assertTrue(tree.checkPermission(SIMPLE_PERMISSION_2))
+        assertFalse(tree.checkPermission(LONG_SIMPLE_PERMISSION))
+        assertTrue(tree.checkPermission(LONG_SIMPLE_PERMISSION_2))
     }
 
     @Test
@@ -62,12 +63,12 @@ class PermissionManagerTest {
         assertTrue(permissionManager.deletePermissionForGroup(groupName, SIMPLE_PERMISSION))
         assertTrue(permissionManager.addPermissionForGroup(groupName, ALL_PERMISSION_GROUP))
 
-        val tree = permissionManager.getPermissionsForGroup(groupName)!!
+        val tree = permissionManager.getOwnerForGroup(groupName)!!
 
-        assertTrue(tree.havePermission(SIMPLE_PERMISSION))
-        assertTrue(tree.havePermission(SIMPLE_PERMISSION_2))
-        assertTrue(tree.havePermission(LONG_SIMPLE_PERMISSION))
-        assertTrue(tree.havePermission(LONG_SIMPLE_PERMISSION_2))
+        assertTrue(tree.checkPermission(SIMPLE_PERMISSION))
+        assertTrue(tree.checkPermission(SIMPLE_PERMISSION_2))
+        assertTrue(tree.checkPermission(LONG_SIMPLE_PERMISSION))
+        assertTrue(tree.checkPermission(LONG_SIMPLE_PERMISSION_2))
     }
 
     companion object {

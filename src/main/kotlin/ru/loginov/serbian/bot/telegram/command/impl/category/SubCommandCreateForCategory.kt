@@ -11,7 +11,7 @@ import ru.loginov.serbian.bot.util.markdown2
 
 @Component
 @SubCommand(parents = [CategoryBotCommand::class])
-//@RequiredPermission("commands.category.create")
+//TODO: Add @RequiredPermission("commands.category.create")
 class SubCommandCreateForCategory : AbstractSubCommand() {
 
     @Autowired

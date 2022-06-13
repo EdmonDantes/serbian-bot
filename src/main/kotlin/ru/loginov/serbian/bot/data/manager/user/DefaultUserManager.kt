@@ -1,6 +1,7 @@
 package ru.loginov.serbian.bot.data.manager.user
 
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.data.dto.user.UserDataDto
 import ru.loginov.serbian.bot.data.dto.user.UserDto
@@ -8,13 +9,28 @@ import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.data.manager.localization.exception.LanguageNotSupportedException
 import ru.loginov.serbian.bot.data.repository.user.UserDataDtoRepository
 import ru.loginov.serbian.bot.data.repository.user.UserDtoRepository
+import ru.loginov.simple.permissions.manager.PermissionManager
 
 @Service
 class DefaultUserManager(
         private val userDtoRepository: UserDtoRepository,
         private val userDataDtoRepository: UserDataDtoRepository,
-        private val localizationManager: LocalizationManager
+        private val localizationManager: LocalizationManager,
+        private val permissionManager: PermissionManager,
+        @Value("\${bot.user.admin.ids:}") adminIdsStr: String
 ) : UserManager {
+
+    private val adminIds = HashSet<Long>()
+
+    init {
+        if (adminIdsStr.isNotBlank()) {
+            adminIdsStr.split(';').forEach {
+                it.toLongOrNull()?.also {
+                    adminIds.add(it)
+                }
+            }
+        }
+    }
 
     override fun create(
             userId: Long,
@@ -33,6 +49,8 @@ class DefaultUserManager(
                     language
         user.canInputDifferentLanguages = canInputDifferentLanguages
         user.permissionGroup = permissionGroup
+                ?: (if (adminIds.contains(userId)) permissionManager.adminGroup else null)
+                        ?: permissionManager.defaultGroup
 
         return try {
             userDtoRepository.save(user)

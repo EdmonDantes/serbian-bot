@@ -1,12 +1,12 @@
 package ru.loginov.serbian.bot.telegram.command.impl
 
-import ru.loginov.serbian.bot.spring.permission.annotation.PermissionCheck
 import ru.loginov.serbian.bot.telegram.command.BotCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.util.markdown2
+import ru.loginov.simple.permissions.annotation.ForcePermissionCheck
 import ru.loginov.telegram.api.util.TelegramMessageTextBuilder
 
-@PermissionCheck
+@ForcePermissionCheck
 abstract class AbstractBotCommand : BotCommand {
     protected open val shortDescription: String? = null
 

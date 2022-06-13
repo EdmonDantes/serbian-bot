@@ -101,9 +101,21 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
             responseTypeReference: TypeReference<T>,
             body: ByteArray? = null,
             queryParameters: Map<String, String> = emptyMap(),
-            contentType: ContentType? = null
+            contentType: ContentType? = null,
+            headersUser: Map<String, String> = emptyMap(),
+            connectionTimeout: Long? = null,
+            requestTimeout: Long? = null
     ): Pair<T?, HttpResponse> {
-        val response = request(method, url, body, queryParameters, ContentType.Application.Json)
+        val response = request(
+                method,
+                url,
+                body,
+                queryParameters,
+                contentType,
+                headersUser,
+                connectionTimeout,
+                requestTimeout
+        )
         return mapper.readValue(response.readBytes(), responseTypeReference) to response
     }
 
@@ -112,12 +124,18 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
             url: String,
             body: Any? = null,
             queryParameters: Map<String, String> = emptyMap(),
+            headersUser: Map<String, String> = emptyMap(),
+            connectionTimeout: Long? = null,
+            requestTimeout: Long? = null
     ): HttpResponse = request(
             method,
             url,
             body?.let { mapper.writeValueAsBytes(it) },
             queryParameters,
-            ContentType.Application.Json
+            ContentType.Application.Json,
+            headersUser,
+            connectionTimeout,
+            requestTimeout
     )
 
     suspend fun <T> requestJson(
@@ -126,6 +144,9 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
             responseTypeReference: TypeReference<T>,
             body: Any? = null,
             queryParameters: Map<String, String> = emptyMap(),
+            headersUser: Map<String, String> = emptyMap(),
+            connectionTimeout: Long? = null,
+            requestTimeout: Long? = null
     ): Pair<T?, HttpResponse> =
             requestWithJsonResponse(
                     method,
@@ -133,7 +154,10 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
                     responseTypeReference,
                     body?.let { mapper.writeValueAsBytes(it) },
                     queryParameters,
-                    ContentType.Application.Json
+                    ContentType.Application.Json,
+                    headersUser,
+                    connectionTimeout,
+                    requestTimeout
             )
 
 
@@ -148,14 +172,20 @@ suspend inline fun <reified T> ru.loginov.http.HttpClient.requestWithJsonRespons
         url: String,
         body: ByteArray? = null,
         queryParameters: Map<String, String> = emptyMap(),
-        contentType: ContentType? = null
+        contentType: ContentType? = null,
+        headersUser: Map<String, String> = emptyMap(),
+        connectionTimeout: Long? = null,
+        requestTimeout: Long? = null
 ): Pair<T?, HttpResponse> = this.requestWithJsonResponse(
         method,
         url,
         object : TypeReference<T>() {},
         body,
         queryParameters,
-        contentType
+        contentType,
+        headersUser,
+        connectionTimeout,
+        requestTimeout
 )
 
 suspend inline fun <reified T> ru.loginov.http.HttpClient.requestJson(
@@ -163,10 +193,16 @@ suspend inline fun <reified T> ru.loginov.http.HttpClient.requestJson(
         url: String,
         body: ByteArray? = null,
         queryParameters: Map<String, String> = emptyMap(),
+        headersUser: Map<String, String> = emptyMap(),
+        connectionTimeout: Long? = null,
+        requestTimeout: Long? = null
 ): Pair<T?, HttpResponse> = this.requestJson(
         method,
         url,
         object : TypeReference<T>() {},
         body,
         queryParameters,
+        headersUser,
+        connectionTimeout,
+        requestTimeout
 )

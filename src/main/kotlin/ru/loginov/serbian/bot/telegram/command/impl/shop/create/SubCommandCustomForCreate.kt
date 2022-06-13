@@ -3,11 +3,11 @@ package ru.loginov.serbian.bot.telegram.command.impl.shop.create
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.shop.ShopDescriptionManager
-import ru.loginov.serbian.bot.spring.permission.annotation.RequiredPermission
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.util.markdown2
+import ru.loginov.simple.permissions.annotation.RequiredPermission
 
 @Component
 @SubCommand([SubCommandCreateForShop::class])

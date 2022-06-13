@@ -7,13 +7,13 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
-import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.telegram.callback.CallbackData
 import ru.loginov.serbian.bot.telegram.callback.CallbackExecutor
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextFactory
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
 import ru.loginov.serbian.bot.telegram.update.OnUpdateHandler
+import ru.loginov.simple.permissions.exception.AccessDeniedException
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Update
 import java.time.LocalDateTime
@@ -155,7 +155,7 @@ class CommandHandler(
 
     private suspend fun processFailedReason(context: BotCommandExecuteContext, command: BotCommand, e: Exception) {
         when (e) {
-            is HaveNotPermissionException -> {
+            is AccessDeniedException -> {
                 LOGGER.info("User '${context.user}' can not have enough permissions for execute command with name '${command.commandName}'")
                 printCanNotFindCommand(context.chatId, command.commandName)
             }

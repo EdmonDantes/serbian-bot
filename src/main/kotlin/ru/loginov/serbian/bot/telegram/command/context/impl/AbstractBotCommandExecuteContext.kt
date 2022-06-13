@@ -2,10 +2,10 @@ package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
-import ru.loginov.serbian.bot.data.manager.permission.PermissionManager
-import ru.loginov.serbian.bot.data.manager.permission.PermissionOwner
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
+import ru.loginov.simple.permissions.PermissionOwner
+import ru.loginov.simple.permissions.manager.PermissionManager
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.BotCommand
 import ru.loginov.telegram.api.entity.Location
@@ -68,15 +68,14 @@ abstract class AbstractBotCommandExecuteContext(
     }
 
     // Permission context implementation
-
-    override fun havePermission(permission: String): Boolean {
-        val tree = permissionManager.getPermissionsForUser(user) ?: PermissionOwner.NO_PERMISSION
-        return tree.havePermission(permission.lowercase())
+    override fun hasPermission(permission: String): Boolean {
+        val owner = permissionManager.getOwnerForGroupOrDefault(user.permissionGroup) ?: PermissionOwner.NO_PERMISSION
+        return owner.checkPermission(permission.lowercase())
     }
 
-    override fun haveAllPermissions(permissions: List<String>): Boolean {
-        val tree = permissionManager.getPermissionsForUser(user) ?: PermissionOwner.NO_PERMISSION
-        return permissions.all { tree.havePermission(it.lowercase()) }
+    override fun hasAllPermissions(permissions: List<String>): Boolean {
+        val owner = permissionManager.getOwnerForGroupOrDefault(user.permissionGroup) ?: PermissionOwner.NO_PERMISSION
+        return owner.checkAllPermission(permissions)
     }
 
     // Localization context implementation

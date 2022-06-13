@@ -3,12 +3,12 @@ package ru.loginov.serbian.bot.telegram.command.impl.help
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
-import ru.loginov.serbian.bot.spring.permission.exception.HaveNotPermissionException
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
 import ru.loginov.serbian.bot.util.markdown2
+import ru.loginov.simple.permissions.exception.AccessDeniedException
 
 @Component
 @SubCommand(parents = [HelpCommand::class])
@@ -28,7 +28,7 @@ class SubCommandAllForHelp : AbstractSubCommand() {
                 botCommandManager.getAllCommands().mapNotNull {
                     try {
                         it.getCommandName(context) to it.getDescription(context)
-                    } catch (e: HaveNotPermissionException) {
+                    } catch (e: AccessDeniedException) {
                         null
                     }
                 }.forEach { (commandName, description) ->

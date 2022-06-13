@@ -37,10 +37,10 @@ dependencies {
 	implementation("com.h2database:h2")
 
 	// --------- Search --------- \\
-	implementation("org.hibernate.search:hibernate-search-mapper-orm:6.1.4.Final")
+	implementation("org.hibernate.search:hibernate-search-mapper-orm:6.1.5.Final")
 //	implementation("org.hibernate:hibernate-search-orm:5.11.10.Final")
-//	implementation("org.hibernate.search:hibernate-search-backend-elasticsearch:6.1.4.Final")
-	implementation("org.hibernate.search:hibernate-search-backend-lucene:6.1.4.Final")
+	implementation("org.hibernate.search:hibernate-search-backend-elasticsearch:6.1.5.Final")
+	//implementation("org.hibernate.search:hibernate-search-backend-lucene:6.1.4.Final")
 
 	// --------- Telegram ------- \\
 	implementation(project(":kotlin-telegram-api"))
@@ -48,6 +48,8 @@ dependencies {
 	// --------- Google ---------- \\
 	implementation("com.google.maps:google-maps-services:2.0.0")
 
+	// --------- Permissions ----- \\
+	implementation(project(":simple-permissions-spring-integration"))
 
 	// --------- TEST ------------ \\
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

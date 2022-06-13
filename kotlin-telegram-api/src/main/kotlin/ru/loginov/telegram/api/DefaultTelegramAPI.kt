@@ -46,7 +46,8 @@ class DefaultTelegramAPI(
     override suspend fun getUpdates(request: GetUpdatesRequest.() -> Unit): List<Update> =
             GetUpdatesRequest().let {
                 request(it)
-                client.requestJson<List<Update>>(HttpMethod.Post, "getUpdates", it) ?: emptyList()
+                client.requestJson<List<Update>>(HttpMethod.Post, "getUpdates", it, (it.timeoutSec ?: 5) * 1000 * 5)
+                        ?: emptyList()
             }
 
     override suspend fun setMyCommands(request: SetMyCommandsRequest.() -> Unit) {
@@ -127,13 +128,17 @@ class DefaultTelegramAPI(
             method: HttpMethod,
             methodName: String,
             body: Any? = null,
+            timeout: Long? = null
     ): T? {
         val response = requestJson(
                 method,
                 generateUrl(methodName),
                 object : TypeReference<TelegramResponse<T>>() {},
                 body,
-                emptyMap()
+                emptyMap(),
+                emptyMap(),
+                null,
+                timeout
         )
         return checkAnswer(response.first)
     }
