@@ -3,22 +3,26 @@ package ru.loginov.serbian.bot.configuration
 import org.h2.tools.Server
 import org.hibernate.cfg.AvailableSettings
 import org.hibernate.jpa.HibernatePersistenceProvider
+import org.hibernate.tool.schema.Action
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.AutoConfigurationPackages
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.boot.autoconfigure.domain.EntityScanPackages
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Primary
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter
 import org.springframework.transaction.annotation.EnableTransactionManagement
+import org.springframework.util.StringUtils
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 import javax.persistence.EntityManagerFactory
@@ -27,7 +31,6 @@ import javax.sql.DataSource
 
 @Configuration
 @ConditionalOnProperty("bot.database.jdbc.in.memory.enabled")
-@EnableJpaRepositories(basePackages = ["ru.loginov.serbian.bot.data.repository.*"])
 @EnableTransactionManagement
 @ComponentScan(basePackages = ["ru.loginov.serbian.bot.data.*", "ru.loginov.serbian.bot.configuration"])
 @EntityScan(basePackages = ["ru.loginov.serbian.bot.data.*"])
@@ -66,9 +69,9 @@ class InMemoryJdbcConfiguration {
     fun dataSource(): DataSource? = if (!isEnabled) null else DriverManagerDataSource().apply {
         setDriverClassName("org.h2.Driver")
         url = if (startInMixedMode) {
-            "jdbc:h2:${h2Server!!.url}/~/helloworld;DB_CLOSE_DELAY=-1"
+            "jdbc:h2:${h2Server!!.url}/~/serbian_bot;DB_CLOSE_DELAY=-1"
         } else {
-            "jdbc:h2:mem:helloworld;DB_CLOSE_DELAY=-1"
+            "jdbc:h2:mem:serbian_bot;DB_CLOSE_DELAY=-1"
         }
         username = "sa"
         password = "sa"
@@ -82,18 +85,19 @@ class InMemoryJdbcConfiguration {
     @Bean
     fun entityManagerFactoryBean(
             dataSource: DataSource,
-            properties: JpaProperties
+            properties: JpaProperties,
+            beanFactory: BeanFactory
     ): LocalContainerEntityManagerFactoryBean = LocalContainerEntityManagerFactoryBean().apply {
         jpaVendorAdapter = HibernateJpaVendorAdapter().apply { setShowSql(true) }
         this.dataSource = dataSource
         setPersistenceProviderClass(HibernatePersistenceProvider::class.java)
-        setPackagesToScan(
-                "ru.loginov.serbian.bot.data.*",
-                "ru.loginov.simple.permissions.spring.data.*"
-        )
+        setPackagesToScan(*getPackagesToScan(beanFactory))
 
         val additionalProperties = mapOf(
-                AvailableSettings.DIALECT to "org.hibernate.dialect.H2Dialect"
+                AvailableSettings.DIALECT to "org.hibernate.dialect.H2Dialect",
+                AvailableSettings.HBM2DDL_AUTO to Action.CREATE_DROP,
+                "hibernate.search.backend.directory.root" to "./search_index" //Need for hibernate search + lucene
+
         )
         setJpaPropertyMap(properties.properties.plus(additionalProperties))
     }
@@ -113,6 +117,13 @@ class InMemoryJdbcConfiguration {
         }
     }
 
+    protected fun getPackagesToScan(beanFactory: BeanFactory): Array<String> {
+        var packages = EntityScanPackages.get(beanFactory).packageNames
+        if (packages.isEmpty() && AutoConfigurationPackages.has(beanFactory)) {
+            packages = AutoConfigurationPackages.get(beanFactory)
+        }
+        return StringUtils.toStringArray(packages)
+    }
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(InMemoryJdbcConfiguration::class.java)

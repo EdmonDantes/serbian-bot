@@ -20,7 +20,7 @@ import ru.loginov.simple.permissions.storage.impl.EmptyGroupReplacer
 
 @Configuration
 @EnableJpaRepositories(basePackages = ["ru.loginov.simple.permissions.spring.data.repository"])
-@EntityScan(basePackages = ["ru.loginov.simple.permissions.spring.data.entity.*"])
+@EntityScan(basePackages = ["ru.loginov.simple.permissions.spring.data.*"])
 open class SimplePermissionConfiguration {
 
     @Value("\${spring.simple.permission.default.group.name:}")

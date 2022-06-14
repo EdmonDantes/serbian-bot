@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.EnableTransactionManagement
 import ru.loginov.serbian.bot.data.repository.search.SearchRepository
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
@@ -13,6 +14,7 @@ import javax.transaction.Transactional
 
 @Component
 @Transactional
+@EnableTransactionManagement
 class SearchRepositoryConfiguration(
         @PersistenceContext val entityManager: EntityManager,
         private val repositories: List<SearchRepository<*>>
