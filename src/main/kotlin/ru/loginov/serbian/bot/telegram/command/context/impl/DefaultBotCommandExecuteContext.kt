@@ -7,8 +7,8 @@ import ru.loginov.simple.permissions.manager.PermissionManager
 import ru.loginov.telegram.api.TelegramAPI
 
 class DefaultBotCommandExecuteContext(
-        override val chatId: Long,
-        override val user: UserDto,
+        chatId: Long,
+        user: UserDto,
         telegram: TelegramAPI,
         permissionManager: PermissionManager,
         localizationManager: LocalizationManager,
@@ -19,5 +19,7 @@ class DefaultBotCommandExecuteContext(
         permissionManager,
         localizationManager,
         callbackManager,
+        chatId,
+        user,
         messageWithoutCommand
 )

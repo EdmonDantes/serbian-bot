@@ -4,8 +4,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.withLocalization
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.context.getNextArgument
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.util.markdown2
 import ru.loginov.simple.permissions.annotation.RequiredPermission
@@ -23,35 +23,34 @@ class SubCommandDeleteForPermissions : AbstractSubCommand() {
     override val shortDescription: String = "@{bot.command.permissions.groups.permissions.delete._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val groupName = context.getNextArgument(
-                "@{bot.command.permissions.groups.permissions.delete._argument.group}",
-                { "@{bot.command.permissions.groups.permissions.delete._.can.not.find.group}{$it}" }
-        ) { it != null && permissionManager.hasGroup(it) }
-                ?: error("Group name can not be null")
+        context.withLocalization("bot.command.permissions.groups.permissions.delete._argument") {
+            val groupName = context.argument("groupName", "group")
+                    .required()
+                    .validate { permissionManager.hasGroup(it) }
+                    .get()
 
-        val permission = context.getNextArgument(
-                "@{bot.command.permissions.groups.permissions.delete._argument.permission}",
-                { "@{bot.command.permissions.groups.permissions.delete._.can.not.find.permission}{$it}" }
-        ) { it != null && permissionManager.hasPermission(it) }
-                ?: error("Permission can not be null")
+            val permission = context.argument("permission", "permission")
+                    .required().validate { permissionManager.hasPermission(it) }
+                    .get()
 
 
-        try {
-            if (permissionManager.deletePermissionForGroup(groupName, permission)) {
-                context.sendMessage {
-                    markdown2(context) {
-                        append("@{bot.command.permissions.groups.permissions.delete._.success}{$permission}{$groupName}")
+            try {
+                if (permissionManager.deletePermissionForGroup(groupName, permission)) {
+                    context.sendMessage {
+                        markdown2(context) {
+                            append("@{bot.command.permissions.groups.permissions.delete._.success}{$permission}{$groupName}")
+                        }
                     }
+                    return
                 }
-                return
+            } catch (e: Exception) {
+                LOGGER.error("Can not delete permission '$permission' to group with name '$groupName'", e)
             }
-        } catch (e: Exception) {
-            LOGGER.error("Can not delete permission '$permission' to group with name '$groupName'", e)
-        }
 
-        context.sendMessage {
-            markdown2(context) {
-                append("@{bot.command.permissions.groups.permissions.delete._.can.not.delete.permission}{$permission}{$groupName}")
+            context.sendMessage {
+                markdown2(context) {
+                    append("@{bot.command.permissions.groups.permissions.delete._.can.not.delete.permission}{$permission}{$groupName}")
+                }
             }
         }
     }

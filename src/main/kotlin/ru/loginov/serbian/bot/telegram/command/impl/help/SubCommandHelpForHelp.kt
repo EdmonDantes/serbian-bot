@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.withLocalization
+import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
@@ -22,13 +24,13 @@ class SubCommandHelpForHelp : AbstractSubCommand() {
     override val shortDescription: String = "@{bot.command.help.help._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val commandName = context.getNextArgument("@{bot.command.help.help._argument.commandName}")
+        context.withLocalization("bot.command.help.help._argument") {
+            val commandName = context.argument("commandName", "commandName").requiredAndGet()
 
-        if (commandName != null) {
             context.sendMessage {
                 markdown2(context) {
                     val command = botCommandManager.getCommandByName(commandName)
-                    if (command == null) {
+                    if (command == null || command.commandName == "start") {
                         append("@{bot.command.help.help._.can.not.find.command} '$commandName'")
                     } else {
                         try {

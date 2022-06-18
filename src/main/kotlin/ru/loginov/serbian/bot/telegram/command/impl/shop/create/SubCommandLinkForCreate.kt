@@ -4,6 +4,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.shop.ShopDescriptionManager
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.withLocalization
+import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.util.markdown2
@@ -18,37 +20,31 @@ class SubCommandLinkForCreate(
     override val shortDescription: String = "@{bot.command.shop.create.link._shopDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val googleShareLink = context.getNextArgument("@{bot.command.shop.create.link._argument.googleShareLink}")
-                ?: error("Google share link can not be null")
-        val floorStr = context.getNextArgument("@{bot.command.shop.create.link._argument.floor}", true)
-        val floor = floorStr?.toIntOrNull()
+        context.withLocalization("bot.command.shop.create.link._argument") {
+            val googleShareLink = context.argument("googleShareLink", "googleShareLink").requiredAndGet()
+            val floor = context.argument("floor", "floor").optional()
+                    .transform { it.toIntOrNull() }
+                    .validate { it != null }
+                    .getOrNull()
 
-        if (floorStr != null && floor == null) {
+            try {
+                val shop = shopDescriptionManager.create(googleShareLink, floor)
+                if (shop != null) {
+                    context.sendMessage {
+                        markdown2(context) {
+                            append("@{bot.command.shop.create.link._success}{${shop.shopName}}{${shop.id}}")
+                        }
+                    }
+                    return
+                }
+            } catch (e: Exception) {
+                LOGGER.warn("Can not save shop from google map share link '$googleShareLink' and floor '$floor'", e)
+            }
+
             context.sendMessage {
                 markdown2(context) {
-                    append("@{bot.command.shop.create.link._.floor.should.be.number}")
+                    append("@{bot.command.shop.create.link._failed}")
                 }
-            }
-            return
-        }
-
-        try {
-            val shop = shopDescriptionManager.create(googleShareLink, floor)
-            if (shop != null) {
-                context.sendMessage {
-                    markdown2(context) {
-                        append("@{bot.command.shop.create.link._success}{${shop.shopName}}{${shop.id}}")
-                    }
-                }
-                return
-            }
-        } catch (e: Exception) {
-            LOGGER.warn("Can not save shop from google map share link '$googleShareLink' and floor '$floor'", e)
-        }
-
-        context.sendMessage {
-            markdown2(context) {
-                append("@{bot.command.shop.create.link._failed}")
             }
         }
     }

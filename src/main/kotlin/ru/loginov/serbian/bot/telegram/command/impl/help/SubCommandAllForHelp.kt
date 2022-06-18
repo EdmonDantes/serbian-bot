@@ -25,7 +25,7 @@ class SubCommandAllForHelp : AbstractSubCommand() {
         context.sendMessage {
             markdown2(context) {
                 append("@{bot.command.help.all._.bots.commands}:\n")
-                botCommandManager.getAllCommands().mapNotNull {
+                botCommandManager.getAllCommands().filter { it.commandName != "start" }.mapNotNull {
                     try {
                         it.getCommandName(context) to it.getDescription(context)
                     } catch (e: AccessDeniedException) {

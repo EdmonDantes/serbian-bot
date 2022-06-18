@@ -14,16 +14,16 @@ class DefaultBotCommandManager : BotCommandManager {
 
     @Autowired
     fun initCommands(commands: List<BotCommand>) {
-        val botCommands = commands.filter { it !is SubCommand && it.commandName != "start" }
-        this.commands.addAll(botCommands)
+        val rootCommands = commands.filter { it !is SubCommand }
+        this.commands.addAll(rootCommands)
         this.commands.sortBy { it.commandName }
 
-        botCommands.forEach {
+        this.commands.forEach {
             if (it.commandName.isNotEmpty()) {
                 if (!commandByName.containsKey(it.commandName.lowercase())) {
                     commandByName[it.commandName.lowercase()] = it
                 } else {
-                    LOGGER.error("Can not register two commands with one name. Command from class '${it.javaClass}' will not register")
+                    LOGGER.error("Can not register two commands with one name: '${it.commandName.lowercase()}'. Command from class '${it.javaClass}' will not register")
                 }
             } else {
                 LOGGER.warn("Can not register command with empty name. Class: '${it.javaClass}'")

@@ -1,6 +1,8 @@
 package ru.loginov.simple.permissions.spring
 
-interface PermissionRegister {
+import ru.loginov.simple.permissions.storage.PermissionStorage
+
+interface PermissionRegister : PermissionStorage {
 
     fun register(permission: String): Boolean
 

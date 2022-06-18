@@ -5,7 +5,7 @@ plugins {
 	id("org.springframework.boot") version "2.6.6"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
 	id("com.palantir.docker") version "0.33.0"
-	kotlin("jvm") version "1.6.10"
+	kotlin("jvm") version "1.6.21"
 	kotlin("plugin.spring") version "1.6.10"
 }
 
@@ -50,6 +50,10 @@ dependencies {
 
 	// --------- Permissions ----- \\
 	implementation(project(":simple-permissions-spring-integration"))
+
+	// --------- Logging --------- \\
+	//implementation("org.apache.logging.log4j:log4j-to-slf4j:2.17.2")
+	//implementation("org.apache.logging.log4j:log4j-core:2.17.2")
 
 	// --------- TEST ------------ \\
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

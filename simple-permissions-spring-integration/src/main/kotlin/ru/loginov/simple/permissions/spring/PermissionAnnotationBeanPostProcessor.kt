@@ -52,10 +52,12 @@ class PermissionAnnotationBeanPostProcessor : BeanPostProcessor {
 
         beanMethodsConditionals.values.forEach {
             it.forEach {
-                if (permissionRegister.register(it)) {
-                    LOGGER.debug("Registered permission '$it'")
-                } else {
-                    LOGGER.warn("Can not register permission '$it'")
+                if (!permissionRegister.hasPermission(it)) {
+                    if (permissionRegister.register(it)) {
+                        LOGGER.debug("Registered permission '$it'")
+                    } else {
+                        LOGGER.warn("Can not register permission '$it'")
+                    }
                 }
             }
         }

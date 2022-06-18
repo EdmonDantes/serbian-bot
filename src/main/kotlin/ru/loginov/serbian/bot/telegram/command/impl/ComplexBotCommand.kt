@@ -3,6 +3,7 @@ package ru.loginov.serbian.bot.telegram.command.impl
 import kotlinx.coroutines.CancellationException
 import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.telegram.command.BotCommand
+import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.util.markdown2
 import ru.loginov.simple.permissions.annotation.ForcePermissionCheck
@@ -93,7 +94,8 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
                 }
             }
         } else {
-            val commandName = context.getNextArgument(menu, "@{bot.complex.command.next.subcommand}")
+            val commandName = context.argument("commandName", menu, "@{bot.complex.command.next.subcommand}")
+                    .requiredAndGet()
 
             val command = subCommands[commandName]
             if (command != null) {

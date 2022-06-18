@@ -4,6 +4,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.withLocalization
+import ru.loginov.serbian.bot.telegram.command.argument.optionalAndGet
+import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.util.markdown2
@@ -22,35 +25,26 @@ class SubCommandDeleteForGroups : AbstractSubCommand() {
     override val shortDescription: String = "@{bot.command.permissions.groups.delete._shortDescription=}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val groupName = context.getNextArgument("@{bot.command.permissions.groups.delete._argument.groupName}")
-        if (groupName.isNullOrEmpty()) {
+        context.withLocalization("bot.command.permissions.groups.delete._argument") {
+            val groupName = context.argument("groupName", "groupName").requiredAndGet()
+            val groupForReplace = context.argument("groupForReplace", "groupForReplace").optionalAndGet()
+
+            try {
+                if (permissionManager.deleteGroup(groupName, groupForReplace)) {
+                    context.sendMessage {
+                        markdown2(context) {
+                            append("@{bot.command.permissions.groups.delete._.success}{$groupName}")
+                        }
+                    }
+                    return
+                }
+            } catch (e: Exception) {
+                LOGGER.error("Can not delete group with name '$groupName'", e)
+            }
             context.sendMessage {
                 markdown2(context) {
-                    append("@{bot.command.permissions.groups.delete._.can.not.delete.group.without.name}")
+                    append("@{bot.command.permissions.groups.delete._.can.not.delete.group}{$groupName}")
                 }
-            }
-        }
-
-        val groupForReplace = context.getNextArgument(
-                "@{bot.command.permissions.groups.delete._argument.groupForReplace}",
-                true
-        )
-
-        try {
-            if (permissionManager.deleteGroup(groupName!!, groupForReplace)) {
-                context.sendMessage {
-                    markdown2(context) {
-                        append("@{bot.command.permissions.groups.delete._.success}{$groupName}")
-                    }
-                }
-                return
-            }
-        } catch (e: Exception) {
-            LOGGER.error("Can not delete group with name '$groupName'", e)
-        }
-        context.sendMessage {
-            markdown2(context) {
-                append("@{bot.command.permissions.groups.delete._.can.not.delete.group}{$groupName}")
             }
         }
     }

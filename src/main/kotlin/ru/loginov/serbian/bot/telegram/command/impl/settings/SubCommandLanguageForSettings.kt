@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.data.manager.user.UserManager
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.util.markdown2
@@ -26,12 +27,16 @@ class SubCommandLanguageForSettings : AbstractSubCommand() {
         val lang = context.user.language ?: localizationManager.defaultLanguage
         val langName = localizationManager.findLocalizedStringByKey(lang, "language.$lang") ?: lang
 
-        val shouldChange = context.getNextChooseArgument("@{bot.command.settings.language._argument.shouldChange}{$langName}")
+        val shouldChange = context.choose(
+                "shouldChange",
+                "@{bot.command.settings.language._argument.shouldChange}{$langName}"
+        ).requiredAndGet()
         if (!shouldChange) {
             return
         }
 
-        val newLang = context.getNextLanguageArgument("@{bot.command.settings.language._argument.lang}")
+        val newLang = context.language("newLang", "@{bot.command.settings.language._argument.lang}")
+                .requiredAndGet()
 
         userManager.update(context.user.id ?: error("Can not find user id"), language = newLang)
         context.user.language = newLang

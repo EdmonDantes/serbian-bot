@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.withLocalization
+import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.util.markdown2
@@ -24,52 +26,48 @@ class SubCommandTranslateForCategory : AbstractSubCommand() {
     override val shortDescription: String = "@{bot.command.category.translate._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val categoryIdStr = context.getNextArgument("@{bot.command.category.translate._argument.categoryId}")
-        val categoryId = categoryIdStr?.toIntOrNull()
+        context.withLocalization("bot.command.category.translate._argument") {
+            val categoryId = context.argument("categoryId", "categoryId")
+                    .required()
+                    .transform { it.toIntOrNull() }
+                    .validateValue { it != null }
+                    .get()!!
 
-        if (categoryId == null || !categoryManager.existsById(categoryId)) {
-            context.sendMessage {
-                markdown2(context) {
-                    append("@{bot.command.category.translate._error.can.not.find.category}{$categoryId}")
-                }
-            }
-            return
-        }
-
-        val lang = context.getNextLanguageArgument("@{bot.command.category.translate._argument.lang}")
-
-        if (lang.isNullOrEmpty() || !localizationManager.isSupport(lang)) {
-            context.sendMessage {
-                markdown2(context) {
-                    append("@{bot.command.category.translate._error.language.is.not.support}{$lang}")
-                }
-            }
-            return
-        }
-
-        val translate = context.getNextArgument("@{bot.command.category.translate._argument.translate}")
-
-        if (translate.isNullOrEmpty()) {
-            context.sendMessage {
-                markdown2(context) {
-                    append("@{bot.command.category.translate._error.translate.is.empty}")
-                }
-            }
-            return
-        }
-
-        try {
-            if (categoryManager.changeLocalization(categoryId, lang, translate)) {
+            if (!categoryManager.existsById(categoryId)) {
                 context.sendMessage {
                     markdown2(context) {
-                        append("@{bot.command.cateogry.translate._success}{$translate}{$categoryId}")
+                        append("@{bot.command.category.translate._error.can.not.find.category}{$categoryId}")
                     }
                 }
-            } else {
-                error("Can not change localization name for category")
+                return
             }
-        } catch (e: Exception) {
-            throw e
+
+            val lang = context.argument("lang", "lang").requiredAndGet()
+
+            if (!localizationManager.isSupport(lang)) {
+                context.sendMessage {
+                    markdown2(context) {
+                        append("@{bot.command.category.translate._error.language.is.not.support}{$lang}")
+                    }
+                }
+                return
+            }
+
+            val translate = context.argument("translate", "translate").requiredAndGet()
+
+            try {
+                if (categoryManager.changeLocalization(categoryId, lang, translate)) {
+                    context.sendMessage {
+                        markdown2(context) {
+                            append("@{bot.command.cateogry.translate._success}{$translate}{$categoryId}")
+                        }
+                    }
+                } else {
+                    error("Can not change localization name for category")
+                }
+            } catch (e: Exception) {
+                throw e
+            }
         }
     }
 }

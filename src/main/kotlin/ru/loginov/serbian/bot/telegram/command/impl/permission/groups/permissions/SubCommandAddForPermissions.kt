@@ -3,20 +3,18 @@ package ru.loginov.serbian.bot.telegram.command.impl.permission.groups.permissio
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.withLocalization
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.context.getNextArgument
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.util.markdown2
 import ru.loginov.simple.permissions.annotation.RequiredPermission
 import ru.loginov.simple.permissions.manager.PermissionManager
-import ru.loginov.simple.permissions.permission.PermissionValidator
 
 @Component
 @SubCommand(parents = [SubCommandPermissionsForGroup::class])
 @RequiredPermission("commands.permission.groups.permissions.add")
 class SubCommandAddForPermissions(
-        private val permissionManager: PermissionManager,
-        private val permissionValidator: PermissionValidator
+        private val permissionManager: PermissionManager
 ) : AbstractSubCommand() {
 
 
@@ -24,34 +22,34 @@ class SubCommandAddForPermissions(
     override val shortDescription: String = "@{bot.command.permissions.groups.permissions.add._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val groupName = context.getNextArgument(
-                "@{bot.command.permissions.groups.permissions.add._argument.group}",
-                { "@{bot.command.permissions.groups.permissions.add._argument.groupName.not.valid}{$it}" }
-        ) { it != null && permissionManager.hasGroup(it) }
-                ?: error("Group name can not be null")
+        context.withLocalization("bot.command.permissions.groups.permissions.add._argument") {
+            val groupName = context.argument("groupName", "group")
+                    .required()
+                    .validate { permissionManager.hasGroup(it) }
+                    .get()
 
-        val permission = context.getNextArgument(
-                "@{bot.command.permissions.groups.permissions.add._argument.permission}",
-                { "@{bot.command.permissions.groups.permissions.add._argument.permission.not.valid}{$it}" }
-        ) { it != null && permissionValidator.validate(it) }
-                ?: error("Permission can not be null")
+            val permission = context.argument("permission", "permission")
+                    .required()
+                    .validate { permissionManager.hasPermission(it) }
+                    .get()
 
-        try {
-            if (permissionManager.addPermissionForGroup(groupName, permission)) {
-                context.sendMessage {
-                    markdown2(context) {
-                        append("@{bot.command.permissions.groups.permissions.add._.success}{$permission}{$groupName}")
+            try {
+                if (permissionManager.addPermissionForGroup(groupName, permission)) {
+                    context.sendMessage {
+                        markdown2(context) {
+                            append("@{bot.command.permissions.groups.permissions.add._.success}{$permission}{$groupName}")
+                        }
                     }
+                    return
                 }
-                return
+            } catch (e: Exception) {
+                LOGGER.error("Can not add permission '$permission' to group with name '$groupName'", e)
             }
-        } catch (e: Exception) {
-            LOGGER.error("Can not add permission '$permission' to group with name '$groupName'", e)
-        }
 
-        context.sendMessage {
-            markdown2(context) {
-                append("@{bot.command.permissions.groups.permissions.add._.can.not.add.permission}{$permission}{$groupName}")
+            context.sendMessage {
+                markdown2(context) {
+                    append("@{bot.command.permissions.groups.permissions.add._.can.not.add.permission}{$permission}{$groupName}")
+                }
             }
         }
     }

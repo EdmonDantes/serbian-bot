@@ -96,8 +96,8 @@ class InMemoryJdbcConfiguration {
         val additionalProperties = mapOf(
                 AvailableSettings.DIALECT to "org.hibernate.dialect.H2Dialect",
                 AvailableSettings.HBM2DDL_AUTO to Action.CREATE_DROP,
-                "hibernate.search.backend.directory.root" to "./search_index" //Need for hibernate search + lucene
-
+                "hibernate.search.backend.directory.root" to "./search_index", //Need for hibernate search + lucene
+                "hibernate.search.configuration_property_checking.strategy" to "ignore"
         )
         setJpaPropertyMap(properties.properties.plus(additionalProperties))
     }

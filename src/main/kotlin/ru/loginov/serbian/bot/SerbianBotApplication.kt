@@ -11,5 +11,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 class SerbianBotApplication
 
 fun main(args: Array<String>) {
+	System.setProperty("org.jboss.logging.provider", "slf4j")
+	System.setProperty("org.springframework.boot.logging.LoggingSystem", "none")
 	runApplication<SerbianBotApplication>(*args)
 }

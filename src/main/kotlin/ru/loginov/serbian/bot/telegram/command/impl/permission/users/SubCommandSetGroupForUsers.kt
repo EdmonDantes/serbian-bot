@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.user.UserManager
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.withLocalization
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.context.getNextArgument
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.simple.permissions.annotation.RequiredPermission
 import ru.loginov.simple.permissions.manager.PermissionManager
@@ -24,15 +24,20 @@ class SubCommandSetGroupForUsers : AbstractSubCommand() {
     override val shortDescription: String = "@{bot.command.permissions.users.setgroup._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val userId = context.getNextArgument("@{bot.command.permissions.users.setgroup._argument.userId}")
-                ?.toLongOrNull()
-                ?: error("User id should be number and not null")
+        context.withLocalization("bot.command.permissions.users.setgroup._argument") {
+            val userId = context.argument("userId", "userId")
+                    .required()
+                    .transform { it.toLongOrNull() }
+                    .validateValue { it != null }
+                    .get()!!
 
-        val group = context.getNextArgument(
-                "@{bot.command.permissions.users.setgroup._argument.groupName}",
-                { "@{bot.command.permissions.users.setgroup._.can.not.find.group}{$it}" }
-        ) { it == null || permissionManager.hasGroup(it) }
+            val groupName = context.argument("groupName", "groupName")
+                    .required()
+                    .validate { permissionManager.hasGroup(it) }
+                    .get()
 
-        userManager.update(userId, permissionGroup = group ?: "")
+            userManager.update(userId, permissionGroup = groupName)
+        }
+
     }
 }

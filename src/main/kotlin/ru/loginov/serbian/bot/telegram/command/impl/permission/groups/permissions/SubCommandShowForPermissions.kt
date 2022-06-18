@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.context.getNextArgument
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.util.markdown2
 import ru.loginov.simple.permissions.annotation.RequiredPermission
@@ -23,11 +22,15 @@ class SubCommandShowForPermissions : AbstractSubCommand() {
     override val shortDescription: String = "@{bot.command.permissions.groups.permissions.show._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
-        val groupName = context.getNextArgument(
-                "@{bot.command.permissions.groups.permissions.show._argument.group}",
-                { "@{bot.command.permissions.groups.permissions.show._.can.not.find.group}{$it}" }
-        ) { it != null && permissionManager.hasGroup(it) }
-                ?: error("Group name can not be null")
+
+        val groupName = context.argument(
+                "groupName",
+                "@{bot.command.permissions.groups.permissions.show._argument.group}"
+        )
+                .required()
+                .validate { permissionManager.hasGroup(it) }
+                .get()
+
 
         try {
             val owner = permissionManager.getOwnerForGroupOrDefault(groupName)

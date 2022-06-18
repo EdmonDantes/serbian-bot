@@ -40,7 +40,7 @@ class SubCommandAnnotationBeanPostProcessor : BeanPostProcessor, ApplicationList
     }
 
     override fun onApplicationEvent(event: ApplicationStartedEvent) {
-        LOGGER.info("Commands hierarchy: '$register'")
+        LOGGER.debug("Commands hierarchy: '$register'")
     }
 
     companion object {

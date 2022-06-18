@@ -58,10 +58,10 @@ class DefaultBotCommandExecuteContextFactory(
                 permissionManager,
                 localizationManager,
                 callbackManager,
+                -1,
+                UserDto().also { it.language = lang },
                 ""
         ) {
-            override val user: UserDto = UserDto().also { it.language = lang }
-            override val chatId: Long = -1
             override fun hasPermission(permission: String): Boolean = false
             override fun hasAllPermissions(permissions: List<String>): Boolean = false
         }
