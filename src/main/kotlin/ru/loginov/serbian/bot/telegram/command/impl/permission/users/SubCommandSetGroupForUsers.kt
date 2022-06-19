@@ -25,13 +25,13 @@ class SubCommandSetGroupForUsers : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.permissions.users.setgroup._argument") {
-            val userId = context.argument("userId", "userId")
+            val userId = argument("userId", "userId")
                     .required()
                     .transform { it.toLongOrNull() }
-                    .validateValue { it != null }
+                    .validate { it != null }
                     .get()!!
 
-            val groupName = context.argument("groupName", "groupName")
+            val groupName = argument("groupName", "groupName")
                     .required()
                     .validate { permissionManager.hasGroup(it) }
                     .get()

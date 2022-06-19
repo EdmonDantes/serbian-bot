@@ -24,7 +24,7 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.category.create._argument") {
-            val categoryName = context.argument("categoryName", "categoryName").requiredAndGet()
+            val categoryName = argument("categoryName", "categoryName").requiredAndGet()
 
             if (categoryName.isEmpty()) {
                 context.sendMessage {
@@ -35,15 +35,14 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
                 return
             }
 
-
-            val parentCategoryId = context.argument("parentCategoryId", "parentCategoryId")
-                    .required()
+            val parentCategoryId = argument("parentCategoryId", "parentCategoryId")
+                    .optional()
                     .transform { it.toIntOrNull() }
-                    .validateValue { it != null }
-                    .get()!!
+                    .validate { it != null }
+                    .getOrNull()
 
             val lang = context.user.getInputLanguageOr(suspend {
-                context.argument("lang", "language").requiredAndGet()
+                argument("lang", "language").requiredAndGet()
             })
 
             context.sendMessage {

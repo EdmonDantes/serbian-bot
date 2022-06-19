@@ -4,7 +4,11 @@ import kotlinx.coroutines.CancellationException
 import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.spring.localization.context.LocalizationContext
+import ru.loginov.serbian.bot.telegram.callback.TelegramCallback.Companion.CANCEL_CALLBACK
+import ru.loginov.serbian.bot.telegram.callback.TelegramCallback.Companion.CONTINUE_CALLBACK
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
+import ru.loginov.serbian.bot.telegram.callback.callbackData
+import ru.loginov.serbian.bot.telegram.callback.continueCallback
 import ru.loginov.serbian.bot.telegram.command.argument.AnyArgument
 import ru.loginov.serbian.bot.telegram.command.argument.configure
 import ru.loginov.serbian.bot.telegram.command.argument.impl.DefaultArgument
@@ -17,8 +21,8 @@ import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Location
 import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupBuilder
-import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupButtonBuilder
 import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupLineBuilder
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
@@ -40,21 +44,21 @@ class TelegramArgumentManager(
                                         message ?: "@{bot.abstract.command.please.choose.argument}"
                                 )
                         )
-                        buildInlineKeyboard {
-                            line {
-                                add {
-                                    text = "\u2705"
-                                    callbackData(_chatId, _userId, 1)
-                                }
-                                add {
-                                    text = "\u274C"
-                                    callbackData(_chatId, _userId, 2)
-                                }
+                    }
+                    buildInlineKeyboard {
+                        line {
+                            add {
+                                text = "\u2705"
+                                callbackData(_chatId, _userId, 1)
                             }
-                            if (it.isOptional) {
-                                line {
-                                    addContinueButton()
-                                }
+                            add {
+                                text = "\u274C"
+                                callbackData(_chatId, _userId, 2)
+                            }
+                        }
+                        if (it.isOptional) {
+                            line {
+                                addContinueButton()
                             }
                         }
                     }
@@ -91,8 +95,7 @@ class TelegramArgumentManager(
 
         try {
             val location = suspendCoroutine<Location> { continuation ->
-                //FIXME: Extract timeout to constant and add unit
-                callbackManager.addCallback(_chatId, _userId, 360_000, null) { data ->
+                callbackManager.addCallback(_chatId, _userId, TIMEOUT_ARGUMENT_MS, TimeUnit.MILLISECONDS) { data ->
                     if (data == null) {
                         continuation.resumeWithException(CancellationException("Callback was cancelled by user"))
                         true
@@ -135,8 +138,6 @@ class TelegramArgumentManager(
         }
 
         return DefaultArgument(name) {
-
-
             val msg = telegram.sendMessage {
                 chatId = _chatId
                 markdown2 {
@@ -145,17 +146,17 @@ class TelegramArgumentManager(
                                     message ?: "@{bot.abstract.command.please.choose.argument}"
                             )
                     )
-                    buildInlineKeyboard {
-                        variants.forEachIndexed { index, it ->
-                            line {
-                                add {
-                                    text = localizationContext.transformStringToLocalized(it)
-                                    callbackData(_chatId, _userId, index)
-                                }
+                }
+                buildInlineKeyboard {
+                    variants.forEachIndexed { index, it ->
+                        line {
+                            add {
+                                text = localizationContext.transformStringToLocalized(it)
+                                callbackData(_chatId, _userId, index)
                             }
                         }
-                        addUserActionButtons(it.isOptional)
                     }
+                    addUserActionButtons(it.isOptional)
                 }
             }
 
@@ -215,33 +216,38 @@ class TelegramArgumentManager(
     }
 
     private fun InlineKeyboardMarkupBuilder.addUserActionButtons(optional: Boolean) {
-        line {
-            add {
-                text = "\u274C"
-                cancelCallback(_chatId, _userId)
-            }
-            if (optional) {
+        if (optional) {
+            line {
                 addContinueButton()
             }
         }
+//        line {
+//            add {
+//                text = "\u274C"
+//                cancelCallback(_chatId, _userId)
+//            }
+//            if (optional) {
+//                addContinueButton()
+//            }
+//        }
     }
 
     private fun InlineKeyboardMarkupLineBuilder.addContinueButton() {
         add {
-            text = "\u27A1"
+            text = localizationContext.findLocalizedStringByKey("phases.skip") ?: "Skip\u27A1"
             continueCallback(_chatId, _userId)
         }
     }
 
     private suspend fun waitResult(msg: Message?): ArgumentValue<String> {
         try {
-            val data = callbackManager.waitCallback(_chatId, _userId, 360_000, null)
+            val data = callbackManager.waitCallback(_chatId, _userId, TIMEOUT_ARGUMENT_MS, TimeUnit.MILLISECONDS)
 
             return when (data.dataFromCallback) {
-                InlineKeyboardMarkupButtonBuilder.CANCEL_CALLBACK -> {
+                CANCEL_CALLBACK -> {
                     throw CancellationException("Callback was cancelled by user")
                 }
-                InlineKeyboardMarkupButtonBuilder.CONTINUE_CALLBACK -> {
+                CONTINUE_CALLBACK -> {
                     ArgumentValue.empty()
                 }
                 else -> {
@@ -270,5 +276,6 @@ class TelegramArgumentManager(
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(TelegramArgumentManager::class.java)
+        private const val TIMEOUT_ARGUMENT_MS: Long = 360_000
     }
 }

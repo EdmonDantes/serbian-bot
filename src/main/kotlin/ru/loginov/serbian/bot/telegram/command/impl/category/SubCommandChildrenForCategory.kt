@@ -21,10 +21,10 @@ class SubCommandChildrenForCategory : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.category.children._argument") {
-            val categoryId = context.argument("categoryId", "categoryId")
+            val categoryId = argument("categoryId", "categoryId")
                     .required()
                     .transform { it.toIntOrNull() }
-                    .validateValue { it != null }
+                    .validate { it != null }
                     .get()!!
 
             val category = categoryManager.findById(categoryId)

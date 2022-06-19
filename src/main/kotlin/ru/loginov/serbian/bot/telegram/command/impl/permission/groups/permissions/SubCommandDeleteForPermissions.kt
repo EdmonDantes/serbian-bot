@@ -24,13 +24,14 @@ class SubCommandDeleteForPermissions : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.permissions.groups.permissions.delete._argument") {
-            val groupName = context.argument("groupName", "group")
+            val groupName = argument("groupName", "group")
                     .required()
                     .validate { permissionManager.hasGroup(it) }
                     .get()
 
-            val permission = context.argument("permission", "permission")
-                    .required().validate { permissionManager.hasPermission(it) }
+            val permission = argument("permission", "permission")
+                    .required()
+                    .validate { permissionManager.hasPermission(it) }
                     .get()
 
 

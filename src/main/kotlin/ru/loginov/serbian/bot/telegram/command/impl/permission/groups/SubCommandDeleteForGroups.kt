@@ -26,8 +26,8 @@ class SubCommandDeleteForGroups : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.permissions.groups.delete._argument") {
-            val groupName = context.argument("groupName", "groupName").requiredAndGet()
-            val groupForReplace = context.argument("groupForReplace", "groupForReplace").optionalAndGet()
+            val groupName = argument("groupName", "groupName").requiredAndGet()
+            val groupForReplace = argument("groupForReplace", "groupForReplace").optionalAndGet()
 
             try {
                 if (permissionManager.deleteGroup(groupName, groupForReplace)) {

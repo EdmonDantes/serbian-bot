@@ -9,7 +9,7 @@ import ru.loginov.serbian.bot.util.markdown2
 import ru.loginov.simple.permissions.annotation.ForcePermissionCheck
 import ru.loginov.simple.permissions.annotation.IgnorePermissionCheck
 import ru.loginov.simple.permissions.exception.AccessDeniedException
-import ru.loginov.telegram.api.util.TelegramMessageTextBuilder
+import ru.loginov.telegram.api.util.Markdown2StringBuilder
 
 @ForcePermissionCheck
 abstract class ComplexBotCommand : AbstractBotCommand() {
@@ -22,7 +22,7 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
 
     open val canExecuteWithoutSubCommand: Boolean = false
 
-    override fun getUsage(context: BotCommandExecuteContext): TelegramMessageTextBuilder? {
+    override fun getUsage(context: BotCommandExecuteContext): Markdown2StringBuilder? {
         return markdown2(context) {
             if (canExecuteWithoutSubCommand) {
                 append("/$commandName\n")

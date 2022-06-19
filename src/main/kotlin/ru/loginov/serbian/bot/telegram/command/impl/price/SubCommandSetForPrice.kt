@@ -20,31 +20,31 @@ class SubCommandSetForPrice(
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.price.set._argument") {
-            val shopId = context.argument("shopId", "shopId")
+            val shopId = argument("shopId", "shopId")
                     .required()
                     .transform { it.toIntOrNull() }
-                    .validateValue { it != null }
+                    .validate { it != null }
                     .get()!!
 
-            val isUseCategory = context.choose("isUseCategory").requiredAndGet()
+            val isUseCategory = choose("isUseCategory").requiredAndGet()
 
-            val descriptionElementId = context.argument(
+            val descriptionElementId = argument(
                     "descriptionElementId",
                     if (isUseCategory) "categoryId" else "productId"
             )
                     .required()
                     .transform { it.toIntOrNull() }
-                    .validateValue { it != null }
+                    .validate { it != null }
                     .get()!!
 
-            val minPrice = context.argument("minPrice", "minPrice").required()
+            val minPrice = argument("minPrice", "minPrice").required()
                     .transform { it.toFloatOrNull() }
-                    .validateValue { it != null }
+                    .validate { it != null }
                     .get()!!
 
-            val maxPrice = context.argument("maxPrice", "maxPrice").required()
+            val maxPrice = argument("maxPrice", "maxPrice").required()
                     .transform { it.toFloatOrNull() }
-                    .validateValue { it != null }
+                    .validate { it != null }
                     .get()!!
 
             try {

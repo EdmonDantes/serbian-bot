@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonRawValue
 
 /**
  * This object represents a json response from telegram api
@@ -34,7 +33,7 @@ data class TelegramResponse<T> @JsonCreator constructor(
         @Deprecated(
                 message = "It's contents are subject to change in the future",
                 replaceWith = ReplaceWith("description"),
-                level = DeprecationLevel.ERROR
+                level = DeprecationLevel.WARNING
         )
         @JsonProperty(value = "error_code", required = false) val errorCode: Int?,
         /**

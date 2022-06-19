@@ -60,7 +60,6 @@ abstract class AbstractBotCommandExecuteContext(
     }
 
     // Localization context implementation
-
     override fun findLocalizedStringByKey(str: String): String? =
             localizationManager.findLocalizedStringByKey(user.language, str)
 

@@ -1,23 +1,21 @@
 package ru.loginov.serbian.bot.telegram.callback.impl
 
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.telegram.callback.CallbackData
 import ru.loginov.serbian.bot.telegram.callback.CallbackExecutor
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallback
+import ru.loginov.serbian.bot.telegram.callback.TelegramCallback.Companion.CANCEL_CALLBACK
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
-import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupButtonBuilder
-import java.util.Queue
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executor
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -26,37 +24,40 @@ import kotlin.coroutines.suspendCoroutine
 class DefaultTelegramCallbackManager(
         @Qualifier("small_tasks") private val executor: Executor,
         @Qualifier("scheduler") private val scheduler: ScheduledExecutorService,
-        private val dispatcher: CoroutineDispatcher,
-        private val scope: CoroutineScope
 ) : TelegramCallbackManager, CallbackExecutor {
 
-    private val chatCallbacks = ConcurrentHashMap<Long, Queue<TelegramCallbackWaiter>>()
-    private val chatAndUserCallback = ConcurrentHashMap<Pair<Long, Long>, Queue<TelegramCallbackWaiter>>()
+    private val nextCallbackId = AtomicInteger(1)
+
+    private val readWriteLock = ReentrantReadWriteLock()
+    private val chatCallbacks = HashMap<Long, MutableMap<Int, TelegramCallbackHandler>>()
+    private val chatAndUserCallback = HashMap<Pair<Long, Long>, MutableMap<Int, TelegramCallbackHandler>>()
 
     override fun addCallback(
             chatId: Long,
             userId: Long?,
             timeout: Long?,
-            unit: TimeUnit?,
+            unit: TimeUnit,
             block: TelegramCallback
     ): Boolean {
-        val queue = if (userId == null) {
-            chatCallbacks.computeIfAbsent(chatId) { ConcurrentLinkedQueue() }
-        } else {
-            chatAndUserCallback.computeIfAbsent(chatId to userId) { ConcurrentLinkedQueue() }
+        val queue = readWriteLock.write {
+            userId?.let { chatAndUserCallback.computeIfAbsent(chatId to userId) { HashMap() } }
+                    ?: chatCallbacks.computeIfAbsent(chatId) { HashMap() }
         }
 
-        val waiter = TelegramCallbackWaiter(block)
-        queue.add(waiter)
+        val callbackId = nextCallbackId.getAndIncrement()
+        val handler = TelegramCallbackHandler(block)
+        synchronized(queue) {
+            queue[callbackId] = handler
+        }
 
         if (timeout != null && timeout > 0) {
-            scheduler.schedule({ scope.launch { waiter.cancel() } }, timeout, unit ?: TimeUnit.MILLISECONDS)
+            scheduler.schedule({ cancelCallback(chatId, userId, callbackId) }, timeout, unit)
         }
 
         return true
     }
 
-    override suspend fun waitCallback(chatId: Long, userId: Long?, timeout: Long?, unit: TimeUnit?): CallbackData =
+    override suspend fun waitCallback(chatId: Long, userId: Long?, timeout: Long?, unit: TimeUnit): CallbackData =
             suspendCoroutine { continuation ->
                 addCallback(chatId, userId, timeout, unit) { data ->
                     if (data == null) {
@@ -69,30 +70,33 @@ class DefaultTelegramCallbackManager(
             }
 
     override fun invoke(chatId: Long, userId: Long?, data: CallbackData): Boolean {
-        if (InlineKeyboardMarkupButtonBuilder.CANCEL_CALLBACK == data.dataFromCallback) {
+        if (CANCEL_CALLBACK == data.dataFromCallback) {
             cancel(chatId, userId)
-            return false
+            return true
         }
 
         val callbacks = getCallbacks(chatId, userId) ?: return false
 
-        if (callbacks.isEmpty()) {
-            return false
-        }
-
-        val iterator = callbacks.iterator()
-
-        while (iterator.hasNext()) {
-            val callback = iterator.next()
-            val shouldRemove = try {
-                callback.execute(data)
-            } catch (e: Exception) {
-                LOGGER.warn("Failed on execute callback for chat id '$chatId' and user id '$userId'", e)
-                true
+        synchronized(callbacks) {
+            if (callbacks.isEmpty()) {
+                return false
             }
 
-            if (shouldRemove) {
-                iterator.remove()
+            val iterator = callbacks.iterator()
+
+            while (iterator.hasNext()) {
+                val (_, callback) = iterator.next()
+
+                val shouldRemove = try {
+                    callback.execute(data)
+                } catch (e: Exception) {
+                    LOGGER.warn("Failed on execute callback for chat id '$chatId' and user id '$userId'", e)
+                    true
+                }
+
+                if (shouldRemove) {
+                    iterator.remove()
+                }
             }
         }
 
@@ -102,28 +106,48 @@ class DefaultTelegramCallbackManager(
     override fun cancel(chatId: Long, userId: Long?) {
         val callbacks = getCallbacks(chatId, userId) ?: return
 
-        while (callbacks.isNotEmpty()) {
-            val callback = callbacks.poll()
-            executor.execute {
-                callback.execute(null)
+        synchronized(callbacks) {
+            callbacks.forEach { (callbackId, callback) ->
+                executor.execute {
+                    try {
+                        callback.cancel()
+                    } catch (e: Exception) {
+                        LOGGER.warn(
+                                "Can not cancel callback for chat '$chatId', user '$userId' with id '$callbackId'",
+                                e
+                        )
+                    }
+                }
             }
+
+            callbacks.clear()
         }
     }
 
-    private inline fun getCallbacks(chatId: Long, userId: Long?): Queue<TelegramCallbackWaiter>? = if (userId == null) {
-        chatCallbacks.remove(chatId)
-    } else {
-        chatAndUserCallback.remove(chatId to userId)
+    private fun cancelCallback(chatId: Long, userId: Long?, callbackId: Int) {
+        val map = getCallbacks(chatId, userId) ?: return
+        val callback = synchronized(map) {
+            map.remove(callbackId)
+        }
+
+        try {
+            callback?.cancel()
+        } catch (e: Exception) {
+            LOGGER.warn("Can not cancel callback for chat '$chatId', user '$userId' with id '$callbackId'", e)
+        }
     }
 
-    private class TelegramCallbackWaiter(
+    private fun getCallbacks(chatId: Long, userId: Long?): MutableMap<Int, TelegramCallbackHandler>? =
+            readWriteLock.read {
+                userId?.let { chatAndUserCallback[chatId to userId] } ?: chatCallbacks[chatId]
+            }
+
+    private class TelegramCallbackHandler(
             private val callback: TelegramCallback
     ) : TelegramCallback {
-        private val executed = AtomicBoolean(false)
         private val canceled = AtomicBoolean(false)
 
         override fun execute(data: CallbackData?): Boolean {
-            executed.set(true)
             if (!canceled.get()) {
                 return callback.execute(data)
             }
@@ -131,8 +155,7 @@ class DefaultTelegramCallbackManager(
         }
 
         fun cancel() {
-            canceled.set(true)
-            if (!executed.getAndSet(true)) {
+            if (!canceled.getAndSet(true)) {
                 callback.execute(null)
             }
         }

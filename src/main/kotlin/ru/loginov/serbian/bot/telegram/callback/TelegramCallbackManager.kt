@@ -9,11 +9,16 @@ interface TelegramCallbackManager {
             chatId: Long,
             userId: Long? = null,
             timeout: Long? = null,
-            unit: TimeUnit? = null,
+            unit: TimeUnit = TimeUnit.MILLISECONDS,
             block: TelegramCallback
     ): Boolean
 
     @Throws(CancellationException::class)
-    suspend fun waitCallback(chatId: Long, userId: Long?, timeout: Long? = null, unit: TimeUnit? = null): CallbackData
+    suspend fun waitCallback(
+            chatId: Long,
+            userId: Long?,
+            timeout: Long? = null,
+            unit: TimeUnit = TimeUnit.MILLISECONDS
+    ): CallbackData
 
 }

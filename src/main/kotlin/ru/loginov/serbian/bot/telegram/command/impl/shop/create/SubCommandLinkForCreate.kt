@@ -21,8 +21,8 @@ class SubCommandLinkForCreate(
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.shop.create.link._argument") {
-            val googleShareLink = context.argument("googleShareLink", "googleShareLink").requiredAndGet()
-            val floor = context.argument("floor", "floor").optional()
+            val googleShareLink = argument("googleShareLink", "googleShareLink").requiredAndGet()
+            val floor = argument("floor", "floor").optional()
                     .transform { it.toIntOrNull() }
                     .validate { it != null }
                     .getOrNull()

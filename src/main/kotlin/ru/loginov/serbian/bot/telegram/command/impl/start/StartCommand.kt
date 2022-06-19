@@ -16,10 +16,7 @@ class StartCommand(
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.start._argument") {
-            val lang = context
-                    .argument("lang", "lang")
-                    .optionalAndGet()
-                    ?: return
+            val lang = language("lang", "lang").optionalAndGet() ?: return
 
             try {
                 userManager.update(context.user.id!!, language = lang)

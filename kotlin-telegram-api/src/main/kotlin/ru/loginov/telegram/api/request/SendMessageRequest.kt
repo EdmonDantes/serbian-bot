@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import ru.loginov.telegram.api.entity.MessageEntity
+import ru.loginov.telegram.api.entity.ParseMode
 import ru.loginov.telegram.api.entity.ReplyKeyboardRemove
 import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupBuilder
 import ru.loginov.telegram.api.entity.builder.ReplyKeyboardMarkupBuilder
-import ru.loginov.telegram.api.util.TelegramMessageTextBuilder
-import ru.loginov.telegram.api.util.markdown2String
+import ru.loginov.telegram.api.util.Markdown2StringBuilder
+import ru.loginov.telegram.api.util.impl.DefaultMarkdown2StringBuilder
 
 /**
  * This object represents request for method [ru.loginov.telegram.api.TelegramAPI.sendMessage]
@@ -35,7 +36,7 @@ class SendMessageRequest {
      */
     //TODO: Change to enum
     @JsonProperty(value = "parse_mode", required = false)
-    var parseMode: String? = null
+    var parseMode: ParseMode? = null
 
     /**
      * A JSON-serialized list of special entities that appear in message text,
@@ -95,26 +96,13 @@ class SendMessageRequest {
     @JsonProperty(value = "reply_markup", required = false)
     var keyboard: Any? = null
 
-    fun emptyText(): SendMessageRequest = apply {
-        text = ""
-    }
-
-    fun markdown2(): SendMessageRequest = apply {
-        parseMode = "MarkdownV2"
-    }
-
-    fun markdown2(block: TelegramMessageTextBuilder.() -> Unit): SendMessageRequest = apply {
-        text = markdown2String(block)
-        parseMode = "MarkdownV2"
-    }
-
     fun markdown2(
-            builder: TelegramMessageTextBuilder,
-            block: TelegramMessageTextBuilder.() -> Unit
+            builder: Markdown2StringBuilder = DefaultMarkdown2StringBuilder(),
+            block: Markdown2StringBuilder.() -> Unit
     ): SendMessageRequest = apply {
         block(builder)
-        text = builder.toMarkdownV2String()
-        parseMode = "MarkdownV2"
+        text = builder.toString()
+        parseMode = ParseMode.MARKDOWN2
     }
 
     fun silence(): SendMessageRequest = apply {
@@ -125,32 +113,32 @@ class SendMessageRequest {
         protectContent = true
     }
 
-    fun disablePreview() : SendMessageRequest = apply {
+    fun disablePreview(): SendMessageRequest = apply {
         disableWebPagePreview = false
     }
 
-    fun reply(messageId: Long) : SendMessageRequest = apply {
+    fun reply(messageId: Long): SendMessageRequest = apply {
         replyToMessageId = messageId
         allowSendingWithoutReply = true
     }
 
-    fun buildInlineKeyboard(block: InlineKeyboardMarkupBuilder.() -> Unit) : SendMessageRequest = apply {
+    fun buildInlineKeyboard(block: InlineKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
         val builder = InlineKeyboardMarkupBuilder()
         block(builder)
         keyboard = builder.build()
     }
 
-    fun buildReplyKeyboard(block: ReplyKeyboardMarkupBuilder.() -> Unit) : SendMessageRequest = apply {
+    fun buildReplyKeyboard(block: ReplyKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
         val builder = ReplyKeyboardMarkupBuilder()
         block(builder)
         keyboard = builder.build()
     }
 
-    fun buildRemoveKeyboard(selective: Boolean = false) : SendMessageRequest = apply {
+    fun buildRemoveKeyboard(selective: Boolean = false): SendMessageRequest = apply {
         keyboard = ReplyKeyboardRemove(true, selective)
     }
 
-    fun buildForceReply() : SendMessageRequest = apply {
+    fun buildForceReply(): SendMessageRequest = apply {
         TODO("Not yet support")
     }
 }

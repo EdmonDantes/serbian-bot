@@ -25,7 +25,7 @@ class SubCommandHelpForHelp : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.help.help._argument") {
-            val commandName = context.argument("commandName", "commandName").requiredAndGet()
+            val commandName = argument("commandName", "commandName").requiredAndGet()
 
             context.sendMessage {
                 markdown2(context) {

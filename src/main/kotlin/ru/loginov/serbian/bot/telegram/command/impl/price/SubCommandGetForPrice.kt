@@ -23,11 +23,11 @@ class SubCommandGetForPrice(
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.price.get._argument") {
-            val isUseCategory = context.choose("isUseCategory", "isUseCategory").requiredAndGet()
-            val elementId = context.argument("elementId", if (isUseCategory) "categoryId" else "productId")
+            val isUseCategory = choose("isUseCategory", "isUseCategory").requiredAndGet()
+            val elementId = argument("elementId", if (isUseCategory) "categoryId" else "productId")
                     .required()
                     .transform { it.toIntOrNull() }
-                    .validateValue { it != null }
+                    .validate { it != null }
                     .get()!!
 
 

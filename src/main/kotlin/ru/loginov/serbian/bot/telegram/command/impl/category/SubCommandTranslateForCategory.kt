@@ -27,10 +27,10 @@ class SubCommandTranslateForCategory : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.category.translate._argument") {
-            val categoryId = context.argument("categoryId", "categoryId")
+            val categoryId = argument("categoryId", "categoryId")
                     .required()
                     .transform { it.toIntOrNull() }
-                    .validateValue { it != null }
+                    .validate { it != null }
                     .get()!!
 
             if (!categoryManager.existsById(categoryId)) {
@@ -42,7 +42,7 @@ class SubCommandTranslateForCategory : AbstractSubCommand() {
                 return
             }
 
-            val lang = context.argument("lang", "lang").requiredAndGet()
+            val lang = argument("lang", "lang").requiredAndGet()
 
             if (!localizationManager.isSupport(lang)) {
                 context.sendMessage {
@@ -53,7 +53,7 @@ class SubCommandTranslateForCategory : AbstractSubCommand() {
                 return
             }
 
-            val translate = context.argument("translate", "translate").requiredAndGet()
+            val translate = argument("translate", "translate").requiredAndGet()
 
             try {
                 if (categoryManager.changeLocalization(categoryId, lang, translate)) {

@@ -49,17 +49,17 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
             headersUser: Map<String, String> = emptyMap(),
             connectionTimeout: Long? = null,
             requestTimeout: Long? = null
-    ): HttpResponse = try {
-        client.request {
-            this.method = method
+    ): HttpResponse =
+            client.request {
+                this.method = method
 
-            this.url(url)
+                this.url(url)
 
-            if (queryParameters.isNotEmpty()) {
-                queryParameters.forEach {
-                    parameter(it.key, it.value)
+                if (queryParameters.isNotEmpty()) {
+                    queryParameters.forEach {
+                        parameter(it.key, it.value)
+                    }
                 }
-            }
 
             if (headersUser.isNotEmpty()) {
                 headers {
@@ -83,16 +83,6 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
                                 ?: DEFAULT_CONNECTION_TIMEOUT)
             }
         }
-    } catch (e: Exception) {
-        throw IllegalStateException(
-                "Can not execute request by method '$method' to url '$url' " +
-                        "${if (body == null) "without" else "with"} body" +
-                        "${if (contentType != null) " with content type '$contentType'" else ""}," +
-                        " query parameters '$queryParameters'," +
-                        " headers '$headersUser'",
-                e
-        )
-    }
 
 
     suspend fun <T> requestWithJsonResponse(

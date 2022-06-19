@@ -22,7 +22,7 @@ class SubCommandFindForCategory : AbstractSubCommand() {
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.category.find._argument") {
-            val name = context.argument("name", "name").requiredAndGet()
+            val name = argument("name", "name").requiredAndGet()
 
             context.sendMessage {
                 markdown2(context) {

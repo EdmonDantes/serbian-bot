@@ -1,5 +1,6 @@
 package ru.loginov.serbian.bot.telegram.update
 
+import io.ktor.client.features.HttpRequestTimeoutException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -57,7 +58,9 @@ class TelegramUpdateFetcher(
                         }
                     }
                 } catch (e: Exception) {
-                    LOGGER.warn("Can not get updates for telegram bot", e)
+                    if (e !is InterruptedException && e !is HttpRequestTimeoutException) {
+                        LOGGER.warn("Can not get updates for telegram bot", e)
+                    }
                     emptyList()
                 }
 

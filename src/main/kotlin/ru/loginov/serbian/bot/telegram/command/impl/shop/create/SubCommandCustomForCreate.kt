@@ -21,9 +21,9 @@ class SubCommandCustomForCreate(
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.shop.create.custom._argument") {
-            val name = context.argument("name", "name").requiredAndGet()
-            val address = context.argument("address", "address").requiredAndGet()
-            val floor = context.argument("floor", "floor")
+            val name = argument("name", "name").requiredAndGet()
+            val address = argument("address", "address").requiredAndGet()
+            val floor = argument("floor", "floor")
                     .optional()
                     .transform { it.toIntOrNull() }
                     .validate { it != null }

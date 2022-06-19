@@ -23,12 +23,12 @@ class SubCommandAddForPermissions(
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.permissions.groups.permissions.add._argument") {
-            val groupName = context.argument("groupName", "group")
+            val groupName = argument("groupName", "group")
                     .required()
                     .validate { permissionManager.hasGroup(it) }
                     .get()
 
-            val permission = context.argument("permission", "permission")
+            val permission = argument("permission", "permission")
                     .required()
                     .validate { permissionManager.hasPermission(it) }
                     .get()
