@@ -33,6 +33,20 @@ fun InlineKeyboardMarkupButtonBuilder.callbackData(
 /**
  * Add callback with format:
  *
+ * **_[chatId]_:_[userId]_#_[data]_**
+ */
+fun InlineKeyboardMarkupButtonBuilder.callbackData(
+        chatId: Long,
+        userId: Long?,
+        data: String?
+): InlineKeyboardMarkupButtonBuilder = apply {
+    this.callbackData = "$chatId${userId?.let { ":$userId" } ?: ""}${data?.let { "#$data" } ?: ""}"
+}
+
+
+/**
+ * Add callback with format:
+ *
  * **_[chatId]_:_[userId]_#cancel**
  */
 fun InlineKeyboardMarkupButtonBuilder.cancelCallback(

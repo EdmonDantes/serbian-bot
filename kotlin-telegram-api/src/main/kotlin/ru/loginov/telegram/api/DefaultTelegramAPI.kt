@@ -11,6 +11,7 @@ import ru.loginov.telegram.api.entity.User
 import ru.loginov.telegram.api.exception.ResponseErrorException
 import ru.loginov.telegram.api.request.AnswerCallbackQueryRequest
 import ru.loginov.telegram.api.request.DeleteMessageRequest
+import ru.loginov.telegram.api.request.EditMessageReplyMarkupRequest
 import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
@@ -33,6 +34,13 @@ class DefaultTelegramAPI(
     override suspend fun deleteMessage(request: DeleteMessageRequest.() -> Unit) {
         client.requestJson<Boolean>(HttpMethod.Post, "deleteMessage", DeleteMessageRequest().also(request))
     }
+
+    override suspend fun editMessageReplyMarkup(request: EditMessageReplyMarkupRequest.() -> Unit): Message? =
+            EditMessageReplyMarkupRequest().let {
+                request(it)
+                client.requestJson<Message>(HttpMethod.Post, "editMessageReplyMarkup", it)
+            }
+
 
     override suspend fun getMyCommands(request: GetMyCommandsRequest.() -> Unit): List<BotCommand> =
             GetMyCommandsRequest().let {

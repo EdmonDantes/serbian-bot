@@ -8,8 +8,6 @@ import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.util.markdown2
 import ru.loginov.simple.permissions.annotation.ForcePermissionCheck
 import ru.loginov.simple.permissions.annotation.IgnorePermissionCheck
-import ru.loginov.simple.permissions.exception.AccessDeniedException
-import ru.loginov.telegram.api.util.Markdown2StringBuilder
 
 @ForcePermissionCheck
 abstract class ComplexBotCommand : AbstractBotCommand() {
@@ -21,56 +19,6 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
         get() = _subCommands ?: emptyMap()
 
     open val canExecuteWithoutSubCommand: Boolean = false
-
-    override fun getUsage(context: BotCommandExecuteContext): Markdown2StringBuilder? {
-        return markdown2(context) {
-            if (canExecuteWithoutSubCommand) {
-                append("/$commandName\n")
-            }
-
-            val commands = subCommands.mapNotNull {
-                try {
-                    Triple(
-                            it.value.getCommandName(context),
-                            it.value.getDescription(context),
-                            it.value.getUsage(context)
-                    )
-                } catch (e: AccessDeniedException) {
-                    null
-                }
-            }
-
-            if (commands.isNotEmpty()) {
-                if (canExecuteWithoutSubCommand) {
-                    bold {
-                        append("@{phases.or}")
-                    }
-                    append('\n')
-                }
-                append("/$commandName <subcommand_name>")
-                commands.forEach { (subCommandName, description, usage) ->
-                    append('\n')
-                    bold {
-                        append("@{bot.complex.command.sub.command} '$subCommandName'")
-                    }
-                    append('\n')
-
-                    if (description != null) {
-                        append(description)
-                        append('\n')
-                    }
-                    if (usage != null) {
-                        italic {
-                            append(usage)
-                        }
-                        append('\n')
-                    }
-                }
-            } else if (!_subCommands.isNullOrEmpty()) {
-                throw AccessDeniedException()
-            }
-        }
-    }
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         val menu = getSubCommandMenu(context)
@@ -132,8 +80,8 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
             _subCommands?.values?.mapNotNull {
                 try {
                     val commandName = it.getCommandName(context)
-                    val shortDescription = it.getShortDescription(context)
-                    (shortDescription ?: commandName) to commandName
+                    val actionDescription = it.getActionDescription(context)
+                    (actionDescription ?: commandName) to commandName
                 } catch (e: Exception) {
                     null
                 }

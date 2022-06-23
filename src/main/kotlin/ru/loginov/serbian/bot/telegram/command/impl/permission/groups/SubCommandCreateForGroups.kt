@@ -20,7 +20,7 @@ class SubCommandCreateForGroups : AbstractSubCommand() {
     private lateinit var permissionManager: PermissionManager
 
     override val commandName: String = "create"
-    override val shortDescription: String = "@{bot.command.permissions.groups.create._shortDescription}"
+    override val actionDescription: String = "@{bot.command.permissions.groups.create._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         val groupName = context.argument("groupName", "@{bot.command.permissions.groups.create._argument.groupName}")

@@ -19,7 +19,7 @@ class SubCommandAddForPermissions(
 
 
     override val commandName: String = "add"
-    override val shortDescription: String = "@{bot.command.permissions.groups.permissions.add._shortDescription}"
+    override val actionDescription: String = "@{bot.command.permissions.groups.permissions.add._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.permissions.groups.permissions.add._argument") {

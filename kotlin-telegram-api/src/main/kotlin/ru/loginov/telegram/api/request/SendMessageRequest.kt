@@ -98,7 +98,7 @@ class SendMessageRequest {
 
     fun markdown2(
             builder: Markdown2StringBuilder = DefaultMarkdown2StringBuilder(),
-            block: Markdown2StringBuilder.() -> Unit
+            block: Markdown2StringBuilder.() -> Unit = {}
     ): SendMessageRequest = apply {
         block(builder)
         text = builder.toString()
@@ -122,19 +122,23 @@ class SendMessageRequest {
         allowSendingWithoutReply = true
     }
 
-    fun buildInlineKeyboard(block: InlineKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
+    fun inlineKeyboard(block: InlineKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
         val builder = InlineKeyboardMarkupBuilder()
         block(builder)
-        keyboard = builder.build()
+        if (builder.size > 0) {
+            keyboard = builder.build()
+        }
     }
 
-    fun buildReplyKeyboard(block: ReplyKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
+    fun replyKeyboard(block: ReplyKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
         val builder = ReplyKeyboardMarkupBuilder()
         block(builder)
-        keyboard = builder.build()
+        if (builder.size > 0) {
+            keyboard = builder.build()
+        }
     }
 
-    fun buildRemoveKeyboard(selective: Boolean = false): SendMessageRequest = apply {
+    fun removeKeyboard(selective: Boolean = false): SendMessageRequest = apply {
         keyboard = ReplyKeyboardRemove(true, selective)
     }
 

@@ -15,10 +15,10 @@ class DefaultBotCommandManager : BotCommandManager {
     @Autowired
     fun initCommands(commands: List<BotCommand>) {
         val rootCommands = commands.filter { it !is SubCommand }
-        this.commands.addAll(rootCommands)
+        this.commands.addAll(rootCommands.filter { it.commandName != "start" })
         this.commands.sortBy { it.commandName }
 
-        this.commands.forEach {
+        rootCommands.forEach {
             if (it.commandName.isNotEmpty()) {
                 if (!commandByName.containsKey(it.commandName.lowercase())) {
                     commandByName[it.commandName.lowercase()] = it

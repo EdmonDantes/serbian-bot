@@ -19,7 +19,7 @@ class SubCommandGetForPrice(
         private val productDescriptionManager: ProductDescriptionManager
 ) : AbstractSubCommand() {
     override val commandName: String = "get"
-    override val shortDescription: String? = "@{bot.command.price.get._shopDescription}"
+    override val actionDescription: String? = "@{bot.command.price.get._shopDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.price.get._argument") {

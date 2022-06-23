@@ -11,5 +11,5 @@ import ru.loginov.serbian.bot.telegram.command.impl.shop.ShopBotCommand
 class SubCommandCreateForShop() : ComplexSubCommand() {
 
     override val commandName: String = "create"
-    override val shortDescription: String = "@{bot.command.shop.create._shopDescription}"
+    override val actionDescription: String = "@{bot.command.shop.create._shopDescription}"
 }

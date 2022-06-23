@@ -8,15 +8,12 @@ import ru.loginov.telegram.api.util.Markdown2StringBuilder
 
 @ForcePermissionCheck
 abstract class AbstractBotCommand : BotCommand {
-    protected open val shortDescription: String? = null
+    protected open val actionDescription: String? = null
+    protected open val description: Markdown2StringBuilder? = null
 
-    override fun getShortDescription(context: BotCommandExecuteContext): String? =
-            shortDescription?.let { context.transformStringToLocalized(it) }
+    override fun getActionDescription(context: BotCommandExecuteContext): String? =
+            actionDescription?.let { context.transformStringToLocalized(it) }
 
     override fun getDescription(context: BotCommandExecuteContext): Markdown2StringBuilder? =
-            getShortDescription(context)?.let { it ->
-                markdown2(context) {
-                    append(it)
-                }
-            }
+            description ?: actionDescription?.let { markdown2(context) { append(it) } }
 }

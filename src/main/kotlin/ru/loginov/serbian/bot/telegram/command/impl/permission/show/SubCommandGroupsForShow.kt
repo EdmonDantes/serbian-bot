@@ -18,7 +18,7 @@ class SubCommandGroupsForShow : AbstractSubCommand() {
     private lateinit var permissionManager: PermissionManager
 
     override val commandName: String = "groups"
-    override val shortDescription: String = "Show all permissions groups"
+    override val actionDescription: String = "Show all permissions groups"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.sendMessageWithoutLimit {

@@ -16,7 +16,7 @@ class SubCommandSetForPrice(
         private val priceDescriptionManager: PriceDescriptionManager
 ) : AbstractSubCommand() {
     override val commandName: String = "set"
-    override val shortDescription: String = "@{bot.command.price.set._shopDescription}"
+    override val actionDescription: String = "@{bot.command.price.set._shopDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.price.set._argument") {

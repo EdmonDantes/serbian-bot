@@ -11,5 +11,5 @@ import ru.loginov.simple.permissions.annotation.RequiredPermission
 @RequiredPermission("commands.permission.groups")
 class SubCommandGroupsForPermissions : ComplexSubCommand() {
     override val commandName: String = "groups"
-    override val shortDescription: String = "@{bot.command.permissions.groups._shortDescription}"
+    override val actionDescription: String = "@{bot.command.permissions.groups._shortDescription}"
 }

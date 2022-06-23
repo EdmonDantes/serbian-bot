@@ -19,7 +19,7 @@ class SubCommandDifferentInputLanguageForSettings : AbstractSubCommand() {
     private lateinit var userManager: UserManager
 
     override val commandName: String = "differentInputLanguage"
-    override val shortDescription: String = "@{bot.command.settings.differentInputLanguage._shortDescription}"
+    override val actionDescription: String = "@{bot.command.settings.differentInputLanguage._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         val shouldChange = context.choose(

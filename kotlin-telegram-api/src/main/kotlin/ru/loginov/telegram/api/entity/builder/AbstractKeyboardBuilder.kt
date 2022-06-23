@@ -10,9 +10,11 @@ package ru.loginov.telegram.api.entity.builder
  */
 abstract class AbstractKeyboardBuilder<K, B, LB : AbstractKeyboardLineBuilder<B, BB>, BB : AbstractKeyboardButtonBuilder<B>> {
 
-    private var keyboardButtons = ArrayList<LB>()
-
+    private var keyboardLines = ArrayList<LB>()
     private var height: Int? = null
+
+    val size: Int
+        get() = keyboardLines.size
 
     fun height(height: Number?) {
         this.height = height?.toInt()
@@ -23,16 +25,18 @@ abstract class AbstractKeyboardBuilder<K, B, LB : AbstractKeyboardLineBuilder<B,
     }
 
     fun line(block: LB.() -> Unit) {
-        if (height == null || keyboardButtons.size < height!!) {
+        if (height == null || keyboardLines.size < height!!) {
             val builder = createLineBuilder()
             block(builder)
-            keyboardButtons.add(builder)
+            if (builder.size > 0) {
+                keyboardLines.add(builder)
+            }
         } else {
             error("Limit lines reached = '$height'")
         }
     }
 
-    fun build(): K = internalBuild(keyboardButtons.map { it.build() })
+    fun build(): K = internalBuild(keyboardLines.map { it.build() })
 
     protected abstract fun createLineBuilder(): LB
 

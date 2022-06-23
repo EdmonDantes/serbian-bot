@@ -18,7 +18,7 @@ class SubCommandFindForCategory : AbstractSubCommand() {
     private lateinit var categoryManager: CategoryManager
 
     override val commandName: String = "find"
-    override val shortDescription: String = "@{bot.command.category.find._shortDescription}"
+    override val actionDescription: String = "@{bot.command.category.find._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.category.find._argument") {

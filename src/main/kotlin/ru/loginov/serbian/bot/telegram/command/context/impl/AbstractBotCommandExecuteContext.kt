@@ -18,6 +18,7 @@ import ru.loginov.telegram.api.entity.Update
 import ru.loginov.telegram.api.entity.User
 import ru.loginov.telegram.api.request.AnswerCallbackQueryRequest
 import ru.loginov.telegram.api.request.DeleteMessageRequest
+import ru.loginov.telegram.api.request.EditMessageReplyMarkupRequest
 import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
@@ -70,7 +71,6 @@ abstract class AbstractBotCommandExecuteContext(
     override fun choose(name: String, message: String?): AnyArgument<Boolean> =
             stringArgumentManager.choose(name, message)
 
-
     override fun language(name: String, message: String?): AnyArgument<String> =
             stringArgumentManager.language(name, message)
 
@@ -87,8 +87,17 @@ abstract class AbstractBotCommandExecuteContext(
             stringArgumentManager.argument(name, variants, message)
 
 
+    // Telegram API implementation
     override suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit) =
             telegram.answerCallbackQuery(request)
+
+    override suspend fun editMessageReplyMarkup(request: EditMessageReplyMarkupRequest.() -> Unit): Message? {
+        val _chatId = chatId
+        return telegram.editMessageReplyMarkup {
+            chatId = _chatId
+            request(this)
+        }
+    }
 
     override suspend fun deleteMessage(request: DeleteMessageRequest.() -> Unit) =
             telegram.deleteMessage(request)

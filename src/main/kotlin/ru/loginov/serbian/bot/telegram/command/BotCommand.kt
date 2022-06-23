@@ -14,22 +14,32 @@ interface BotCommand {
      */
     val commandName: String
 
+    /**
+     * Try to get command name with current permissions
+     */
     @ForcePermissionCheck
     @Throws(AccessDeniedException::class)
     fun getCommandName(context: BotCommandExecuteContext): String = commandName
 
+    /**
+     * Try to get command action description.
+     *
+     * Used for short description in command menu
+     */
     @ForcePermissionCheck
     @Throws(AccessDeniedException::class)
-    fun getShortDescription(context: BotCommandExecuteContext): String? = null
+    fun getActionDescription(context: BotCommandExecuteContext): String?
 
+    /**
+     * Try to get full description
+     */
     @ForcePermissionCheck
     @Throws(AccessDeniedException::class)
     fun getDescription(context: BotCommandExecuteContext): Markdown2StringBuilder? = null
 
-    @ForcePermissionCheck
-    @Throws(AccessDeniedException::class)
-    fun getUsage(context: BotCommandExecuteContext): Markdown2StringBuilder? = null
-
+    /**
+     * Try to execute command
+     */
     @ForcePermissionCheck
     @Throws(CancellationException::class, AccessDeniedException::class)
     suspend fun execute(context: BotCommandExecuteContext)

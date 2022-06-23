@@ -17,7 +17,7 @@ class SubCommandLinkForCreate(
         private val shopDescriptionManager: ShopDescriptionManager
 ) : AbstractSubCommand() {
     override val commandName: String = "link"
-    override val shortDescription: String = "@{bot.command.shop.create.link._shopDescription}"
+    override val actionDescription: String = "@{bot.command.shop.create.link._shopDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.shop.create.link._argument") {

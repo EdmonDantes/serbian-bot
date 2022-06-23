@@ -21,7 +21,7 @@ class SubCommandLanguageForSettings : AbstractSubCommand() {
     private lateinit var localizationManager: LocalizationManager
 
     override val commandName: String = "language"
-    override val shortDescription: String = "@{bot.command.settings.language._shortDescription}"
+    override val actionDescription: String = "@{bot.command.settings.language._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         val lang = context.user.language ?: localizationManager.defaultLanguage

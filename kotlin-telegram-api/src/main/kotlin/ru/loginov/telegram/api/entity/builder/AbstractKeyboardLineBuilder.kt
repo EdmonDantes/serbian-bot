@@ -10,6 +10,9 @@ abstract class AbstractKeyboardLineBuilder<T, B : AbstractKeyboardButtonBuilder<
     private var line: MutableList<B> = ArrayList()
     private var width: Long? = null
 
+    val size: Int
+        get() = line.size
+
     fun add(block: B.() -> Unit) {
         if (width == null || line.size < width!!) {
             val builder = createKeyboardBuilder()
@@ -30,5 +33,5 @@ abstract class AbstractKeyboardLineBuilder<T, B : AbstractKeyboardButtonBuilder<
 
     fun build(): List<T> = line.map { it.build() }
 
-    protected abstract fun createKeyboardBuilder() : B
+    protected abstract fun createKeyboardBuilder(): B
 }

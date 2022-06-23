@@ -5,6 +5,8 @@ import java.net.URL
 
 interface Markdown2StringBuilder {
 
+    fun append(builder: Markdown2StringBuilder): Markdown2StringBuilder
+
     fun append(char: Char, needToEscape: Boolean = true): Markdown2StringBuilder
     fun append(str: String, needToEscape: Boolean = true): Markdown2StringBuilder
     fun append(obj: Any, needToEscape: Boolean = true): Markdown2StringBuilder

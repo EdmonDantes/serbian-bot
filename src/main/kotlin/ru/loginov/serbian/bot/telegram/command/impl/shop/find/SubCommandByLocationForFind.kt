@@ -16,7 +16,7 @@ class SubCommandByLocationForFind(
         private val shopManager: ShopDescriptionManager
 ) : AbstractSubCommand() {
     override val commandName: String = "byLocation"
-    override val shortDescription: String = "@{bot.command.shop.find.bylocation._shopDescription}"
+    override val actionDescription: String = "@{bot.command.shop.find.bylocation._shopDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         val location = context.location("location", "@{bot.command.shop.find.bylocation._argument.location}")

@@ -11,5 +11,5 @@ import ru.loginov.simple.permissions.annotation.RequiredPermission
 @RequiredPermission("commands.permission.show")
 class SubCommandShowForPermission : ComplexSubCommand() {
     override val commandName: String = "show"
-    override val shortDescription: String = "Show groups or permissions"
+    override val actionDescription: String = "Show groups or permissions"
 }

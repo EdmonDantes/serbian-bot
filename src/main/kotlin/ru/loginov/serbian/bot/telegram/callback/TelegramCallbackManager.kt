@@ -7,7 +7,7 @@ interface TelegramCallbackManager {
 
     fun addCallback(
             chatId: Long,
-            userId: Long? = null,
+            userId: Long?,
             timeout: Long? = null,
             unit: TimeUnit = TimeUnit.MILLISECONDS,
             block: TelegramCallback

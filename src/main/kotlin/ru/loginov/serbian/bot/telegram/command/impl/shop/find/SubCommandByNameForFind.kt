@@ -16,7 +16,7 @@ class SubCommandByNameForFind(
         private val shopManager: ShopDescriptionManager
 ) : AbstractSubCommand() {
     override val commandName: String = "byName"
-    override val shortDescription: String = "@{bot.command.shop.find.byname._shopDescription}"
+    override val actionDescription: String = "@{bot.command.shop.find.byname._shopDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         val name = context.argument("name", "@{bot.command.shop.find.byname._argument.name}").requiredAndGet()

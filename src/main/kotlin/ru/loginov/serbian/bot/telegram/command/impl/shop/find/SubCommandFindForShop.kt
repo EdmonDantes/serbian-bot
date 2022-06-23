@@ -10,5 +10,5 @@ import ru.loginov.serbian.bot.telegram.command.impl.shop.ShopBotCommand
 //TODO: Add in next version. After update permission manager. @RequiredPermission("commands.shop.find")
 class SubCommandFindForShop : ComplexSubCommand() {
     override val commandName: String = "find"
-    override val shortDescription: String = "@{bot.command.shop.find._shopDescription}"
+    override val actionDescription: String = "@{bot.command.shop.find._shopDescription}"
 }

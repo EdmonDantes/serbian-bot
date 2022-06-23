@@ -38,7 +38,7 @@ class CommandHandler(
                 val emptyContext = commandContextFactory.createEmptyContext(it)
                 it to commandManager.getAllCommands().mapNotNull {
                     try {
-                        it.getCommandName(emptyContext) to it.getShortDescription(emptyContext)
+                        it.getCommandName(emptyContext) to it.getActionDescription(emptyContext)
                     } catch (e: Exception) {
                         null
                     }

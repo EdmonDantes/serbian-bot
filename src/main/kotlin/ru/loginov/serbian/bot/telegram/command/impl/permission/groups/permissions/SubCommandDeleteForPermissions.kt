@@ -20,7 +20,7 @@ class SubCommandDeleteForPermissions : AbstractSubCommand() {
     private lateinit var permissionManager: PermissionManager
 
     override val commandName: String = "delete"
-    override val shortDescription: String = "@{bot.command.permissions.groups.permissions.delete._shortDescription}"
+    override val actionDescription: String = "@{bot.command.permissions.groups.permissions.delete._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.permissions.groups.permissions.delete._argument") {

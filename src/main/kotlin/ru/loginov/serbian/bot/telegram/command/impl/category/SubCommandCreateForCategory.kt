@@ -20,7 +20,7 @@ class SubCommandCreateForCategory : AbstractSubCommand() {
     private lateinit var categoryManager: CategoryManager
 
     override val commandName: String = "create"
-    override val shortDescription: String? = "@{bot.command.category.create._shortDescription}"
+    override val actionDescription: String? = "@{bot.command.category.create._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.category.create._argument") {

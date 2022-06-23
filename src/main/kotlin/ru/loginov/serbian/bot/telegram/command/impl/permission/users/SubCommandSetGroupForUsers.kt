@@ -21,7 +21,7 @@ class SubCommandSetGroupForUsers : AbstractSubCommand() {
     private lateinit var permissionManager: PermissionManager
 
     override val commandName: String = "setgroup"
-    override val shortDescription: String = "@{bot.command.permissions.users.setgroup._shortDescription}"
+    override val actionDescription: String = "@{bot.command.permissions.users.setgroup._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.permissions.users.setgroup._argument") {

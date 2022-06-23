@@ -61,28 +61,28 @@ class HttpClient(engineFactory: HttpClientEngineFactory<*> = CIO) {
                     }
                 }
 
-            if (headersUser.isNotEmpty()) {
-                headers {
-                    headersUser.forEach { (key, value) ->
-                        if (key.isNotEmpty()) {
-                            append(key, value)
+                if (headersUser.isNotEmpty()) {
+                    headers {
+                        headersUser.forEach { (key, value) ->
+                            if (key.isNotEmpty()) {
+                                append(key, value)
+                            }
                         }
                     }
                 }
-            }
 
-            if (body != null) {
-                this.body = CustomOutgoingContext(contentType, body)
-            }
+                if (body != null) {
+                    this.body = CustomOutgoingContext(contentType, body)
+                }
 
-            timeout {
-                requestTimeoutMillis = requestTimeout ?: DEFAULT_REQUEST_TIMEOUT
-                connectTimeoutMillis = connectionTimeout ?: DEFAULT_CONNECTION_TIMEOUT
-                socketTimeoutMillis =
-                        (requestTimeout ?: DEFAULT_REQUEST_TIMEOUT) + (connectionTimeout
-                                ?: DEFAULT_CONNECTION_TIMEOUT)
+                timeout {
+                    requestTimeoutMillis = requestTimeout ?: DEFAULT_REQUEST_TIMEOUT
+                    connectTimeoutMillis = connectionTimeout ?: DEFAULT_CONNECTION_TIMEOUT
+                    socketTimeoutMillis =
+                            (requestTimeout ?: DEFAULT_REQUEST_TIMEOUT) + (connectionTimeout
+                                    ?: DEFAULT_CONNECTION_TIMEOUT)
+                }
             }
-        }
 
 
     suspend fun <T> requestWithJsonResponse(

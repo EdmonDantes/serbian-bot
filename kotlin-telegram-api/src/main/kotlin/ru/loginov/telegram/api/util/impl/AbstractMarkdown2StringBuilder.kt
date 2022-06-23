@@ -9,6 +9,10 @@ abstract class AbstractMarkdown2StringBuilder : Markdown2StringBuilder {
     protected val markdown2 = StringBuilder()
     protected abstract val codeBlockEscapedSymbols: CharArray
 
+    override fun append(builder: Markdown2StringBuilder): Markdown2StringBuilder = this.apply {
+        append(builder.toString(), false)
+    }
+
     override fun bold(block: Markdown2StringBuilder.() -> Unit): Markdown2StringBuilder = this.apply {
         processBlock("*", block)
     }
@@ -153,6 +157,6 @@ abstract class AbstractMarkdown2StringBuilder : Markdown2StringBuilder {
     override fun hashCode(): Int = markdown2.hashCode()
 
     companion object {
-        private val URL_REGEX_CHECKER = Regex("(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})\n")
+        private val URL_REGEX_CHECKER = Regex("(https?://(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?://(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})\n")
     }
 }

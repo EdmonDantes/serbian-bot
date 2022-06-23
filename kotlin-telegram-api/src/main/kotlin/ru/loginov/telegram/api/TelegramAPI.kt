@@ -6,6 +6,7 @@ import ru.loginov.telegram.api.entity.Update
 import ru.loginov.telegram.api.entity.User
 import ru.loginov.telegram.api.request.AnswerCallbackQueryRequest
 import ru.loginov.telegram.api.request.DeleteMessageRequest
+import ru.loginov.telegram.api.request.EditMessageReplyMarkupRequest
 import ru.loginov.telegram.api.request.GetMyCommandsRequest
 import ru.loginov.telegram.api.request.GetUpdatesRequest
 import ru.loginov.telegram.api.request.SendMessageRequest
@@ -19,6 +20,7 @@ interface TelegramAPI {
      */
     suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit)
     suspend fun deleteMessage(request: DeleteMessageRequest.() -> Unit)
+    suspend fun editMessageReplyMarkup(request: EditMessageReplyMarkupRequest.() -> Unit): Message?
     suspend fun getMyCommands(request: GetMyCommandsRequest.() -> Unit): List<BotCommand>
     suspend fun getMe(): User?
     suspend fun getUpdates(request: GetUpdatesRequest.() -> Unit): List<Update>

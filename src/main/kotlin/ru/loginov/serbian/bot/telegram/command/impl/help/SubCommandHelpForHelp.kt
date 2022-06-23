@@ -21,7 +21,7 @@ class SubCommandHelpForHelp : AbstractSubCommand() {
     private lateinit var botCommandManager: BotCommandManager
 
     override val commandName: String = "help"
-    override val shortDescription: String = "@{bot.command.help.help._shortDescription}"
+    override val actionDescription: String = "@{bot.command.help.help._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.help.help._argument") {
@@ -34,7 +34,9 @@ class SubCommandHelpForHelp : AbstractSubCommand() {
                         append("@{bot.command.help.help._.can.not.find.command} '$commandName'")
                     } else {
                         try {
-                            val (commandName, usage) = command.getCommandName(context) to command.getUsage(context)
+                            val (commandName, usage) = command.getCommandName(context) to command.getActionDescription(
+                                    context
+                            )
 
                             if (usage == null) {
                                 append("@{bot.command.help.help._.command.have.not.special.usage}{${commandName}}")

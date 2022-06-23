@@ -23,7 +23,7 @@ class SubCommandTranslateForCategory : AbstractSubCommand() {
     private lateinit var localizationManager: LocalizationManager
 
     override val commandName: String = "translate"
-    override val shortDescription: String = "@{bot.command.category.translate._shortDescription}"
+    override val actionDescription: String = "@{bot.command.category.translate._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.withLocalization("bot.command.category.translate._argument") {

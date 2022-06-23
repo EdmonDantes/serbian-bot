@@ -11,5 +11,5 @@ import ru.loginov.simple.permissions.annotation.RequiredPermission
 @RequiredPermission("commands.permission.users")
 class SubCommandUsersForPermission : ComplexSubCommand() {
     override val commandName: String = "users"
-    override val shortDescription: String = "@{bot.command.permissions.users._shortDescription}"
+    override val actionDescription: String = "@{bot.command.permissions.users._shortDescription}"
 }

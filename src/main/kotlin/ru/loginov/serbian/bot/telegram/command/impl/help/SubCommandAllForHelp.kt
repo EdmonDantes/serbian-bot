@@ -19,7 +19,7 @@ class SubCommandAllForHelp : AbstractSubCommand() {
     private lateinit var botCommandManager: BotCommandManager
 
     override val commandName: String = "all"
-    override val shortDescription: String = "@{bot.command.help.all._shortDescription}"
+    override val actionDescription: String = "@{bot.command.help.all._shortDescription}"
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.sendMessage {
