@@ -9,12 +9,13 @@ import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDto
 import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDtoLocalization
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
-import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
-import ru.loginov.serbian.bot.data.manager.localization.exception.LanguageNotSupportedException
 import ru.loginov.serbian.bot.data.repository.product.ProductDescriptionDtoLocalizationRepository
 import ru.loginov.serbian.bot.data.repository.product.ProductDescriptionDtoRepository
 import ru.loginov.serbian.bot.data.repository.search.SearchRepository
+import ru.loginov.simple.localization.exception.LanguageNotSupportedException
+import ru.loginov.simple.localization.manager.LocalizationManager
 
+//TODO: Create new business logic
 @Service
 class DefaultProductDescriptionManager(
         private val productDescriptionDtoRepository: ProductDescriptionDtoRepository,

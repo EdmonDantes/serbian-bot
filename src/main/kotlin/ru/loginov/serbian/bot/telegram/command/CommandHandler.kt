@@ -6,13 +6,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.telegram.callback.CallbackData
 import ru.loginov.serbian.bot.telegram.callback.CallbackExecutor
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextFactory
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
 import ru.loginov.serbian.bot.telegram.update.OnUpdateHandler
+import ru.loginov.simple.localization.manager.LocalizationManager
 import ru.loginov.simple.permissions.exception.AccessDeniedException
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Update
@@ -91,14 +91,14 @@ class CommandHandler(
         val chatId = update.message!!.chat.id
         val lang = update.message!!.from!!.languageTag
 
-        if (update.message!!.text?.startsWith('/') != true) {
+        if (!update.message!!.text.startsWith('/')) {
             val data = CallbackData(dataFromMessage = update.message?.text, location = update.message?.location)
             callbackExecutor.invoke(chatId, userId, data)
             return
         }
 
         val commandName = update.message!!.text.let { text ->
-            text!!.substring(1, text.indexOf(' ').let { if (it < 0) text.length else it })
+            text.substring(1, text.indexOf(' ').let { if (it < 0) text.length else it })
         }
 
         val command = commandManager.getCommandByName(commandName)
@@ -108,12 +108,12 @@ class CommandHandler(
             return
         }
 
-        val argumentsStr = update.message!!.text!!.substring(commandName.length + 1)
+        val argumentsStr = update.message!!.text.substring(commandName.length + 1)
 
         // Cancel callback, because we should execute another command, so we should cancel current command
         callbackExecutor.cancel(chatId, userId)
 
-        val context = commandContextFactory.createContext(userId, chatId, lang, argumentsStr)
+        val context = commandContextFactory.createContext(userId, chatId, update.message!!, argumentsStr, lang)
         try {
             command.execute(context)
         } catch (e: Exception) {
@@ -132,7 +132,7 @@ class CommandHandler(
         }
 
         val (ids, dataStr) = update.callbackQuery!!.data!!.split("#").filter { it.isNotEmpty() }.let {
-            (if (it.size > 0) it[0] else null) to (if (it.size > 1) it[1] else null)
+            (if (it.isNotEmpty()) it[0] else null) to (if (it.size > 1) it[1] else null)
         }
 
         if (ids == null) {
@@ -141,7 +141,7 @@ class CommandHandler(
         }
 
         val (chatId, userId) = ids.split(":").mapNotNull { it.toLongOrNull() }.let {
-            (if (it.size > 0) it[0] else null) to (if (it.size > 1) it[1] else null)
+            (if (it.isNotEmpty()) it[0] else null) to (if (it.size > 1) it[1] else null)
         }
 
         if (chatId == null) {

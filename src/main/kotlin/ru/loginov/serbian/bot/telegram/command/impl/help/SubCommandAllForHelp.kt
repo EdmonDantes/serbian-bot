@@ -8,6 +8,7 @@ import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
 import ru.loginov.serbian.bot.util.markdown2
+import ru.loginov.simple.localization.impl.localizationKey
 import ru.loginov.simple.permissions.exception.AccessDeniedException
 
 @Component
@@ -19,12 +20,15 @@ class SubCommandAllForHelp : AbstractSubCommand() {
     private lateinit var botCommandManager: BotCommandManager
 
     override val commandName: String = "all"
-    override val actionDescription: String = "@{bot.command.help.all._shortDescription}"
+
+    override fun getActionDescription(context: BotCommandExecuteContext): String? =
+            context.localization.localizeOrNull(ACTION_DESCRIPTION_LOCATION_KEY)
 
     override suspend fun execute(context: BotCommandExecuteContext) {
         context.sendMessage {
-            markdown2(context) {
-                append("@{bot.command.help.all._.bots.commands}:\n")
+            markdown2(context.localization) {
+                append(localizationKey("bot.command.help.all._.bots.commands"))
+                append(":\n")
                 botCommandManager.getAllCommands().filter { it.commandName != "start" }.mapNotNull {
                     try {
                         it.getCommandName(context) to it.getDescription(context)
@@ -39,11 +43,15 @@ class SubCommandAllForHelp : AbstractSubCommand() {
                     }
                     if (description != null) {
                         append(" - ")
-                        append(description!!)
+                        append(description)
                     }
                     append("\n")
                 }
             }
         }
+    }
+
+    companion object {
+        private val ACTION_DESCRIPTION_LOCATION_KEY = localizationKey("bot.command.help.all._actionDescription")
     }
 }

@@ -5,11 +5,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.data.dto.category.CategoryDto
 import ru.loginov.serbian.bot.data.dto.category.CategoryDtoLocalization
-import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
-import ru.loginov.serbian.bot.data.manager.localization.exception.LanguageNotSupportedException
 import ru.loginov.serbian.bot.data.repository.category.CategoryDtoLocalizationRepository
 import ru.loginov.serbian.bot.data.repository.category.CategoryDtoRepository
 import ru.loginov.serbian.bot.data.repository.search.SearchRepository
+import ru.loginov.simple.localization.exception.LanguageNotSupportedException
+import ru.loginov.simple.localization.manager.LocalizationManager
+import ru.loginov.simple.localization.manager.prepareLanguage
 
 @Service
 class DefaultCategoryManager(
@@ -31,11 +32,7 @@ class DefaultCategoryManager(
             categoryDtoRepository.existsById(categoryId)
 
     override fun findLocalizedNameFor(categoryDto: CategoryDto, language: String?): String? {
-        if (language != null && !localizationManager.isSupport(language)) {
-            throw LanguageNotSupportedException(language)
-        }
-
-        val lang = language ?: localizationManager.defaultLanguage
+        val lang = localizationManager.prepareLanguage(language)
 
         val localizations = if (Hibernate.isInitialized(categoryDto.localization)) {
             categoryDto.localization

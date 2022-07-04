@@ -34,7 +34,6 @@ class SendMessageRequest {
      *
      * *Optional*
      */
-    //TODO: Change to enum
     @JsonProperty(value = "parse_mode", required = false)
     var parseMode: ParseMode? = null
 
@@ -96,7 +95,7 @@ class SendMessageRequest {
     @JsonProperty(value = "reply_markup", required = false)
     var keyboard: Any? = null
 
-    fun markdown2(
+    inline fun markdown2(
             builder: Markdown2StringBuilder = DefaultMarkdown2StringBuilder(),
             block: Markdown2StringBuilder.() -> Unit = {}
     ): SendMessageRequest = apply {
@@ -122,7 +121,7 @@ class SendMessageRequest {
         allowSendingWithoutReply = true
     }
 
-    fun inlineKeyboard(block: InlineKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
+    inline fun inlineKeyboard(block: InlineKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
         val builder = InlineKeyboardMarkupBuilder()
         block(builder)
         if (builder.size > 0) {
@@ -130,7 +129,7 @@ class SendMessageRequest {
         }
     }
 
-    fun replyKeyboard(block: ReplyKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
+    inline fun replyKeyboard(block: ReplyKeyboardMarkupBuilder.() -> Unit): SendMessageRequest = apply {
         val builder = ReplyKeyboardMarkupBuilder()
         block(builder)
         if (builder.size > 0) {

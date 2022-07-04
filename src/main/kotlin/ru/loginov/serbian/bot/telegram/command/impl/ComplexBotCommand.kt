@@ -6,6 +6,11 @@ import ru.loginov.serbian.bot.telegram.command.BotCommand
 import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.util.markdown2
+import ru.loginov.simple.localization.LocalizationRequest
+import ru.loginov.simple.localization.impl.localizationKey
+import ru.loginov.simple.localization.impl.localizationRequest
+import ru.loginov.simple.localization.impl.singleRequest
+import ru.loginov.simple.localization.impl.stringRequest
 import ru.loginov.simple.permissions.annotation.ForcePermissionCheck
 import ru.loginov.simple.permissions.annotation.IgnorePermissionCheck
 
@@ -25,24 +30,28 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
         if (menu.isEmpty()) {
             if (canExecuteWithoutSubCommand) {
                 try {
-                    executeWithoutSubCommands()
+                    executeWithoutSubCommands(context)
                 } catch (e: Exception) {
                     LOGGER.warn("Can not execute command '${this.commandName}'", e)
                     context.sendMessage {
-                        markdown2(context) {
-                            append("@{bot.complex.command.can.execute.command}")
+                        markdown2(context.localization) {
+                            append(localizationKey("bot.complex.command.can.execute.command"))
                         }
                     }
                 }
             } else {
                 context.sendMessage {
-                    markdown2(context) {
-                        append("@{bot.complex.command.can.not.find.subcommands}")
+                    markdown2(context.localization) {
+                        append(localizationKey("bot.complex.command.can.not.find.subcommands"))
                     }
                 }
             }
         } else {
-            val commandName = context.argument("commandName", menu, "@{bot.complex.command.next.subcommand}")
+            val commandName = context.arguments.argument(
+                    "commandName",
+                    menu,
+                    singleRequest("bot.complex.command.next.subcommand")
+            )
                     .requiredAndGet()
 
             val command = subCommands[commandName]
@@ -60,35 +69,43 @@ abstract class ComplexBotCommand : AbstractBotCommand() {
                             e
                     )
                     context.sendMessage {
-                        markdown2(context) {
-                            append("@{bot.complex.command.can.not.execute.subcommand}. @{phases.internal.error}")
+                        markdown2(context.localization) {
+                            append(localizationRequest {
+                                add("bot.complex.command.can.not.execute.subcommand")
+                                withoutLocalization(". ")
+                                add("phases.internal.error")
+                            })
                         }
                     }
                 }
             } else {
                 LOGGER.error("Can not find subcommand with '$commandName'")
                 context.sendMessage {
-                    markdown2(context) {
-                        append("@{bot.complex.command.can.not.execute.subcommand}. @{phases.internal.error}")
+                    markdown2(context.localization) {
+                        append(localizationRequest {
+                            add("bot.complex.command.can.not.execute.subcommand")
+                            withoutLocalization(". ")
+                            add("phases.internal.error")
+                        })
                     }
                 }
             }
         }
     }
 
-    private fun getSubCommandMenu(context: BotCommandExecuteContext): Map<String, String> =
+    private fun getSubCommandMenu(context: BotCommandExecuteContext): Map<LocalizationRequest, String> =
             _subCommands?.values?.mapNotNull {
                 try {
                     val commandName = it.getCommandName(context)
                     val actionDescription = it.getActionDescription(context)
-                    (actionDescription ?: commandName) to commandName
+                    (actionDescription?.let { singleRequest(it) } ?: stringRequest(commandName)) to commandName
                 } catch (e: Exception) {
                     null
                 }
             }?.toMap() ?: emptyMap()
 
     @IgnorePermissionCheck
-    open fun executeWithoutSubCommands() {
+    open suspend fun executeWithoutSubCommands(context: BotCommandExecuteContext) {
         error("Can not find any subcommands for class: '${this.javaClass}'")
     }
 }

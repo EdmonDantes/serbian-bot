@@ -50,3 +50,8 @@ open class DefaultMarkdown2StringBuilder : AbstractMarkdown2StringBuilder() {
         private val CODE_BLOCK_ESCAPED_SYMBOLS = charArrayOf('`', '\\')
     }
 }
+
+fun markdown2(): Markdown2StringBuilder = DefaultMarkdown2StringBuilder()
+
+inline fun markdown2(block: Markdown2StringBuilder.() -> Unit): Markdown2StringBuilder =
+        DefaultMarkdown2StringBuilder().apply(block)

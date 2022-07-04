@@ -5,10 +5,10 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.data.dto.user.UserDataDto
 import ru.loginov.serbian.bot.data.dto.user.UserDto
-import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
-import ru.loginov.serbian.bot.data.manager.localization.exception.LanguageNotSupportedException
 import ru.loginov.serbian.bot.data.repository.user.UserDataDtoRepository
 import ru.loginov.serbian.bot.data.repository.user.UserDtoRepository
+import ru.loginov.simple.localization.exception.LanguageNotSupportedException
+import ru.loginov.simple.localization.manager.LocalizationManager
 import ru.loginov.simple.permissions.manager.PermissionManager
 
 @Service
@@ -20,16 +20,10 @@ class DefaultUserManager(
         @Value("\${bot.user.admin.ids:}") adminIdsStr: String
 ) : UserManager {
 
-    private val adminIds = HashSet<Long>()
+    private val adminIds: Set<Long>
 
     init {
-        if (adminIdsStr.isNotBlank()) {
-            adminIdsStr.split(';').forEach {
-                it.toLongOrNull()?.also {
-                    adminIds.add(it)
-                }
-            }
-        }
+        adminIds = adminIdsStr.split(';').mapNotNull { it.toLongOrNull() }.toSet()
     }
 
     override fun create(

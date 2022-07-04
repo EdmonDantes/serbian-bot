@@ -2,7 +2,8 @@ package ru.loginov.serbian.bot.spring.localization
 
 import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.spring.localization.annotation.Localized
-import ru.loginov.serbian.bot.spring.localization.context.LocalizationContext
+import ru.loginov.simple.localization.context.LocalizationContext
+import ru.loginov.simple.localization.impl.localizationKey
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -104,7 +105,7 @@ class LocalizedProxyHandler(private val obj: Any?, private val clazz: Class<*>) 
             method: Method,
             parameterValue: String
     ): String {
-        val translated = context.findLocalizedStringByKey(parameterValue)
+        val translated = context.localizeOrNull(localizationKey(parameterValue))
         return if (translated == null) {
             LOGGER.warn(
                     "Can not translate params '${parameter.name}' from method '${method.name} " +

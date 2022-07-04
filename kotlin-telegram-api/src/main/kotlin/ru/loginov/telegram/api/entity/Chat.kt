@@ -23,13 +23,13 @@ data class Chat(
          *
          * *Optional*
          */
-        @JsonProperty(value = "title", required = false) val title: String?,
+        @JsonProperty(value = "title", required = false) val title: String? = null,
         /**
          * Username, for private chats, supergroups and channels if available
          *
          * *Optional*
          */
-        @JsonProperty(value = "username", required = false) val username: String?,
+        @JsonProperty(value = "username", required = false) val username: String? = null,
         /**
          * First name of the other party in a private chat
          *
@@ -41,7 +41,7 @@ data class Chat(
          *
          * *Optional*
          */
-        @JsonProperty(value = "last_name", required = false) val lastName: String?,
+        @JsonProperty(value = "last_name", required = false) val lastName: String? = null,
         /**
          * Chat photo.
          *
@@ -49,7 +49,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "photo", required = false) val photo: ChatPhoto?,
+        @JsonProperty(value = "photo", required = false) val photo: ChatPhoto? = null,
         /**
          * Bio of the other party in a private chat.
          *
@@ -57,7 +57,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "bio", required = false) val bio: String?,
+        @JsonProperty(value = "bio", required = false) val bio: String? = null,
         /**
          * True, if privacy settings of the other party in the private chat allows
          * to use *tg://user?id=<user_id>* links only in chats with the user.
@@ -66,7 +66,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "has_private_forwards", required = false) val hasPrivateForwards: Boolean?,
+        @JsonProperty(value = "has_private_forwards", required = false) val hasPrivateForwards: Boolean? = null,
         /**
          * Description, for groups, supergroups and channel chats.
          *
@@ -74,7 +74,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "description", required = false) val description: String?,
+        @JsonProperty(value = "description", required = false) val description: String? = null,
         /**
          * Primary invite link, for groups, supergroups and channel chats.
          *
@@ -82,7 +82,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "invite_link", required = false) val inviteLink: String?,
+        @JsonProperty(value = "invite_link", required = false) val inviteLink: String? = null,
         /**
          * The most recent pinned message (by sending date)
          *
@@ -90,7 +90,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "pinned_message", required = false) val pinnedMessage: Message?,
+        @JsonProperty(value = "pinned_message", required = false) val pinnedMessage: Message? = null,
         /**
          * Default chat member permissions, for groups and supergroups
          *
@@ -98,7 +98,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "permissions", required = false) val permissions: ChatPermissions?,
+        @JsonProperty(value = "permissions", required = false) val permissions: ChatPermissions? = null,
         /**
          * For supergroups, the minimum allowed delay between consecutive messages
          * sent by each unpriviledged user; in seconds.
@@ -107,7 +107,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "show_mode_delay", required = false) val showModeDelaySeconds: Long?,
+        @JsonProperty(value = "show_mode_delay", required = false) val showModeDelaySeconds: Long? = null,
         /**
          * The time after which all messages sent to the chat will be automatically deleted; in seconds.
          *
@@ -115,7 +115,10 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "message_auto_delete_time", required = false) val messageAutoDeleteTimeoutSeconds: Long?,
+        @JsonProperty(
+                value = "message_auto_delete_time",
+                required = false
+        ) val messageAutoDeleteTimeoutSeconds: Long? = null,
         /**
          * True, if messages from the chat can't be forwarded to other chats.
          *
@@ -123,7 +126,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "has_protected_content", required = false) val hasProtectedContent: Boolean?,
+        @JsonProperty(value = "has_protected_content", required = false) val hasProtectedContent: Boolean? = null,
         /**
          * For supergroups, name of group sticker set.
          *
@@ -131,7 +134,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "sticker_set_name", required = false) val stickerSetName: String?,
+        @JsonProperty(value = "sticker_set_name", required = false) val stickerSetName: String? = null,
         /**
          * True, if the bot can change the group sticker set.
          *
@@ -139,7 +142,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "can_set_sticker_set", required = false) val canSetStickerSet: Boolean?,
+        @JsonProperty(value = "can_set_sticker_set", required = false) val canSetStickerSet: Boolean? = null,
         /**
          * Unique identifier for the linked chat, i.e. the discussion group identifier
          * for a channel and vice versa; for supergroups and channel chats.
@@ -148,7 +151,7 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "linked_chat_id", required = false) val linkedChatId: Long?,
+        @JsonProperty(value = "linked_chat_id", required = false) val linkedChatId: Long? = null,
         /**
          * For supergroups, the location to which the supergroup is connected.
          *
@@ -156,5 +159,5 @@ data class Chat(
          *
          * It is returned only for ***getChat*** method
          */
-        @JsonProperty(value = "location", required = false) val location: ChatLocation?
+        @JsonProperty(value = "location", required = false) val location: ChatLocation? = null
 )

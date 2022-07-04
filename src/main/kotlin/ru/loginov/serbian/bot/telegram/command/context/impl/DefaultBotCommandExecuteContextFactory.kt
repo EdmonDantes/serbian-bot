@@ -2,13 +2,24 @@ package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.dto.user.UserDto
-import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
 import ru.loginov.serbian.bot.data.manager.user.UserManager
+import ru.loginov.serbian.bot.data.manager.user.UserSettingsManager
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
+import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.EmptyArgumentManager
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.StringArgumentManager
+import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.TelegramArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContextFactory
+import ru.loginov.simple.localization.LocalizationRequest
+import ru.loginov.simple.localization.context.LocalizationContext
+import ru.loginov.simple.localization.context.impl.DefaultLocalizationContext
+import ru.loginov.simple.localization.manager.LocalizationManager
 import ru.loginov.simple.permissions.manager.PermissionManager
 import ru.loginov.telegram.api.TelegramAPI
+import ru.loginov.telegram.api.entity.Chat
+import ru.loginov.telegram.api.entity.Message
+import javax.annotation.PostConstruct
 
 @Component
 class DefaultBotCommandExecuteContextFactory(
@@ -17,50 +28,69 @@ class DefaultBotCommandExecuteContextFactory(
         private val callbackManager: TelegramCallbackManager,
         private val permissionManager: PermissionManager,
         private val localizationManager: LocalizationManager,
+        private val userSettingsManager: UserSettingsManager
 ) : BotCommandExecuteContextFactory {
+
+    private val localizationContexts = HashMap<String, LocalizationContext>()
+
+    @PostConstruct
+    fun init() {
+        localizationManager.supportLanguages.forEach {
+            localizationContexts[it] = DefaultLocalizationContext(it, localizationManager)
+        }
+    }
 
     override fun createContext(
             userId: Long,
             chatId: Long,
-            lang: String?,
-            argumentsStr: String
+            incomeMessage: Message,
+            argumentsStr: String,
+            lang: String?
     ): BotCommandExecuteContext {
-        val user = userManager.findById(userId)
-                ?: userManager.create(
-                        userId,
+        val user = userManager.findByIdWithData(userId, userSettingsManager.possibleSettings)
+                ?: userManager.create(userId, chatId, lang)
+                ?: error("Can not save user with id '$userId'")
+
+        val contextLanguage = user.language ?: localizationManager.defaultLanguage
+        val localizationContext = localizationContexts[contextLanguage]
+                ?: error("Can not get localization context for language '$contextLanguage'")
+
+        val argumentManager = StringArgumentManager(
+                TelegramArgumentManager(
+                        telegramApi,
+                        callbackManager,
+                        localizationContext,
+                        localizationManager,
                         chatId,
-                        lang,
-                )
-                ?: error("Can not save user")
-
-        if (user.language == null) {
-            user.language = lang
-        }
-
-        if (user.language == null || !localizationManager.isSupport(user.language!!)) {
-            user.language = localizationManager.defaultLanguage
-        }
+                        userId
+                ), argumentsStr
+        )
 
         return DefaultBotCommandExecuteContext(
-                chatId,
-                user,
                 telegramApi,
                 permissionManager,
-                localizationManager,
-                callbackManager,
-                argumentsStr
+                localizationContext,
+                argumentManager,
+                chatId,
+                user,
+                incomeMessage
         )
     }
 
     override fun createEmptyContext(lang: String?): BotCommandExecuteContext {
+
+        val contextLanguage = lang ?: localizationManager.defaultLanguage
+        val localizationContext = localizationContexts[contextLanguage]
+                ?: error("Can not get localization context for language '$contextLanguage'")
+
         return object : AbstractBotCommandExecuteContext(
                 telegramApi,
                 permissionManager,
-                localizationManager,
-                callbackManager,
+                localizationContext,
+                EmptyArgumentManager() as ArgumentManager<LocalizationRequest>,
                 -1,
                 UserDto().also { it.language = lang },
-                ""
+                Message(-1, chat = Chat(-1, "private", firstName = ""), sendDateTime = 0, text = "")
         ) {
             override fun hasPermission(permission: String): Boolean = false
             override fun hasAllPermissions(permissions: List<String>): Boolean = false

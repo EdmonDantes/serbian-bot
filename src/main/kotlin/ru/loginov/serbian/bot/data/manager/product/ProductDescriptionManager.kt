@@ -2,8 +2,9 @@ package ru.loginov.serbian.bot.data.manager.product
 
 import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDto
 import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDtoLocalization
-import ru.loginov.serbian.bot.data.manager.localization.exception.LanguageNotSupportedException
+import ru.loginov.simple.localization.exception.LanguageNotSupportedException
 
+//TODO: Create new business logic
 interface ProductDescriptionManager {
 
     suspend fun create(names: Map<String, String>, categoryId: Int?): ProductDescriptionDto?

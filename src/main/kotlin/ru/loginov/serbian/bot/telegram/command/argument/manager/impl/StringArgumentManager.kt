@@ -13,7 +13,7 @@ import ru.loginov.serbian.bot.telegram.command.argument.value.impl.DefaultArgume
  *
  * Not thread safe
  */
-class StringArgumentManager(private val parent: ArgumentManager?, args: String) : ArgumentManager {
+class StringArgumentManager(private val parent: ArgumentManager<String>?, args: String) : ArgumentManager<String> {
 
     private val arguments: List<String>
     private var index: Int = 0
@@ -71,14 +71,14 @@ class StringArgumentManager(private val parent: ArgumentManager?, args: String) 
 
     private fun <T> getArgument(
             name: String,
-            parentFunction: ArgumentManager.() -> AnyArgument<T>,
+            parentFunction: ArgumentManager<String>.() -> AnyArgument<T>,
             transformer: (String) -> T
     ): AnyArgument<T> = (DefaultArgument(name) { getArgumentValue(it, parentFunction, transformer) })
 
 
     private suspend fun <T> getArgumentValue(
             definition: ArgumentDefinition,
-            parentFunction: ArgumentManager.() -> AnyArgument<T>,
+            parentFunction: ArgumentManager<String>.() -> AnyArgument<T>,
             transformer: (String) -> T?
     ): ArgumentValue<T> =
             if (index >= arguments.size) {

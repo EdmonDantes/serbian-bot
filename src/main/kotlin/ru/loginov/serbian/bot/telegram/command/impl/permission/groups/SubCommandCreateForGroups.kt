@@ -1,3 +1,4 @@
+/*
 package ru.loginov.serbian.bot.telegram.command.impl.permission.groups
 
 import org.slf4j.LoggerFactory
@@ -50,4 +51,4 @@ class SubCommandCreateForGroups : AbstractSubCommand() {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(SubCommandDeleteForGroups::class.java)
     }
-}
+}*/

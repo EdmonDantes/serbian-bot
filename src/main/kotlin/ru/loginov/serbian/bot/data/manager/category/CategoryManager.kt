@@ -2,7 +2,7 @@ package ru.loginov.serbian.bot.data.manager.category
 
 import ru.loginov.serbian.bot.data.dto.category.CategoryDto
 import ru.loginov.serbian.bot.data.dto.category.CategoryDtoLocalization
-import ru.loginov.serbian.bot.data.manager.localization.exception.LanguageNotSupportedException
+import ru.loginov.simple.localization.exception.LanguageNotSupportedException
 
 /**
  * Class for managing [CategoryDto]

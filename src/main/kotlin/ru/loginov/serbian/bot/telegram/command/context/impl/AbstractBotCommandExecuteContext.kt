@@ -2,13 +2,10 @@ package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.data.dto.user.UserDto
-import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
-import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
-import ru.loginov.serbian.bot.telegram.command.argument.AnyArgument
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
-import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.StringArgumentManager
-import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.TelegramArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
+import ru.loginov.simple.localization.LocalizationRequest
+import ru.loginov.simple.localization.context.LocalizationContext
 import ru.loginov.simple.permissions.PermissionOwner
 import ru.loginov.simple.permissions.manager.PermissionManager
 import ru.loginov.telegram.api.TelegramAPI
@@ -28,26 +25,12 @@ import ru.loginov.telegram.api.request.SetMyCommandsRequest
 abstract class AbstractBotCommandExecuteContext(
         private val telegram: TelegramAPI,
         private val permissionManager: PermissionManager,
-        private val localizationManager: LocalizationManager,
-        private val callbackManager: TelegramCallbackManager,
-        override final val chatId: Long,
-        override final val user: UserDto,
-        messageWithoutCommand: String
+        override val localization: LocalizationContext,
+        override val arguments: ArgumentManager<LocalizationRequest>,
+        final override val chatId: Long,
+        final override val user: UserDto,
+        final override val inputMessage: Message
 ) : BotCommandExecuteContext {
-
-    private val telegramArgumentManager: ArgumentManager = TelegramArgumentManager(
-            telegram,
-            callbackManager,
-            this,
-            localizationManager,
-            chatId,
-            user.id
-    )
-    private val stringArgumentManager: ArgumentManager = StringArgumentManager(
-            telegramArgumentManager,
-            messageWithoutCommand
-    )
-
 
     // Permission context implementation
     override fun hasPermission(permission: String): Boolean {
@@ -59,33 +42,6 @@ abstract class AbstractBotCommandExecuteContext(
         val owner = permissionManager.getOwnerForGroupOrDefault(user.permissionGroup) ?: PermissionOwner.NO_PERMISSION
         return owner.checkAllPermission(permissions)
     }
-
-    // Localization context implementation
-    override fun findLocalizedStringByKey(str: String): String? =
-            localizationManager.findLocalizedStringByKey(user.language, str)
-
-    override fun transformStringToLocalized(str: String): String =
-            localizationManager.transformStringToLocalized(user.language, str)
-
-    // BotCommandArgumentManager implementation
-    override fun choose(name: String, message: String?): AnyArgument<Boolean> =
-            stringArgumentManager.choose(name, message)
-
-    override fun language(name: String, message: String?): AnyArgument<String> =
-            stringArgumentManager.language(name, message)
-
-    override fun location(name: String, message: String?): AnyArgument<Pair<Double, Double>> =
-            stringArgumentManager.location(name, message)
-
-    override fun argument(name: String, message: String?): AnyArgument<String> =
-            stringArgumentManager.argument(name, message)
-
-    override fun argument(name: String, variants: List<String>, message: String?): AnyArgument<String> =
-            stringArgumentManager.argument(name, variants, message)
-
-    override fun argument(name: String, variants: Map<String, String>, message: String?): AnyArgument<String> =
-            stringArgumentManager.argument(name, variants, message)
-
 
     // Telegram API implementation
     override suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit) =

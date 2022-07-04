@@ -1,12 +1,9 @@
 package ru.loginov.serbian.bot.telegram.command.argument.manager.impl
 
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
-import ru.loginov.serbian.bot.data.manager.localization.LocalizationManager
-import ru.loginov.serbian.bot.spring.localization.context.LocalizationContext
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallback.Companion.CANCEL_CALLBACK
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallback.Companion.CONTINUE_CALLBACK
 import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
@@ -21,13 +18,16 @@ import ru.loginov.serbian.bot.telegram.command.argument.value.ArgumentValue
 import ru.loginov.serbian.bot.telegram.command.argument.value.impl.DefaultArgumentValue
 import ru.loginov.serbian.bot.telegram.command.argument.value.transform
 import ru.loginov.serbian.bot.telegram.command.argument.value.transformOrEmpty
-import ru.loginov.serbian.bot.util.markdown2
+import ru.loginov.simple.localization.context.LocalizationContext
+import ru.loginov.simple.localization.impl.localizationKey
+import ru.loginov.simple.localization.manager.LocalizationManager
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Location
 import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupBuilder
 import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupLineBuilder
 import ru.loginov.telegram.api.util.Markdown2StringBuilder
+import ru.loginov.telegram.api.util.impl.DefaultMarkdown2StringBuilder
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -39,12 +39,12 @@ class TelegramArgumentManager(
         private val localizationManager: LocalizationManager,
         private val _chatId: Long,
         private val _userId: Long?,
-) : ArgumentManager {
+) : ArgumentManager<String> {
     override fun choose(name: String, message: String?): AnyArgument<Boolean> =
             DefaultArgument(name) {
                 val msg = telegram.sendMessage {
                     chatId = _chatId
-                    markdown2(localizationContext) {
+                    markdown2 {
                         append(message ?: DEFAULT_MESSAGE_FOR_CHOOSE)
                     }
                     inlineKeyboard {
@@ -70,12 +70,9 @@ class TelegramArgumentManager(
             }
 
     override fun language(name: String, message: String?): AnyArgument<String> = DefaultArgument(name) { definition ->
-        val menu = localizationManager.supportLanguages.mapNotNull { lang ->
-            localizationManager.findLocalizedStringByKey(
-                    lang,
-                    "language.$lang"
-            )?.let { it to lang }
-        }.toMap()
+        val menu = localizationManager.supportLanguages.associateBy { lang ->
+            localizationManager.localize(lang, localizationKey(lang))
+        }
 
         argument(name, menu, message).configure(definition).process()
     }
@@ -83,7 +80,7 @@ class TelegramArgumentManager(
     override fun location(name: String, message: String?): AnyArgument<Pair<Double, Double>> = DefaultArgument(name) {
         val msg = telegram.sendMessage {
             chatId = _chatId
-            markdown2(localizationContext) {
+            markdown2 {
                 append(message ?: DEFAULT_MESSAGE_FOR_WRITE)
             }
             inlineKeyboard {
@@ -115,7 +112,7 @@ class TelegramArgumentManager(
     override fun argument(name: String, message: String?): AnyArgument<String> = DefaultArgument(name) {
         val msg = telegram.sendMessage {
             chatId = _chatId
-            markdown2(localizationContext) {
+            markdown2 {
                 append(message ?: DEFAULT_MESSAGE_FOR_WRITE)
             }
             inlineKeyboard {
@@ -126,7 +123,6 @@ class TelegramArgumentManager(
         waitResult(msg)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun argument(name: String, variants: List<String>, message: String?): AnyArgument<String> {
         if (variants.isEmpty()) {
             error("Variants can not be empty")
@@ -155,13 +151,13 @@ class TelegramArgumentManager(
 
         val messagesTexts: MutableList<Markdown2StringBuilder> = ArrayList(variants.size)
 
-        messagesTexts.add(markdown2(localizationContext) {
+        messagesTexts.add(DefaultMarkdown2StringBuilder().apply {
             append(message ?: DEFAULT_MESSAGE_FOR_CHOOSE)
         })
 
         for (index in 0 until variants.size - 1) {
             val variant = variants[index]
-            messagesTexts.add(markdown2(localizationContext) {
+            messagesTexts.add(DefaultMarkdown2StringBuilder().apply {
                 append("$index. ")
                 append(variant)
             })
@@ -182,7 +178,7 @@ class TelegramArgumentManager(
                         val index = variants.lastIndex
                         telegram.sendMessage {
                             chatId = _chatId
-                            markdown2(localizationContext) {
+                            markdown2 {
                                 append("$index. ")
                                 append(variants[index])
                             }
@@ -202,8 +198,10 @@ class TelegramArgumentManager(
                 chatId = _chatId
                 markdown2 {
                     append(
-                            localizationContext.findLocalizedStringByKey("phases.internal.error")
-                                    ?: "Internal error"
+                            localizationContext.localizeOrDefault(
+                                    localizationKey("phases.internal.error"),
+                                    "Internal error"
+                            )
                     )
                 }
             }
@@ -248,9 +246,7 @@ class TelegramArgumentManager(
                         .toIntOrNull()
                         ?.let { if (variants.indices.contains(it)) variants[it] else null }
 
-                        ?: variants
-                                .filter { it.lowercase() == data.lowercase() }
-                                .firstOrNull()
+                        ?: variants.firstOrNull { it.lowercase() == data.lowercase() }
 
             }
         } finally {
@@ -299,13 +295,19 @@ class TelegramArgumentManager(
             line {
                 if (needButtonForPrevPage) {
                     add {
-                        text = localizationContext.findLocalizedStringByKey("phases.prev.page") ?: "Previous page\u2B05"
+                        text = localizationContext.localizeOrDefault(
+                                localizationKey("phases.prev.page"),
+                                "Previous page\u2B05"
+                        )
                         callbackData(_chatId, _userId, "prev")
                     }
                 }
                 if (needButtonForNextPage) {
                     add {
-                        text = localizationContext.findLocalizedStringByKey("phases.next.page") ?: "Next page\u21A1"
+                        text = localizationContext.localizeOrDefault(
+                                localizationKey("phases.next.page"),
+                                "Next page\u21A1"
+                        )
                         callbackData(_chatId, _userId, "next")
                     }
                 }
@@ -323,7 +325,7 @@ class TelegramArgumentManager(
 
     private fun InlineKeyboardMarkupLineBuilder.addContinueButton() {
         add {
-            text = localizationContext.findLocalizedStringByKey("phases.skip") ?: "Skip\u27A1"
+            text = localizationContext.localizeOrDefault(localizationKey("phases.skip"), "Skip\u27A1")
             continueCallback(_chatId, _userId)
         }
     }
@@ -369,11 +371,14 @@ class TelegramArgumentManager(
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(TelegramArgumentManager::class.java)
+
         private const val TIMEOUT_ARGUMENT_MS: Long = 360_000
+
         private const val MAX_MENU_COUNT_LINES = 2
         private const val MAX_MENU_ELEMENTS_ON_LINE = 5
         private const val MAX_MENU_ELEMENTS_ON_PAGE = MAX_MENU_ELEMENTS_ON_LINE * MAX_MENU_COUNT_LINES
-        private const val DEFAULT_MESSAGE_FOR_WRITE = "@{bot.abstract.command.please.write.argument}"
-        private const val DEFAULT_MESSAGE_FOR_CHOOSE = "@{bot.abstract.command.please.choose.argument}"
+
+        private const val DEFAULT_MESSAGE_FOR_WRITE = "Please write argument"
+        private const val DEFAULT_MESSAGE_FOR_CHOOSE = "Please choose argument"
     }
 }

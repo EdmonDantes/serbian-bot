@@ -2,8 +2,10 @@ package ru.loginov.serbian.bot.telegram.command.impl.shop.create
 
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.serbian.bot.telegram.command.impl.ComplexSubCommand
 import ru.loginov.serbian.bot.telegram.command.impl.shop.ShopBotCommand
+import ru.loginov.simple.localization.impl.localizationKey
 
 @Component
 @SubCommand([ShopBotCommand::class])
@@ -11,5 +13,6 @@ import ru.loginov.serbian.bot.telegram.command.impl.shop.ShopBotCommand
 class SubCommandCreateForShop() : ComplexSubCommand() {
 
     override val commandName: String = "create"
-    override val actionDescription: String = "@{bot.command.shop.create._shopDescription}"
+    override fun getActionDescription(context: BotCommandExecuteContext): String? =
+            context.localization.localize(localizationKey("bot.command.shop.create._actionDescription"))
 }

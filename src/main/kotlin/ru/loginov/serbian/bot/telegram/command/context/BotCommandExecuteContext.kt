@@ -1,13 +1,19 @@
 package ru.loginov.serbian.bot.telegram.command.context
 
 import ru.loginov.serbian.bot.data.dto.user.UserDto
-import ru.loginov.serbian.bot.spring.localization.context.LocalizationContext
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
+import ru.loginov.simple.localization.LocalizationRequest
+import ru.loginov.simple.localization.context.LocalizationContext
 import ru.loginov.simple.permissions.PermissionContext
 import ru.loginov.telegram.api.TelegramAPI
+import ru.loginov.telegram.api.entity.Message
 
-// WARN: Use inheritance instead of composition for reduce count of creating objects for every command call
-interface BotCommandExecuteContext : PermissionContext, LocalizationContext, ArgumentManager, TelegramAPI {
-    val user: UserDto
+interface BotCommandExecuteContext : PermissionContext, TelegramAPI {
+
+    val arguments: ArgumentManager<LocalizationRequest>
+    val localization: LocalizationContext
+
     val chatId: Long
+    val user: UserDto
+    val inputMessage: Message
 }

@@ -34,10 +34,8 @@ class TelegramUpdateFetcher(
         var lastSeq: Long? = updateSequenceRepository.findById(DEFAULT_ID).orElse(null)?.seq
         var i = 0
         while (isContinue.get()) {
-            while (i < 1000) {
-                lastSeq = fetchUpdates(lastSeq)
-                i++
-            }
+            lastSeq = fetchUpdates(lastSeq)
+            i++
         }
     }
 
@@ -64,12 +62,17 @@ class TelegramUpdateFetcher(
                     emptyList()
                 }
 
-        var newLastSeq: Long? = lastSeq
+        if (updates.isEmpty()) {
+            return lastSeq
+        }
 
-        updates.forEach { update ->
-            newLastSeq = max(newLastSeq ?: Long.MIN_VALUE, update.id + 1)
-            onUpdateHandlers.forEach { handler ->
-                coroutineScope.launch(fetcherThreadContext) {
+        var newLastSeq = max(lastSeq ?: Long.MIN_VALUE, updates.maxOf { it.id } + 1)
+
+        onUpdateHandlers.forEach { handler ->
+            coroutineScope.launch(fetcherThreadContext) {
+                updates.forEach { update ->
+                    newLastSeq = max(newLastSeq, update.id + 1)
+
                     try {
                         handler.onUpdate(update)
                     } catch (e: Exception) {
@@ -79,8 +82,10 @@ class TelegramUpdateFetcher(
             }
         }
 
+
+
         if (newLastSeq != lastSeq) {
-            updateSequenceRepository.saveAndFlush(UpdateSequenceDto(newLastSeq!!, DEFAULT_ID))
+            updateSequenceRepository.saveAndFlush(UpdateSequenceDto(newLastSeq, DEFAULT_ID))
         }
 
         return newLastSeq
