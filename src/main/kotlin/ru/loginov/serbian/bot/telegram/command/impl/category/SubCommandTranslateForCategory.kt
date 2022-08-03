@@ -1,21 +1,21 @@
 package ru.loginov.serbian.bot.telegram.command.impl.category
 
+import io.github.edmondantes.simple.localization.Localizer
+import io.github.edmondantes.simple.localization.impl.localizationKey
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
+import ru.loginov.serbian.bot.telegram.command.base.LocalizedSubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.LocalizedSubCommand
-import ru.loginov.serbian.bot.util.markdown2
-import ru.loginov.simple.localization.impl.localizationKey
-import ru.loginov.simple.localization.manager.LocalizationManager
+import ru.loginov.serbian.bot.telegram.util.markdown2
 
 @Component
 @SubCommand(parents = [CategoryBotCommand::class])
 //TODO: Add @RequiredPermission("commands.category.translate")
 class SubCommandTranslateForCategory(
         private val categoryManager: CategoryManager,
-        private val localizationManager: LocalizationManager
+        private val localizationManager: Localizer
 ) : LocalizedSubCommand("bot.command.category.translate") {
 
     override val commandName: String = "translate"
@@ -30,7 +30,7 @@ class SubCommandTranslateForCategory(
         if (!categoryManager.existsById(categoryId)) {
             sendMessage {
                 markdown2(localization) {
-                    append(localizationKey("_error.can.not.find.category", categoryId))
+                    append(localizationKey("_error.can.not.find.category", "$categoryId"))
                 }
             }
             return
@@ -52,7 +52,7 @@ class SubCommandTranslateForCategory(
         if (categoryManager.changeLocalization(categoryId, lang, translate)) {
             sendMessage {
                 markdown2(localization) {
-                    append(localizationKey("_success", translate, categoryId))
+                    append(localizationKey("_success", translate, "$categoryId"))
                 }
             }
         } else {

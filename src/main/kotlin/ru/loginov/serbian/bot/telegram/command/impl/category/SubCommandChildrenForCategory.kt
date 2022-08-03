@@ -3,17 +3,17 @@ package ru.loginov.serbian.bot.telegram.command.impl.category
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.base.LocalizedSubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.LocalizedSubCommand
-import ru.loginov.serbian.bot.util.markdown2
-import ru.loginov.simple.localization.impl.localizationKey
+import ru.loginov.serbian.bot.telegram.util.markdown2
+import ru.loginov.simple.permissions.annotation.RequiredPermission
 
 @Component
 @SubCommand(parents = [CategoryBotCommand::class])
+@RequiredPermission("commands.category.children")
 class SubCommandChildrenForCategory(
         private val categoryManager: CategoryManager
 ) : LocalizedSubCommand("bot.command.category.children") {
-
 
     override val commandName: String = "children"
 
@@ -28,14 +28,14 @@ class SubCommandChildrenForCategory(
         sendMessage {
             markdown2(localization) {
                 if (category == null) {
-                    append(localizationKey("_error.can.not.find.category"))
+                    appendKey("_error.can.not.find.category")
                 } else {
                     val parentName = categoryManager.findLocalizedNameFor(category, user.language)
                             ?: "ID=${category.id}"
                     if (category.subCategories.isEmpty()) {
-                        append(localizationKey("_error.can.not.find.children", parentName))
+                        appendKey("_error.can.not.find.children", parentName)
                     } else {
-                        append(localizationKey("_success", parentName))
+                        appendKey("_success", parentName)
                         category.subCategories.forEach {
                             val categoryName = categoryManager.findLocalizedNameFor(it, user.language)
                             if (categoryName != null) {

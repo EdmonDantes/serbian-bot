@@ -1,10 +1,10 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
+import io.github.edmondantes.simple.localization.context.LocalizationContext
+import io.github.edmondantes.simple.permissions.manager.PermissionManager
 import ru.loginov.serbian.bot.data.dto.user.UserDto
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
 import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.withLocalization
-import ru.loginov.simple.localization.context.LocalizationContext
-import ru.loginov.simple.permissions.manager.PermissionManager
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Message
 

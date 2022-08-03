@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component
 import ru.loginov.simple.permissions.annotation.ForcePermissionCheck
 import ru.loginov.simple.permissions.annotation.RequiredPermission
 import ru.loginov.simple.permissions.scanner.FullyPermissionConditionalScanner
+import ru.loginov.simple.permissions.scanner.PermissionConditionalScanner
 import ru.loginov.simple.permissions.util.getAllInterfaces
 import ru.loginov.simple.permissions.util.getAnyAnnotations
 import ru.loginov.simple.permissions.util.tryToGetJavaMethods
-import ru.loginov.spring.simple.permissions.scanner.PermissionConditionalScanner
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import kotlin.reflect.full.functions
@@ -56,7 +56,7 @@ class PermissionAnnotationBeanPostProcessor : BeanPostProcessor {
                     if (permissionRegister.register(it)) {
                         LOGGER.debug("Registered permission '$it'")
                     } else {
-                        LOGGER.warn("Can not register permission '$it'")
+                        LOGGER.warn("Can not register permission '$it' in class '$clazz'")
                     }
                 }
             }

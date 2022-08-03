@@ -2,6 +2,7 @@ package ru.loginov.serbian.bot.data.repository.search
 
 import org.hibernate.search.mapper.orm.Search
 import org.springframework.beans.factory.annotation.Autowired
+import java.util.function.Function
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 import javax.transaction.Transactional
@@ -17,8 +18,8 @@ class DefaultMultiSearchRepository : MultiSearchRepository {
         val classes = map.keys
         val properties = map.values.toTypedArray()
 
-        return Search.session(entityManager).search(classes).where {
+        return Search.session(entityManager).search(classes).where ( Function {
             it.match().fields(*properties).matching(value).fuzzy()
-        }.fetch(20).hits() as List<Any>
+        }).fetch(20).hits() as List<Any>
     }
 }

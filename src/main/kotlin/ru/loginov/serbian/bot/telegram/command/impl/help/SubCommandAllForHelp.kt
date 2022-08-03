@@ -1,14 +1,14 @@
 package ru.loginov.serbian.bot.telegram.command.impl.help
 
+import io.github.edmondantes.simple.localization.impl.localizationKey
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.base.AbstractSubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.AbstractSubCommand
 import ru.loginov.serbian.bot.telegram.command.manager.BotCommandManager
-import ru.loginov.serbian.bot.util.markdown2
-import ru.loginov.simple.localization.impl.localizationKey
+import ru.loginov.serbian.bot.telegram.util.markdown2
 import ru.loginov.simple.permissions.exception.AccessDeniedException
 
 @Component

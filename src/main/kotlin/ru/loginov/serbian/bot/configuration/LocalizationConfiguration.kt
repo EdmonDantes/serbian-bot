@@ -1,16 +1,16 @@
 package ru.loginov.serbian.bot.configuration
 
+import io.github.edmondantes.simple.localization.Localizer
+import io.github.edmondantes.simple.localization.impl.ResourceBundleLocalizer
+import io.github.edmondantes.simple.localization.parser.LocalizationRequestParser
+import io.github.edmondantes.simple.localization.parser.impl.DefaultLocalizationRequestParser
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.loginov.simple.localization.manager.LocalizationManager
-import ru.loginov.simple.localization.manager.impl.ResourceBundleLocalizationManager
-import ru.loginov.simple.localization.parser.LocalizationRequestParser
-import ru.loginov.simple.localization.parser.impl.DefaultLocalizationRequestParser
 
 @Configuration
 //TODO: Will move data to database and add integration with database
-open class LocalizationConfiguration {
+class LocalizationConfiguration {
 
     /**
      * Which languages is supported by application
@@ -26,7 +26,7 @@ open class LocalizationConfiguration {
     /**
      * Base name for resources bundle for localization
      */
-    @Value("\${bot.language.file.base.name:}")
+    @Value("\${bot.language.file.base.name:lang/localization}")
     private var baseNameForLocalizationFiles: String = "lang/localization"
 
     @Value("\${bot.language.support:en;ru}")
@@ -35,8 +35,8 @@ open class LocalizationConfiguration {
     }
 
     @Bean
-    fun localizationManager(): LocalizationManager =
-            ResourceBundleLocalizationManager(supportLanguages, defaultLanguage, baseNameForLocalizationFiles)
+    fun localizationManager(): Localizer =
+            ResourceBundleLocalizer(supportLanguages, defaultLanguage, baseNameForLocalizationFiles)
 
     @Bean
     fun localizationRequestParser(): LocalizationRequestParser =

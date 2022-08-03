@@ -1,10 +1,10 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
+import io.github.edmondantes.simple.localization.LocalizationRequest
+import io.github.edmondantes.simple.localization.context.LocalizationContext
 import ru.loginov.serbian.bot.data.dto.user.UserDto
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.simple.localization.LocalizationRequest
-import ru.loginov.simple.localization.context.LocalizationContext
 import ru.loginov.telegram.api.entity.BotCommand
 import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.Update
@@ -29,11 +29,11 @@ open class ParentBotCommandExecuteContext(protected val parent: BotCommandExecut
     override val chatId: Long
         get() = parent.chatId
 
-    override fun hasPermission(permission: String): Boolean =
-            parent.hasPermission(permission)
+    override fun checkPermission(permission: String): Boolean =
+            parent.checkPermission(permission)
 
-    override fun hasAllPermissions(permissions: List<String>): Boolean =
-            parent.hasAllPermissions(permissions)
+    override fun checkAllPermission(permissions: List<String>): Boolean =
+            parent.checkAllPermission(permissions)
 
     override suspend fun answerCallbackQuery(request: AnswerCallbackQueryRequest.() -> Unit) =
             parent.answerCallbackQuery(request)

@@ -1,11 +1,11 @@
 package ru.loginov.serbian.bot.data.manager.category
 
-import ru.loginov.serbian.bot.data.dto.category.CategoryDto
-import ru.loginov.serbian.bot.data.dto.category.CategoryDtoLocalization
-import ru.loginov.simple.localization.exception.LanguageNotSupportedException
+import io.github.edmondantes.simple.localization.exception.LanguageNotSupportedException
+import ru.loginov.serbian.bot.data.dto.category.CategoryDescription
+import ru.loginov.serbian.bot.data.dto.category.CategoryLocalizedName
 
 /**
- * Class for managing [CategoryDto]
+ * Class for managing [CategoryDescription]
  */
 interface CategoryManager {
 
@@ -13,21 +13,21 @@ interface CategoryManager {
      * Try to find all categories without parent.
      * @return List of found categories else empty list
      */
-    fun getAllRootCategories(): List<CategoryDto>
+    fun getAllRootCategories(): List<CategoryDescription>
 
     /**
      * Try to find category by [name] with most match chance.
      * @return List of found categories names with sorted by match chance descending.
      */
-    fun findByName(name: String): List<CategoryDtoLocalization>
+    fun findByName(name: String): List<CategoryLocalizedName>
 
     /**
      * Try to find category with [categoryId]. Load additional data for category
      *
      * If you want only check existing please use method [existsById]
-     * @return If found return [CategoryDto] else null
+     * @return If found return [CategoryDescription] else null
      */
-    fun findById(categoryId: Int): CategoryDto?
+    fun findById(categoryId: Int): CategoryDescription?
 
     /**
      * Check if application have category with [categoryId]
@@ -36,7 +36,7 @@ interface CategoryManager {
     fun existsById(categoryId: Int): Boolean
 
     /**
-     * Try to get localized name for [categoryDto]. If necessary manager will load additional data
+     * Try to get localized name for [categoryDescription]. If necessary manager will load additional data
      * @param language language for localization. Default: 'en' (English)
      * @return If it can, return localized name for a given language,
      * else for English language,
@@ -45,15 +45,15 @@ interface CategoryManager {
      * @throws IllegalStateException if manager can not load localizations
      */
     @Throws(LanguageNotSupportedException::class, IllegalStateException::class)
-    fun findLocalizedNameFor(categoryDto: CategoryDto, language: String?): String?
+    fun findLocalizedNameFor(categoryDescription: CategoryDescription, language: String?): String?
 
     /**
      * Create new category with [names] and parent with id [parentId]
      * @param names keys - languages, values - localized names
-     * @return If success saved object of [CategoryDto], else null
+     * @return If success saved object of [CategoryDescription], else null
      * @throws LanguageNotSupportedException If one language in [names] is not supported
      */
-    fun create(names: Map<String, String>, parentId: Int? = null): CategoryDto?
+    fun create(names: Map<String, String>, parentId: Int? = null): CategoryDescription?
 
     /**
      * Change localization name for category with [categoryId]

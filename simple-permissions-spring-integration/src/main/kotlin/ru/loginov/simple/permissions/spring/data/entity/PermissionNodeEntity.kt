@@ -1,6 +1,6 @@
 package ru.loginov.simple.permissions.spring.data.entity
 
-import ru.loginov.simple.permissions.entity.PermissionNode
+import io.github.edmondantes.simple.permissions.data.entity.PermissionNode
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.FetchType
@@ -20,7 +20,7 @@ import javax.persistence.Transient
                 name = "with_children", attributeNodes = [
             NamedAttributeNode(value = "id"),
             NamedAttributeNode(value = "value"),
-            NamedAttributeNode(value = "excluded"),
+            NamedAttributeNode(value = "_excluded"),
             NamedAttributeNode(value = "parentId"),
             NamedAttributeNode(value = "children")
         ]
@@ -35,11 +35,11 @@ class PermissionNodeEntity : PermissionNode {
             value: String? = null,
             excluded: Boolean? = null,
             parentId: Int? = null,
-            children: List<PermissionNodeEntity> = emptyList(),
+            children: List<PermissionNodeEntity>? = null,
     ) : super() {
-        this.id = id
+        this.id = id ?: -1
         this.value = value
-        this.excluded = excluded
+        this._excluded = excluded
         this.parentId = parentId
         this.children = children
     }
@@ -49,15 +49,21 @@ class PermissionNodeEntity : PermissionNode {
             node.value,
             node.excluded,
             node.parentId,
-            node.childrenIds?.map { PermissionNodeEntity(it) } ?: emptyList()
+            node.childrenIds.map { PermissionNodeEntity(it) }
     )
 
     @Id
     @GeneratedValue
-    override var id: Int? = null
+    override var id: Int = -1
 
     override var value: String? = null
-    override var excluded: Boolean? = null
+
+    @Column(name = "excluded", nullable = false)
+    var _excluded: Boolean? = null
+
+    @get:Transient
+    override val excluded: Boolean
+        get() = _excluded ?: error("This permission node is not yet saved or loaded in repo")
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parentId", insertable = false, updatable = false)
@@ -67,11 +73,14 @@ class PermissionNodeEntity : PermissionNode {
     override var parentId: Int? = null
 
     @OneToMany(mappedBy = "parentId", fetch = FetchType.LAZY)
-    var children: List<PermissionNodeEntity> = emptyList()
+    var children: List<PermissionNodeEntity>? = null
         set(value) {
-            field = value; childrenIds = value.mapNotNull { it.id }
+            field = value;
+            if (value != null) {
+                childrenIds = value.map { it.id }
+            }
         }
 
     @Transient
-    override var childrenIds: List<Int>? = emptyList()
+    override var childrenIds: List<Int> = emptyList()
 }

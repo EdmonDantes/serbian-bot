@@ -1,10 +1,12 @@
 package ru.loginov.simple.permissions.spring
 
+import io.github.edmondantes.simple.permissions.data.storage.PermissionStorage
+import io.github.edmondantes.simple.permissions.validator.PermissionValidator
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import ru.loginov.simple.permissions.permission.PermissionValidator
-import ru.loginov.simple.permissions.storage.PermissionStorage
 
 @Component
+@Qualifier("permissionStorage")
 class DefaultPermissionRegister(private val permissionValidator: PermissionValidator) : PermissionRegister, PermissionStorage {
     override val permissions: MutableSet<String> = HashSet()
 

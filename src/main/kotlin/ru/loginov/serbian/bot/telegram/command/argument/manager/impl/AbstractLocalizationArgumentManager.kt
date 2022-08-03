@@ -1,14 +1,13 @@
 package ru.loginov.serbian.bot.telegram.command.argument.manager.impl
 
+import io.github.edmondantes.simple.localization.LocalizationRequest
+import io.github.edmondantes.simple.localization.impl.singleRequest
 import ru.loginov.serbian.bot.telegram.command.argument.AnyArgument
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
 import ru.loginov.serbian.bot.telegram.command.argument.manager.LocalizationArgumentManager
-import ru.loginov.simple.localization.LocalizationRequest
-import ru.loginov.simple.localization.impl.singleRequest
 
 abstract class AbstractLocalizationArgumentManager<T>(
-        private val parent: ArgumentManager<T>,
-        private val shouldAlwaysSendMessage: Boolean = true
+        private val parent: ArgumentManager<T>
 ) : LocalizationArgumentManager {
 
     override fun choose(name: String, message: LocalizationRequest?): AnyArgument<Boolean> =

@@ -1,12 +1,16 @@
 package ru.loginov.serbian.bot.telegram.command.argument.manager.impl
 
+import io.github.edmondantes.simple.kotlin.callbacks.SimpleCallback
+import io.github.edmondantes.simple.kotlin.callbacks.key.wait
+import io.github.edmondantes.simple.localization.Localizer
+import io.github.edmondantes.simple.localization.context.LocalizationContext
+import io.github.edmondantes.simple.localization.impl.localizationKey
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
-import ru.loginov.serbian.bot.telegram.callback.TelegramCallback.Companion.CANCEL_CALLBACK
-import ru.loginov.serbian.bot.telegram.callback.TelegramCallback.Companion.CONTINUE_CALLBACK
-import ru.loginov.serbian.bot.telegram.callback.TelegramCallbackManager
+import ru.loginov.serbian.bot.configuration.TelegramCallbackStore
+import ru.loginov.serbian.bot.telegram.callback.CANCEL_CALLBACK
+import ru.loginov.serbian.bot.telegram.callback.CONTINUE_CALLBACK
+import ru.loginov.serbian.bot.telegram.callback.CallbackData
 import ru.loginov.serbian.bot.telegram.callback.callbackData
 import ru.loginov.serbian.bot.telegram.callback.continueCallback
 import ru.loginov.serbian.bot.telegram.command.argument.AnyArgument
@@ -18,25 +22,20 @@ import ru.loginov.serbian.bot.telegram.command.argument.value.ArgumentValue
 import ru.loginov.serbian.bot.telegram.command.argument.value.impl.DefaultArgumentValue
 import ru.loginov.serbian.bot.telegram.command.argument.value.transform
 import ru.loginov.serbian.bot.telegram.command.argument.value.transformOrEmpty
-import ru.loginov.simple.localization.context.LocalizationContext
-import ru.loginov.simple.localization.impl.localizationKey
-import ru.loginov.simple.localization.manager.LocalizationManager
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.Location
 import ru.loginov.telegram.api.entity.Message
 import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupBuilder
 import ru.loginov.telegram.api.entity.builder.InlineKeyboardMarkupLineBuilder
-import ru.loginov.telegram.api.util.Markdown2StringBuilder
-import ru.loginov.telegram.api.util.impl.DefaultMarkdown2StringBuilder
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class TelegramArgumentManager(
         private val telegram: TelegramAPI,
-        private val callbackManager: TelegramCallbackManager,
+        private val callbackManager: TelegramCallbackStore,
         private val localizationContext: LocalizationContext,
-        private val localizationManager: LocalizationManager,
+        private val localizationManager: Localizer,
         private val _chatId: Long,
         private val _userId: Long?,
 ) : ArgumentManager<String> {
@@ -71,7 +70,7 @@ class TelegramArgumentManager(
 
     override fun language(name: String, message: String?): AnyArgument<String> = DefaultArgument(name) { definition ->
         val menu = localizationManager.supportLanguages.associateBy { lang ->
-            localizationManager.localize(lang, localizationKey(lang))
+            localizationManager.localize(lang, localizationKey("language.$lang"))
         }
 
         argument(name, menu, message).configure(definition).process()
@@ -89,18 +88,23 @@ class TelegramArgumentManager(
         }
 
         try {
+
             val location = suspendCoroutine<Location> { continuation ->
-                callbackManager.addCallback(_chatId, _userId, TIMEOUT_ARGUMENT_MS, TimeUnit.MILLISECONDS) { data ->
+                val callback = SimpleCallback<CallbackData> { context ->
+                    context?.remove()
+                    val data = context?.data
                     if (data == null) {
-                        continuation.resumeWithException(CancellationException("Callback was cancelled by user"))
-                        true
+                        continuation.resumeWithException(CancellationException("Callback was cancelled"))
                     } else if (data.location != null) {
                         continuation.resumeWith(Result.success(data.location))
-                        true
-                    } else {
-                        false
                     }
                 }
+                callbackManager.add(
+                        _chatId to _userId,
+                        callback,
+                        0,
+                        TimeUnit.MILLISECONDS.toMicros(TIMEOUT_ARGUMENT_MS)
+                )
             }
             DefaultArgumentValue(location.latitude to location.longitude)
         } finally {
@@ -149,68 +153,91 @@ class TelegramArgumentManager(
             message: String?
     ): ArgumentValue<String> {
 
-        val messagesTexts: MutableList<Markdown2StringBuilder> = ArrayList(variants.size)
-
-        messagesTexts.add(DefaultMarkdown2StringBuilder().apply {
-            append(message ?: DEFAULT_MESSAGE_FOR_CHOOSE)
-        })
-
-        for (index in 0 until variants.size - 1) {
-            val variant = variants[index]
-            messagesTexts.add(DefaultMarkdown2StringBuilder().apply {
-                append("$index. ")
-                append(variant)
-            })
-        }
-
-        val messagesFutures = messagesTexts.map {
-            coroutineScope {
-                async {
-                    telegram.sendMessage {
-                        chatId = _chatId
-                        markdown2(it)
+        val lstMsg = telegram.sendMessageWithoutLimit {
+            chatId = _chatId
+            markdown2 {
+                append(message ?: DEFAULT_MESSAGE_FOR_CHOOSE)
+                append('\n')
+                append('\n')
+                variants.forEachIndexed { index, variant ->
+                    if (index != 0) {
+                        append('\n')
+                        append('\n')
                     }
+                    append(index)
+                    append('.')
+                    append(' ')
+                    append(variant)
                 }
             }
-        }.plus(
-                coroutineScope {
-                    async {
-                        val index = variants.lastIndex
-                        telegram.sendMessage {
-                            chatId = _chatId
-                            markdown2 {
-                                append("$index. ")
-                                append(variants[index])
-                            }
-                            inlineKeyboard {
-                                addChooseIndexButton(0, index)
-                                addUserActionButtons(definition.isOptional)
-                            }
-                        }
-                    }
-                }
-        )
-
-        val messages = messagesFutures.map { it.await() }
-
-        if (messages.size - 1 != variants.size) {
-            telegram.sendMessage {
-                chatId = _chatId
-                markdown2 {
-                    append(
-                            localizationContext.localizeOrDefault(
-                                    localizationKey("phases.internal.error"),
-                                    "Internal error"
-                            )
-                    )
-                }
+            inlineKeyboard {
+                addChooseIndexButton(0, variants.lastIndex)
+                addUserActionButtons(definition.isOptional)
             }
-
-            error("Can not send messages with all variants. Variants count '${variants.size}'. Send message count '${messages.size}'")
         }
+
+//        val messagesTexts: MutableList<Markdown2StringBuilder> = ArrayList(variants.size)
+//
+//        messagesTexts.add(DefaultMarkdown2StringBuilder().apply {
+//            append(message ?: DEFAULT_MESSAGE_FOR_CHOOSE)
+//        })
+//
+//        for (index in 0 until variants.size - 1) {
+//            val variant = variants[index]
+//            messagesTexts.add(DefaultMarkdown2StringBuilder().apply {
+//                append("$index. ")
+//                append(variant)
+//            })
+//        }
+//
+//        val messagesFutures = messagesTexts.map {
+//            coroutineScope {
+//                async {
+//                    telegram.sendMessage {
+//                        chatId = _chatId
+//                        markdown2(it)
+//                    }
+//                }
+//            }
+//        }.plus(
+//                coroutineScope {
+//                    async {
+//                        val index = variants.lastIndex
+//                        telegram.sendMessage {
+//                            chatId = _chatId
+//                            markdown2 {
+//                                append("$index. ")
+//                                append(variants[index])
+//                            }
+//                            inlineKeyboard {
+//                                addChooseIndexButton(0, index)
+//                                addUserActionButtons(definition.isOptional)
+//                            }
+//                        }
+//                    }
+//                }
+//        )
+//
+//        val messages = messagesFutures.map { it.await() }
+//
+//        if (messages.size - 1 != variants.size) {
+//            telegram.sendMessage {
+//                chatId = _chatId
+//                markdown2 {
+//                    append(
+//                            localizationContext.localizeOrDefault(
+//                                    localizationKey("phases.internal.error"),
+//                                    "Internal error"
+//                            )
+//                    )
+//                }
+//            }
+//
+//            error("Can not send messages with all variants. Variants count '${variants.size}'. Send message count '${messages.size}'")
+//        }
 
         var value: ArgumentValue<String>
-        var lastMessage: Message? = messages.last()
+        var lastMessage: Message? = lstMsg.last()//messages.last()
         var page = 0
 
         try {
@@ -250,7 +277,7 @@ class TelegramArgumentManager(
 
             }
         } finally {
-            messages.forEach {
+            lstMsg.forEach {
                 removeMessage(it)
             }
         }
@@ -331,19 +358,17 @@ class TelegramArgumentManager(
     }
 
     private suspend fun waitCallback(): ArgumentValue<String> {
-        val data = callbackManager.waitCallback(_chatId, _userId, TIMEOUT_ARGUMENT_MS, TimeUnit.MILLISECONDS)
+        val data = callbackManager.wait(
+                _chatId to _userId,
+                0,
+                TimeUnit.MILLISECONDS.toMicros(TIMEOUT_ARGUMENT_MS)
+        )
 
-        return when (data.dataFromCallback) {
-            CANCEL_CALLBACK -> {
-                throw CancellationException("Callback was cancelled by user")
-            }
-            CONTINUE_CALLBACK -> {
-                ArgumentValue.empty()
-            }
-            else -> {
-                (data.dataFromMessage ?: data.dataFromCallback)?.let { DefaultArgumentValue(it) }
-                        ?: ArgumentValue.empty()
-            }
+        return when (data.data) {
+            CANCEL_CALLBACK -> throw CancellationException("Callback was cancelled by user")
+            CONTINUE_CALLBACK -> ArgumentValue.empty()
+            else -> data.data?.let { DefaultArgumentValue(it) } ?: ArgumentValue.empty()
+
         }
     }
 

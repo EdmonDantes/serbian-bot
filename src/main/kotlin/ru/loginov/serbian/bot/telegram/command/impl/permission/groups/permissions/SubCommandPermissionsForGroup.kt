@@ -2,7 +2,7 @@
 //
 //import org.springframework.stereotype.Component
 //import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
-//import ru.loginov.serbian.bot.telegram.command.impl.ComplexSubCommand
+//import ru.loginov.serbian.bot.telegram.command.base.ComplexSubCommand
 //import ru.loginov.serbian.bot.telegram.command.impl.permission.groups.SubCommandGroupsForPermissions
 //import ru.loginov.simple.permissions.annotation.RequiredPermission
 //

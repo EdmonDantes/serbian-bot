@@ -1,20 +1,20 @@
 package ru.loginov.serbian.bot.telegram.command.impl.price
 
+import io.github.edmondantes.simple.localization.impl.localizationKey
+import io.github.edmondantes.simple.localization.impl.singleRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import ru.loginov.serbian.bot.data.manager.price.PriceDescriptionManager
+import ru.loginov.serbian.bot.data.manager.purchase.PurchaseManager
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
+import ru.loginov.serbian.bot.telegram.command.base.LocalizedSubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.LocalizedSubCommand
-import ru.loginov.serbian.bot.util.markdown2
-import ru.loginov.simple.localization.impl.localizationKey
-import ru.loginov.simple.localization.impl.singleRequest
+import ru.loginov.serbian.bot.telegram.util.markdown2
 
 @Component
 @SubCommand([PriceCommand::class])
 class SubCommandSetForPrice(
-        private val priceDescriptionManager: PriceDescriptionManager
+        private val purchaseManager: PurchaseManager
 ) : LocalizedSubCommand("bot.command.price.set") {
     override val commandName: String = "set"
 
@@ -36,21 +36,16 @@ class SubCommandSetForPrice(
                 .validate { it != null }
                 .get()!!
 
-        val minPrice = arguments.argument("minPrice").required()
-                .transform { it.toFloatOrNull() }
-                .validate { it != null }
-                .get()!!
-
-        val maxPrice = arguments.argument("maxPrice").required()
+        val price = arguments.argument("price").required()
                 .transform { it.toFloatOrNull() }
                 .validate { it != null }
                 .get()!!
 
         try {
             val dto = if (isUseCategory) {
-                priceDescriptionManager.createOrUpdateForCategory(descriptionElementId, shopId, minPrice, maxPrice)
+                purchaseManager.createForCategory(descriptionElementId, shopId, price)
             } else {
-                priceDescriptionManager.createOrUpdateForProduct(descriptionElementId, shopId, minPrice, maxPrice)
+                purchaseManager.createForProduct(descriptionElementId, shopId, price)
             }
             if (dto != null) {
                 sendMessage {

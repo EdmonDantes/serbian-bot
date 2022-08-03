@@ -1,7 +1,7 @@
 version = "0.0.1-SNAPSHOT"
 
 dependencies {
-    api(project(":simple-permissions-core"))
+    api("io.github.edmondantes:simple-permissions:0.1.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.2")
 
     implementation("org.springframework.boot:spring-boot-autoconfigure:2.7.0")

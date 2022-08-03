@@ -4,8 +4,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.user.UserManager
 import ru.loginov.serbian.bot.telegram.command.argument.optionalAndGet
+import ru.loginov.serbian.bot.telegram.command.base.LocalizedBotCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.LocalizedBotCommand
 
 @Component
 class StartCommand(

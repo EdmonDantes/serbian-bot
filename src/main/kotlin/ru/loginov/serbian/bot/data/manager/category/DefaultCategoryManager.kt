@@ -1,67 +1,64 @@
 package ru.loginov.serbian.bot.data.manager.category
 
+import io.github.edmondantes.simple.localization.Localizer
+import io.github.edmondantes.simple.localization.exception.LanguageNotSupportedException
 import org.hibernate.Hibernate
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import ru.loginov.serbian.bot.data.dto.category.CategoryDto
-import ru.loginov.serbian.bot.data.dto.category.CategoryDtoLocalization
+import ru.loginov.serbian.bot.data.dto.category.CategoryDescription
+import ru.loginov.serbian.bot.data.dto.category.CategoryLocalizedName
 import ru.loginov.serbian.bot.data.repository.category.CategoryDtoLocalizationRepository
 import ru.loginov.serbian.bot.data.repository.category.CategoryDtoRepository
 import ru.loginov.serbian.bot.data.repository.search.SearchRepository
-import ru.loginov.simple.localization.exception.LanguageNotSupportedException
-import ru.loginov.simple.localization.manager.LocalizationManager
-import ru.loginov.simple.localization.manager.prepareLanguage
 
 @Service
 class DefaultCategoryManager(
         private val categoryDtoRepository: CategoryDtoRepository,
         private val categoryDtoLocalizationRepository: CategoryDtoLocalizationRepository,
-        private val categoryDtoLocalizationSearchRepository: SearchRepository<CategoryDtoLocalization>,
-        private val localizationManager: LocalizationManager
+        private val categoryLocalizedNameSearchRepository: SearchRepository<CategoryLocalizedName>,
+        private val localizer: Localizer
 ) : CategoryManager {
 
-    override fun getAllRootCategories(): List<CategoryDto> = categoryDtoRepository.findAllRootWithLocalization()
+    override fun getAllRootCategories(): List<CategoryDescription> = categoryDtoRepository.findAllRootWithLocalization()
 
-    override fun findByName(name: String): List<CategoryDtoLocalization> =
-            categoryDtoLocalizationSearchRepository.findAllByGeneralProperty(name)
+    override fun findByName(name: String): List<CategoryLocalizedName> =
+            categoryLocalizedNameSearchRepository.findAllByGeneralProperty(name)
 
-    override fun findById(categoryId: Int): CategoryDto? =
+    override fun findById(categoryId: Int): CategoryDescription? =
             categoryDtoRepository.findByIdWithAllFields(categoryId).orElse(null)
 
     override fun existsById(categoryId: Int): Boolean =
             categoryDtoRepository.existsById(categoryId)
 
-    override fun findLocalizedNameFor(categoryDto: CategoryDto, language: String?): String? {
-        val lang = localizationManager.prepareLanguage(language)
-
-        val localizations = if (Hibernate.isInitialized(categoryDto.localization)) {
-            categoryDto.localization
-        } else if (categoryDto.id != null) {
-            categoryDtoRepository.findByIdWithLocalization(categoryDto.id!!).orElse(null)?.localization
+    override fun findLocalizedNameFor(categoryDescription: CategoryDescription, language: String?): String? {
+        val localizations = if (Hibernate.isInitialized(categoryDescription.localization)) {
+            categoryDescription.localization
+        } else if (categoryDescription.id != null) {
+            categoryDtoRepository.findByIdWithLocalization(categoryDescription.id!!).orElse(null)?.localization
         } else {
             null
         }
 
         if (localizations == null) {
-            error("Can not get localizations for category with id '${categoryDto.id}'")
+            error("Can not get localizations for category with id '${categoryDescription.id}'")
         }
 
         if (!Hibernate.isInitialized(localizations)) {
-            error("Can not get initialized localizations for category with id '${categoryDto.id}'")
+            error("Can not get initialized localizations for category with id '${categoryDescription.id}'")
         }
 
-        val localization = localizations[lang]
-                ?: localizations[localizationManager.defaultLanguage]
+        val localization = localizations[language ?: localizer.defaultLanguage]
+                ?: localizations[localizer.defaultLanguage]
                 ?: localizations.values.firstOrNull()
 
         return localization?.name
     }
 
-    override fun create(names: Map<String, String>, parentId: Int?): CategoryDto? {
-        val category = CategoryDto(parentId, null)
+    override fun create(names: Map<String, String>, parentId: Int?): CategoryDescription? {
+        val category = CategoryDescription(parentId, null)
 
         names.forEach {
-            if (localizationManager.isSupport(it.key)) {
+            if (localizer.isSupport(it.key)) {
                 category.putLocalization(it.key, it.value)
             } else {
                 throw LanguageNotSupportedException(it.key)
@@ -77,7 +74,7 @@ class DefaultCategoryManager(
     }
 
     override fun changeLocalization(categoryId: Int, language: String, value: String): Boolean {
-        if (!localizationManager.isSupport(language)) {
+        if (!localizer.isSupport(language)) {
             throw LanguageNotSupportedException(language)
         }
 
@@ -85,7 +82,7 @@ class DefaultCategoryManager(
             return false
         }
 
-        val localization = CategoryDtoLocalization(categoryId, language, value)
+        val localization = CategoryLocalizedName(categoryId, language, value)
         return try {
             categoryDtoLocalizationRepository.save(localization)
             true

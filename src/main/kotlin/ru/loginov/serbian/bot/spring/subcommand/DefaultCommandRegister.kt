@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.telegram.command.BotCommand
-import ru.loginov.serbian.bot.telegram.command.impl.ComplexBotCommand
+import ru.loginov.serbian.bot.telegram.command.base.ComplexBotCommand
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.memberProperties

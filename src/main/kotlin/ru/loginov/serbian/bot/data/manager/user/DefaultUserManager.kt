@@ -1,22 +1,25 @@
 package ru.loginov.serbian.bot.data.manager.user
 
+import io.github.edmondantes.simple.localization.Localizer
+import io.github.edmondantes.simple.localization.exception.LanguageNotSupportedException
+import io.github.edmondantes.simple.permissions.manager.PermissionManager
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.loginov.serbian.bot.data.dto.user.UserDataDto
 import ru.loginov.serbian.bot.data.dto.user.UserDto
 import ru.loginov.serbian.bot.data.repository.user.UserDataDtoRepository
 import ru.loginov.serbian.bot.data.repository.user.UserDtoRepository
-import ru.loginov.simple.localization.exception.LanguageNotSupportedException
-import ru.loginov.simple.localization.manager.LocalizationManager
-import ru.loginov.simple.permissions.manager.PermissionManager
+import ru.loginov.serbian.bot.util.transaction.TransactionHelper
 
 @Service
 class DefaultUserManager(
         private val userDtoRepository: UserDtoRepository,
         private val userDataDtoRepository: UserDataDtoRepository,
-        private val localizationManager: LocalizationManager,
+        private val localizationManager: Localizer,
         private val permissionManager: PermissionManager,
+        private val transactionHelper: TransactionHelper,
         @Value("\${bot.user.admin.ids:}") adminIdsStr: String
 ) : UserManager {
 
@@ -41,7 +44,7 @@ class DefaultUserManager(
                     localizationManager.defaultLanguage
                 else
                     language
-        user.canInputDifferentLanguages = canInputDifferentLanguages
+        user.canInputDifferentLanguages = canInputDifferentLanguages ?: false
         user.permissionGroup = permissionGroup
                 ?: (if (adminIds.contains(userId)) permissionManager.adminGroup else null)
                         ?: permissionManager.defaultGroup
@@ -65,18 +68,28 @@ class DefaultUserManager(
             throw LanguageNotSupportedException(language)
         }
 
-        val user = UserDto()
-
-        user.id = userId
-        user.chatId = chatId
-        user.language = language
-        user.canInputDifferentLanguages = canInputDifferentLanguages
-        user.permissionGroup = permissionGroup
-
         return try {
-            userDtoRepository.save(user)
+            transactionHelper.transaction {
+                if (chatId != null) {
+                    userDtoRepository.setChatId(userId, chatId)
+                }
+
+                if (language != null) {
+                    userDtoRepository.setLanguage(userId, language)
+                }
+
+                if (canInputDifferentLanguages != null) {
+                    userDtoRepository.setCanInputDifferentLanguages(userId, canInputDifferentLanguages)
+                }
+
+                if (permissionGroup != null) {
+                    userDtoRepository.setPermissionGroup(userId, permissionGroup)
+                }
+
+                userDtoRepository.findByIdOrNull(userId)
+            }
         } catch (e: Exception) {
-            LOGGER.warn("Can not update user '$user'", e)
+            LOGGER.warn("Can not update user with id '$userId'", e)
             null
         }
     }

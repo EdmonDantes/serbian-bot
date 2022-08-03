@@ -5,7 +5,6 @@ import ru.loginov.simple.permissions.annotation.ForcePermissionCheck
 import ru.loginov.simple.permissions.annotation.IgnorePermissionCheck
 import ru.loginov.simple.permissions.annotation.RequiredPermission
 import ru.loginov.simple.permissions.util.tryToGetJavaMethods
-import ru.loginov.spring.simple.permissions.scanner.PermissionConditionalScanner
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KCallable

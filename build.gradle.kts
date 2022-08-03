@@ -55,7 +55,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
-	//implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-web")
 
 	// ------- JSON processing --- \\
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -65,9 +65,9 @@ dependencies {
 	implementation("com.h2database:h2")
 
 	// --------- Search --------- \\
-	implementation("org.hibernate.search:hibernate-search-mapper-orm:6.1.5.Final")
+	implementation("org.hibernate.search:hibernate-search-mapper-orm:6.2.0.Alpha1")
 //	implementation("org.hibernate:hibernate-search-orm:5.11.10.Final")
-	implementation("org.hibernate.search:hibernate-search-backend-elasticsearch:6.1.5.Final")
+	implementation("org.hibernate.search:hibernate-search-backend-elasticsearch:6.2.0.Alpha1")
 	//implementation("org.hibernate.search:hibernate-search-backend-lucene:6.1.4.Final")
 
     // --------- Telegram ------- \\
@@ -80,7 +80,10 @@ dependencies {
     implementation(project(":simple-permissions-spring-integration"))
 
     // --------- Localization ---- \\
-    implementation(project(":simple-localization"))
+    implementation("io.github.edmondantes:simple-localization:0.1.0")
+
+    // --------- Callbacks ------- \\
+    implementation("io.github.edmondantes:simple-kotlin-callbacks:0.1.1")
 
     // --------- Logging --------- \\
     //implementation("org.apache.logging.log4j:log4j-to-slf4j:2.17.2")
@@ -88,6 +91,8 @@ dependencies {
 
     // --------- TEST ------------ \\
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.0")
 }
 
 tasks {

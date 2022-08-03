@@ -1,6 +1,6 @@
 package ru.loginov.simple.permissions.spring
 
-import ru.loginov.simple.permissions.storage.PermissionStorage
+import io.github.edmondantes.simple.permissions.data.storage.PermissionStorage
 
 interface PermissionRegister : PermissionStorage {
 

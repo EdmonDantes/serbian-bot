@@ -1,5 +1,6 @@
 package ru.loginov.serbian.bot.data.dto.user
 
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
 
@@ -17,21 +18,25 @@ class UserDto {
     /**
      * Direct chat id
      */
+    //@Column(nullable = false)
     var chatId: Long? = null
 
     /**
      * Language for user
      */
+    @Column(nullable = false)
     var language: String? = null
 
     /**
      * If true, bot will send menu for language choosing
      */
+    @Column(nullable = false)
     var canInputDifferentLanguages: Boolean? = null
 
     /**
      * Permissions group
      */
+    @Column(nullable = false)
     var permissionGroup: String? = null
 
     /**

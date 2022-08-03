@@ -1,10 +1,8 @@
 package ru.loginov.serbian.bot.telegram.command.argument
 
 interface AnyArgument<T> : Argument<T> {
-
     fun required(): Argument<T>
     fun optional(): Argument<T>
-
 }
 
 fun <T> AnyArgument<T>.configure(definition: ArgumentDefinition): Argument<T> =

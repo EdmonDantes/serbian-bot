@@ -15,16 +15,6 @@ internal fun Class<*>.getAnyAnnotations(): List<Annotation> =
             this.annotations.toList()
         }
 
-internal fun Class<*>.getAllInterfaces(): List<Class<*>> {
-    val result = ArrayList<Class<*>>()
-    var currentClass = this
-    while (currentClass != Any::class.java) {
-        result.addAll(currentClass.interfaces)
-        currentClass = currentClass.superclass
-    }
-    return result
-}
-
 fun KCallable<*>.tryToGetJavaMethods(): List<Method> = when (this) {
     is KFunction<*> -> listOf(javaMethod)
     is KMutableProperty<*> -> listOf(getter.javaMethod, setter.javaMethod)

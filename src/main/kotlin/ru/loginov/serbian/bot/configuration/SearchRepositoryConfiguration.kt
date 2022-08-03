@@ -2,6 +2,7 @@ package ru.loginov.serbian.bot.configuration
 
 import org.hibernate.search.mapper.orm.Search
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.stereotype.Component
@@ -15,11 +16,16 @@ import javax.transaction.Transactional
 @Component
 @Transactional
 @EnableTransactionManagement
+@ConditionalOnProperty(name = ["spring.jpa.properties.hibernate.search.enabled"], havingValue = "true", matchIfMissing = true)
 class SearchRepositoryConfiguration(
         @PersistenceContext val entityManager: EntityManager,
         private val repositories: List<SearchRepository<*>>
 ) : ApplicationListener<ApplicationReadyEvent> {
     override fun onApplicationEvent(event: ApplicationReadyEvent) {
+        if (repositories.isEmpty()) {
+            return
+        }
+
         try {
             Search.session(entityManager)
                     .massIndexer(repositories.map { it.entityClass })

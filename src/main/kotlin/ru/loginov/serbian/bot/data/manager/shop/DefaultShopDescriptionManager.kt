@@ -12,8 +12,8 @@ import org.springframework.data.jpa.domain.AbstractPersistable_
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.loginov.http.HttpClient
-import ru.loginov.serbian.bot.data.dto.shop.ShopDescriptionCommentDto
-import ru.loginov.serbian.bot.data.dto.shop.ShopDescriptionDto
+import ru.loginov.serbian.bot.data.dto.shop.ShopComment
+import ru.loginov.serbian.bot.data.dto.shop.ShopDescription
 import ru.loginov.serbian.bot.data.repository.search.SearchRepository
 import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionCommentDtoRepository
 import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionDtoRepository
@@ -26,12 +26,12 @@ import java.time.LocalDateTime
 class DefaultShopDescriptionManager(
         private val shopDescriptionDtoRepository: ShopDescriptionDtoRepository,
         private val shopDescriptionCommentDtoRepository: ShopDescriptionCommentDtoRepository,
-        private val searchRepo: SearchRepository<ShopDescriptionDto>,
+        private val searchRepo: SearchRepository<ShopDescription>,
         private val httpClient: HttpClient,
         private val geoApiContext: GeoApiContext
 ) : ShopDescriptionManager {
 
-    override suspend fun create(googleMapLink: String, floor: Int?): ShopDescriptionDto? {
+    override suspend fun create(googleMapLink: String, floor: Int?): ShopDescription? {
         val name = parseNameFrom(googleMapLink) ?: return null
 
         val results = try {
@@ -63,7 +63,7 @@ class DefaultShopDescriptionManager(
             return null
         }
 
-        val dto = ShopDescriptionDto()
+        val dto = ShopDescription()
         dto.googleMapLink = details.url.toString()
         dto.address = details.formattedAddress
         dto.googleMapId = candidate.placeId
@@ -91,8 +91,8 @@ class DefaultShopDescriptionManager(
             floor: Int?,
             latitude: Double?,
             longitude: Double?
-    ): ShopDescriptionDto? {
-        val dto = ShopDescriptionDto()
+    ): ShopDescription? {
+        val dto = ShopDescription()
         dto.shopName = name
         dto.address = address
         dto.floor = floor
@@ -107,7 +107,7 @@ class DefaultShopDescriptionManager(
         }
     }
 
-    override suspend fun findById(id: Int): ShopDescriptionDto? =
+    override suspend fun findById(id: Int): ShopDescription? =
             shopDescriptionDtoRepository.useSuspend {
                 try {
                     it.findByIdOrNull(id)
@@ -117,7 +117,7 @@ class DefaultShopDescriptionManager(
                 }
             }
 
-    override suspend fun findByName(name: String): List<ShopDescriptionDto> {
+    override suspend fun findByName(name: String): List<ShopDescription> {
         if (name.isBlank()) {
             return emptyList()
         }
@@ -127,7 +127,7 @@ class DefaultShopDescriptionManager(
         }
     }
 
-    override suspend fun findNearest(latitude: Double, longitude: Double): List<ShopDescriptionDto> {
+    override suspend fun findNearest(latitude: Double, longitude: Double): List<ShopDescription> {
         return shopDescriptionDtoRepository.useSuspend {
             it.findTopByLocation(PageRequest.ofSize(20), latitude, longitude)
         }
@@ -161,7 +161,7 @@ class DefaultShopDescriptionManager(
             return false
         }
 
-        val dto = ShopDescriptionCommentDto()
+        val dto = ShopComment()
         dto.entityId = shopId
         dto.comment = comment
         dto.createdTime = LocalDateTime.now()
@@ -177,7 +177,7 @@ class DefaultShopDescriptionManager(
         }
     }
 
-    override suspend fun getComments(shopId: Int, beforeDate: LocalDateTime?): List<ShopDescriptionCommentDto> =
+    override suspend fun getComments(shopId: Int, beforeDate: LocalDateTime?): List<ShopComment> =
             shopDescriptionCommentDtoRepository.useSuspend {
                 try {
                     it.findTop10ByEntityIdAndCreatedTimeBeforeOrderByCreatedTimeDesc(

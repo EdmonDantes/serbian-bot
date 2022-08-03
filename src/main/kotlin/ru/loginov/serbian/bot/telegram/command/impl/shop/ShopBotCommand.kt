@@ -1,9 +1,9 @@
 package ru.loginov.serbian.bot.telegram.command.impl.shop
 
+import io.github.edmondantes.simple.localization.impl.localizationKey
 import org.springframework.stereotype.Component
+import ru.loginov.serbian.bot.telegram.command.base.ComplexBotCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.ComplexBotCommand
-import ru.loginov.simple.localization.impl.localizationKey
 
 @Component
 //TODO: Add in next version. After update permission manager. @RequiredPermission("commands.shop")

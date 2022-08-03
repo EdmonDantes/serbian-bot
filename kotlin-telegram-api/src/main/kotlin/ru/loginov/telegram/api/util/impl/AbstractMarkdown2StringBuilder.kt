@@ -7,6 +7,7 @@ import java.net.URL
 abstract class AbstractMarkdown2StringBuilder : Markdown2StringBuilder {
 
     protected val markdown2 = StringBuilder()
+
     protected abstract val codeBlockEscapedSymbols: CharArray
 
     override fun append(builder: Markdown2StringBuilder): Markdown2StringBuilder = this.apply {

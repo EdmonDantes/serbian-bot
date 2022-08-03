@@ -1,8 +1,8 @@
 package ru.loginov.serbian.bot.data.manager.product
 
+import io.github.edmondantes.simple.localization.exception.LanguageNotSupportedException
 import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDto
 import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDtoLocalization
-import ru.loginov.simple.localization.exception.LanguageNotSupportedException
 
 //TODO: Create new business logic
 interface ProductDescriptionManager {

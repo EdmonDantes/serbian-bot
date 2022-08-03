@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import ru.loginov.serbian.bot.configuration.InMemoryJdbcConfiguration
-import ru.loginov.serbian.bot.data.dto.shop.ShopDescriptionDto
+import ru.loginov.serbian.bot.data.dto.shop.ShopDescription
 
 
 @SpringBootTest(classes = [InMemoryJdbcConfiguration::class, ShopDescriptionManager::class])
@@ -130,7 +130,7 @@ class ShopDescriptionManagerTest {
     }
 
 
-    private fun createShop(methodName: String): ShopDescriptionDto {
+    private fun createShop(methodName: String): ShopDescription {
         val shop = runBlocking {
             shopDescriptionManager.create("Test '$methodName''", "Test address")
         }

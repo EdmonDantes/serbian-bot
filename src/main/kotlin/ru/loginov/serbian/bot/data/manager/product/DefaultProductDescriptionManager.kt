@@ -1,5 +1,7 @@
 package ru.loginov.serbian.bot.data.manager.product
 
+import io.github.edmondantes.simple.localization.Localizer
+import io.github.edmondantes.simple.localization.exception.LanguageNotSupportedException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.hibernate.Hibernate
@@ -12,8 +14,6 @@ import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.data.repository.product.ProductDescriptionDtoLocalizationRepository
 import ru.loginov.serbian.bot.data.repository.product.ProductDescriptionDtoRepository
 import ru.loginov.serbian.bot.data.repository.search.SearchRepository
-import ru.loginov.simple.localization.exception.LanguageNotSupportedException
-import ru.loginov.simple.localization.manager.LocalizationManager
 
 //TODO: Create new business logic
 @Service
@@ -22,7 +22,7 @@ class DefaultProductDescriptionManager(
         private val productDescriptionDtoLocalizationRepository: ProductDescriptionDtoLocalizationRepository,
         private val searchRepository: SearchRepository<ProductDescriptionDtoLocalization>,
         private val categoryManager: CategoryManager,
-        private val localizationManager: LocalizationManager
+        private val localizer: Localizer
 ) : ProductDescriptionManager {
     override suspend fun create(names: Map<String, String>, categoryId: Int?): ProductDescriptionDto? {
         if (categoryId != null && !categoryManager.existsById(categoryId)) {
@@ -33,7 +33,7 @@ class DefaultProductDescriptionManager(
         dto.categoryId = categoryId
         dto.localization = HashMap()
         names.forEach { (lang, name) ->
-            if (!localizationManager.isSupport(lang)) {
+            if (!localizer.isSupport(lang)) {
                 throw LanguageNotSupportedException(lang)
             }
 
@@ -97,11 +97,11 @@ class DefaultProductDescriptionManager(
             }
 
     override fun findLocalizedNameFor(dto: ProductDescriptionDto, language: String?): String? {
-        if (language != null && !localizationManager.isSupport(language)) {
+        if (language != null && !localizer.isSupport(language)) {
             throw LanguageNotSupportedException(language)
         }
 
-        val lang = language ?: localizationManager.defaultLanguage
+        val lang = language ?: localizer.defaultLanguage
 
         val localizations = if (Hibernate.isInitialized(dto.localization)) {
             dto.localization
@@ -120,7 +120,7 @@ class DefaultProductDescriptionManager(
         }
 
         val localization = localizations[lang]
-                ?: localizations[localizationManager.defaultLanguage]
+                ?: localizations[localizer.defaultLanguage]
                 ?: localizations.values.firstOrNull()
 
         return localization?.name
@@ -138,7 +138,7 @@ class DefaultProductDescriptionManager(
             }
 
     override suspend fun changeLocalization(productId: Int, language: String, value: String): Boolean {
-        if (!containsWithId(productId) || !localizationManager.isSupport(language) || value.isBlank()) {
+        if (!containsWithId(productId) || !localizer.isSupport(language) || value.isBlank()) {
             return false
         }
 

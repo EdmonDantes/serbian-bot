@@ -2,15 +2,20 @@ package ru.loginov.serbian.bot.data.repository.price
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import ru.loginov.serbian.bot.data.dto.price.PriceDescriptionDto
+import ru.loginov.serbian.bot.data.dto.price.PriceDescription
 import java.util.Optional
 
 @Repository
-interface PriceDescriptionRepository : JpaRepository<PriceDescriptionDto, Int> {
+interface PriceDescriptionRepository : JpaRepository<PriceDescription, Int> {
 
-    fun findAllByCategoryId(categoryId: Int): List<PriceDescriptionDto>
-    fun findByCategoryIdAndShopId(categoryId: Int, shopId: Int): Optional<PriceDescriptionDto>
+    fun findAllByCategoryId(categoryId: Int): List<PriceDescription>
+    fun findAllByShopId(shopId: Int): List<PriceDescription>
+    fun findAllByProductId(productId: Int): List<PriceDescription>
 
-    fun findAllByProductId(productId: Int): List<PriceDescriptionDto>
-    fun findByProductIdAndShopId(productId: Int, shopId: Int): Optional<PriceDescriptionDto>
+    fun findByCategoryIdAndShopIdAndProductId(
+            categoryId: Int?,
+            shopId: Int?,
+            productId: Int?
+    ): Optional<PriceDescription>
+
 }

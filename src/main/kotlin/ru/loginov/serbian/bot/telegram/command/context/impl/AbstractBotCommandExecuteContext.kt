@@ -1,13 +1,13 @@
 package ru.loginov.serbian.bot.telegram.command.context.impl
 
+import io.github.edmondantes.simple.localization.LocalizationRequest
+import io.github.edmondantes.simple.localization.context.LocalizationContext
+import io.github.edmondantes.simple.permissions.PermissionOwner
+import io.github.edmondantes.simple.permissions.manager.PermissionManager
 import org.slf4j.LoggerFactory
 import ru.loginov.serbian.bot.data.dto.user.UserDto
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.simple.localization.LocalizationRequest
-import ru.loginov.simple.localization.context.LocalizationContext
-import ru.loginov.simple.permissions.PermissionOwner
-import ru.loginov.simple.permissions.manager.PermissionManager
 import ru.loginov.telegram.api.TelegramAPI
 import ru.loginov.telegram.api.entity.BotCommand
 import ru.loginov.telegram.api.entity.Message
@@ -33,13 +33,13 @@ abstract class AbstractBotCommandExecuteContext(
 ) : BotCommandExecuteContext {
 
     // Permission context implementation
-    override fun hasPermission(permission: String): Boolean {
-        val owner = permissionManager.getOwnerForGroupOrDefault(user.permissionGroup) ?: PermissionOwner.NO_PERMISSION
+    override fun checkPermission(permission: String): Boolean {
+        val owner = permissionManager.groupOrDefault(user.permissionGroup) ?: PermissionOwner.NO_PERMISSION
         return owner.checkPermission(permission.lowercase())
     }
 
-    override fun hasAllPermissions(permissions: List<String>): Boolean {
-        val owner = permissionManager.getOwnerForGroupOrDefault(user.permissionGroup) ?: PermissionOwner.NO_PERMISSION
+    override fun checkAllPermission(permissions: List<String>): Boolean {
+        val owner = permissionManager.groupOrDefault(user.permissionGroup) ?: PermissionOwner.NO_PERMISSION
         return owner.checkAllPermission(permissions)
     }
 

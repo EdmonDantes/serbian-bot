@@ -1,7 +1,7 @@
 package ru.loginov.simple.permissions.spring
 
+import io.github.edmondantes.simple.permissions.PermissionOwner
 import org.slf4j.LoggerFactory
-import ru.loginov.simple.permissions.PermissionContext
 import ru.loginov.simple.permissions.exception.AccessDeniedException
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
@@ -33,7 +33,8 @@ class PermissionCheckerProxyHandler(
         }
 
         val methodPermissions = methodsConditionals[currentMethod] ?: return method.invokeWithArgs(bean, args)
-        val context = args?.find { it is PermissionContext } as PermissionContext?
+
+        val context = args?.filterIsInstance<PermissionOwner>()?.firstOrNull()
 
         if (context == null) {
             logger.warn(
@@ -44,7 +45,7 @@ class PermissionCheckerProxyHandler(
         }
 
         val isHavePermissions = try {
-            context.hasAllPermissions(methodPermissions)
+            context.checkAllPermission(methodPermissions)
         } catch (e: Exception) {
             throw AccessDeniedException(e)
         }

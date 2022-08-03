@@ -59,7 +59,7 @@ class DefaultTelegramAPI(
             }
 
     override suspend fun setMyCommands(request: SetMyCommandsRequest.() -> Unit) {
-        client.requestJson<Boolean>(HttpMethod.Post, "setMyCommands", SetMyCommandsRequest().also(request))
+        client.requestJson<Boolean>(HttpMethod.Post, "setMyCommands", SetMyCommandsRequest().also(request), 10000)
     }
 
     override suspend fun sendMessage(request: SendMessageRequest.() -> Unit): Message? =

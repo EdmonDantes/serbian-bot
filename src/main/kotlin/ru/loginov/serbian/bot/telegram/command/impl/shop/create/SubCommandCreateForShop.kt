@@ -1,11 +1,11 @@
 package ru.loginov.serbian.bot.telegram.command.impl.shop.create
 
+import io.github.edmondantes.simple.localization.impl.localizationKey
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
+import ru.loginov.serbian.bot.telegram.command.base.ComplexSubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.ComplexSubCommand
 import ru.loginov.serbian.bot.telegram.command.impl.shop.ShopBotCommand
-import ru.loginov.simple.localization.impl.localizationKey
 
 @Component
 @SubCommand([ShopBotCommand::class])

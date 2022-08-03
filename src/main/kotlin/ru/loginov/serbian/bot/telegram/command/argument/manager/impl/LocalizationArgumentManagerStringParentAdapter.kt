@@ -1,18 +1,17 @@
 package ru.loginov.serbian.bot.telegram.command.argument.manager.impl
 
+import io.github.edmondantes.simple.localization.LocalizationRequest
+import io.github.edmondantes.simple.localization.context.LocalizationContext
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
 import ru.loginov.serbian.bot.telegram.command.argument.manager.LocalizationArgumentManager
-import ru.loginov.simple.localization.LocalizationRequest
-import ru.loginov.simple.localization.context.LocalizationContext
 
 /**
  * Implementation of [LocalizationArgumentManager] which using [ArgumentManager] which get strings like parent
  */
 class LocalizationArgumentManagerStringParentAdapter(
         private val localizationContext: LocalizationContext,
-        parent: ArgumentManager<String>,
-        shouldAlwaysSendMessage: Boolean = true
-) : AbstractLocalizationArgumentManager<String>(parent, shouldAlwaysSendMessage) {
+        parent: ArgumentManager<String>
+) : AbstractLocalizationArgumentManager<String>(parent) {
     override fun prepareMessage(message: LocalizationRequest?): String? =
             message?.let { transformMessage(it) }
 

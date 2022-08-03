@@ -1,14 +1,14 @@
 package ru.loginov.serbian.bot.telegram.command.impl.shop.find
 
+import io.github.edmondantes.simple.localization.impl.localizationKey
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.shop.ShopDescriptionManager
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
+import ru.loginov.serbian.bot.telegram.command.base.LocalizedSubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.LocalizedSubCommand
-import ru.loginov.serbian.bot.util.markdown2
-import ru.loginov.simple.localization.impl.localizationKey
+import ru.loginov.serbian.bot.telegram.util.markdown2
 
 @Component
 @SubCommand([SubCommandFindForShop::class])
@@ -35,9 +35,9 @@ class SubCommandByLocationForFind(
                             append(
                                     localizationKey(
                                             "_success.shop.description",
-                                            it.id,
-                                            it.shopName,
-                                            it.address,
+                                            it.id?.toString() ?: "",
+                                            it.shopName ?: "",
+                                            it.address ?: "",
                                             it.googleMapLink ?: "---"
                                     )
                             )

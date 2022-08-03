@@ -1,7 +1,7 @@
 package ru.loginov.serbian.bot.data.manager.user
 
+import io.github.edmondantes.simple.localization.exception.LanguageNotSupportedException
 import ru.loginov.serbian.bot.data.dto.user.UserDto
-import ru.loginov.simple.localization.exception.LanguageNotSupportedException
 
 /**
  * Class for manage users

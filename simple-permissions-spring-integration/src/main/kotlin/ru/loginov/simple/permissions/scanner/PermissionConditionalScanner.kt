@@ -1,4 +1,4 @@
-package ru.loginov.spring.simple.permissions.scanner
+package ru.loginov.simple.permissions.scanner
 
 import java.lang.reflect.Method
 

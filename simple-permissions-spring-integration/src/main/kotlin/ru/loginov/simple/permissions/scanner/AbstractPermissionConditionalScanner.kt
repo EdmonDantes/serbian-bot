@@ -1,7 +1,6 @@
 package ru.loginov.simple.permissions.scanner
 
 import ru.loginov.simple.permissions.annotation.RequiredPermission
-import ru.loginov.spring.simple.permissions.scanner.PermissionConditionalScanner
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 

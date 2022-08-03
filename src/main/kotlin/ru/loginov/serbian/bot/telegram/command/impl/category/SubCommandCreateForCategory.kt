@@ -1,19 +1,20 @@
 package ru.loginov.serbian.bot.telegram.command.impl.category
 
+import io.github.edmondantes.simple.localization.impl.localizationKey
+import io.github.edmondantes.simple.localization.impl.singleRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
 import ru.loginov.serbian.bot.spring.subcommand.annotation.SubCommand
 import ru.loginov.serbian.bot.telegram.command.argument.requiredAndGet
+import ru.loginov.serbian.bot.telegram.command.base.LocalizedSubCommand
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
-import ru.loginov.serbian.bot.telegram.command.impl.LocalizedSubCommand
-import ru.loginov.serbian.bot.util.markdown2
-import ru.loginov.simple.localization.impl.localizationKey
-import ru.loginov.simple.localization.impl.singleRequest
+import ru.loginov.serbian.bot.telegram.util.markdown2
+import ru.loginov.simple.permissions.annotation.RequiredPermission
 
 @Component
 @SubCommand(parents = [CategoryBotCommand::class])
-//TODO: Add @RequiredPermission("commands.category.create")
+@RequiredPermission("commands.category.create")
 class SubCommandCreateForCategory(
         private val categoryManager: CategoryManager
 ) : LocalizedSubCommand("bot.command.category.create") {
@@ -54,7 +55,7 @@ class SubCommandCreateForCategory(
                     }
 
                     if (category != null) {
-                        append(localizationKey("_.success", categoryName, category.id!!))
+                        append(localizationKey("_.success", categoryName, "${category.id!!}"))
                     } else {
                         append(localizationKey("_.can.not.create.category", categoryName))
                     }
