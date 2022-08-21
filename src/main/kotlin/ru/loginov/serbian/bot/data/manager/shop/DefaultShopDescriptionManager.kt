@@ -15,8 +15,8 @@ import ru.loginov.http.HttpClient
 import ru.loginov.serbian.bot.data.dto.shop.ShopComment
 import ru.loginov.serbian.bot.data.dto.shop.ShopDescription
 import ru.loginov.serbian.bot.data.repository.search.SearchRepository
-import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionCommentDtoRepository
-import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionDtoRepository
+import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionCommentRepository
+import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionRepository
 import ru.loginov.serbian.bot.util.google.suspendAndAwait
 import ru.loginov.serbian.bot.util.saveOr
 import ru.loginov.serbian.bot.util.useSuspend
@@ -24,8 +24,8 @@ import java.time.LocalDateTime
 
 @Service
 class DefaultShopDescriptionManager(
-        private val shopDescriptionDtoRepository: ShopDescriptionDtoRepository,
-        private val shopDescriptionCommentDtoRepository: ShopDescriptionCommentDtoRepository,
+        private val shopDescriptionRepository: ShopDescriptionRepository,
+        private val shopDescriptionCommentRepository: ShopDescriptionCommentRepository,
         private val searchRepo: SearchRepository<ShopDescription>,
         private val httpClient: HttpClient,
         private val geoApiContext: GeoApiContext
@@ -74,7 +74,7 @@ class DefaultShopDescriptionManager(
             dto.longitude = details.geometry.location.lng
         }
 
-        return shopDescriptionDtoRepository.useSuspend {
+        return shopDescriptionRepository.useSuspend {
             it.saveOr(dto) { e ->
                 LOGGER.warn(
                         "Can not save shop description for place from google map link with place id '${candidate.placeId}'",
@@ -99,7 +99,7 @@ class DefaultShopDescriptionManager(
         dto.latitude = latitude
         dto.longitude = longitude
 
-        return shopDescriptionDtoRepository.useSuspend {
+        return shopDescriptionRepository.useSuspend {
             it.saveOr(dto) { e ->
                 LOGGER.warn("Can not save shop description for {name:'$name';address:'$address';floor:'$floor'}", e)
                 null
@@ -108,7 +108,7 @@ class DefaultShopDescriptionManager(
     }
 
     override suspend fun findById(id: Int): ShopDescription? =
-            shopDescriptionDtoRepository.useSuspend {
+            shopDescriptionRepository.useSuspend {
                 try {
                     it.findByIdOrNull(id)
                 } catch (e: Exception) {
@@ -128,14 +128,14 @@ class DefaultShopDescriptionManager(
     }
 
     override suspend fun findNearest(latitude: Double, longitude: Double): List<ShopDescription> {
-        return shopDescriptionDtoRepository.useSuspend {
+        return shopDescriptionRepository.useSuspend {
             it.findTopByLocation(PageRequest.ofSize(20), latitude, longitude)
         }
     }
 
 
     override suspend fun existsById(id: Int): Boolean =
-            shopDescriptionDtoRepository.useSuspend {
+            shopDescriptionRepository.useSuspend {
                 try {
                     it.existsById(id)
                 } catch (e: Exception) {
@@ -145,7 +145,7 @@ class DefaultShopDescriptionManager(
             }
 
     override suspend fun remove(id: Int): Boolean =
-            shopDescriptionDtoRepository.useSuspend {
+            shopDescriptionRepository.useSuspend {
                 try {
                     it.deleteById(id)
                     true
@@ -162,11 +162,11 @@ class DefaultShopDescriptionManager(
         }
 
         val dto = ShopComment()
-        dto.entityId = shopId
+        dto.shopId = shopId
         dto.comment = comment
         dto.createdTime = LocalDateTime.now()
 
-        return shopDescriptionCommentDtoRepository.useSuspend {
+        return shopDescriptionCommentRepository.useSuspend {
             try {
                 it.save(dto)
                 true
@@ -178,9 +178,9 @@ class DefaultShopDescriptionManager(
     }
 
     override suspend fun getComments(shopId: Int, beforeDate: LocalDateTime?): List<ShopComment> =
-            shopDescriptionCommentDtoRepository.useSuspend {
+            shopDescriptionCommentRepository.useSuspend {
                 try {
-                    it.findTop10ByEntityIdAndCreatedTimeBeforeOrderByCreatedTimeDesc(
+                    it.findTop10ByShopIdAndCreatedTimeBeforeOrderByCreatedTimeDesc(
                             shopId,
                             beforeDate ?: LocalDateTime.now()
                     )

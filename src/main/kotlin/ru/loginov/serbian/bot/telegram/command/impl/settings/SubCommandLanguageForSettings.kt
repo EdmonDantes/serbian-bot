@@ -33,7 +33,7 @@ class SubCommandLanguageForSettings(
 
         val newLang = arguments.language("newLang").requiredAndGet()
 
-        userManager.update(user.id ?: error("Can not find user id"), language = newLang)
+//        userManager.update(user.id ?: error("Can not find user id"), language = newLang)
         user.language = newLang
 
         val newLangName = rootLocalizer.localizeOrDefault(newLang, localizationKey("language.$newLang"), newLang)

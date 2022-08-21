@@ -21,7 +21,7 @@ class SubCommandDifferentInputLanguageForSettings(private val userManager: UserM
     override suspend fun BotCommandExecuteContext.action() {
         val shouldChange = arguments.choose(
                 "shouldChange",
-                singleRequest("shouldChange", "${user.canInputDifferentLanguages ?: false}")
+                singleRequest("shouldChange")//, FIXME: "${user.canInputDifferentLanguages ?: false}")
         ).requiredAndGet()
 
         if (!shouldChange) {
@@ -30,8 +30,8 @@ class SubCommandDifferentInputLanguageForSettings(private val userManager: UserM
 
         val newValue = arguments.choose("property").requiredAndGet()
 
-        userManager.update(user.id ?: error("Can not find user id"), canInputDifferentLanguages = newValue)
-        user.canInputDifferentLanguages = newValue
+//        userManager.update(user.id ?: error("Can not find user id"), canInputDifferentLanguages = newValue)
+//        user.canInputDifferentLanguages = newValue
 
         sendMessage {
             markdown2(localization) {

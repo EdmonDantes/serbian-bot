@@ -32,11 +32,11 @@ class SubCommandChildrenForCategory(
                 } else {
                     val parentName = categoryManager.findLocalizedNameFor(category, user.language)
                             ?: "ID=${category.id}"
-                    if (category.subCategories.isEmpty()) {
+                    if (category.children.isEmpty()) {
                         appendKey("_error.can.not.find.children", parentName)
                     } else {
                         appendKey("_success", parentName)
-                        category.subCategories.forEach {
+                        category.children.forEach {
                             val categoryName = categoryManager.findLocalizedNameFor(it, user.language)
                             if (categoryName != null) {
                                 append("\n$categoryName -> ${it.id}")

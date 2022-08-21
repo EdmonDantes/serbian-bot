@@ -1,17 +1,17 @@
 package ru.loginov.serbian.bot.data.manager.product
 
 import io.github.edmondantes.simple.localization.exception.LanguageNotSupportedException
-import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDto
-import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDtoLocalization
+import ru.loginov.serbian.bot.data.dto.product.ProductDescription
+import ru.loginov.serbian.bot.data.dto.product.ProductLocalizedName
 
 //TODO: Create new business logic
 interface ProductDescriptionManager {
 
-    suspend fun create(names: Map<String, String>, categoryId: Int?): ProductDescriptionDto?
+    suspend fun create(names: Map<String, String>, categoryId: Int?): ProductDescription?
 
-    suspend fun findById(id: Int): ProductDescriptionDto?
-    suspend fun findByCategoryId(categoryId: Int): List<ProductDescriptionDto>
-    suspend fun findByName(name: String): List<ProductDescriptionDtoLocalization>
+    suspend fun findById(id: Int): ProductDescription?
+    suspend fun findByCategoryId(categoryId: Int): List<ProductDescription>
+    suspend fun findByName(name: String): List<ProductLocalizedName>
     suspend fun containsWithId(id: Int): Boolean
 
     /**
@@ -24,7 +24,7 @@ interface ProductDescriptionManager {
      * @throws IllegalStateException if manager can not load localizations
      */
     @Throws(LanguageNotSupportedException::class, IllegalStateException::class)
-    fun findLocalizedNameFor(dto: ProductDescriptionDto, language: String?): String?
+    fun findLocalizedNameFor(dto: ProductDescription, language: String?): String?
 
     suspend fun remove(id: Int): Boolean
 

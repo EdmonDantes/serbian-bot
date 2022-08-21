@@ -8,10 +8,13 @@ import ru.loginov.serbian.bot.data.dto.category.CategoryDescription
 import java.util.Optional
 
 @Repository
-interface CategoryDtoRepository : JpaRepository<CategoryDescription, Int> {
+interface CategoryDescriptionRepository : JpaRepository<CategoryDescription, Int> {
 
     @Query("SELECT dao FROM CategoryDescription dao JOIN FETCH dao.localization")
     fun findAllWithLocalization(): List<CategoryDescription>
+
+    @Query("SELECT dao FROM CategoryDescription dao WHERE dao.parent IS NULL")
+    fun findAllRoot(): List<CategoryDescription>
 
     @Query("SELECT dao FROM CategoryDescription dao JOIN FETCH dao.localization WHERE dao.parent IS NULL")
     fun findAllRootWithLocalization(): List<CategoryDescription>
@@ -19,10 +22,10 @@ interface CategoryDtoRepository : JpaRepository<CategoryDescription, Int> {
     @Query("SELECT dao FROM CategoryDescription dao LEFT JOIN FETCH dao.localization WHERE dao.id = :id")
     fun findByIdWithLocalization(@Param("id") id: Int): Optional<CategoryDescription>
 
-    @Query("SELECT dao FROM CategoryDescription dao LEFT JOIN FETCH dao.subCategories WHERE dao.id = :id")
+    @Query("SELECT dao FROM CategoryDescription dao LEFT JOIN FETCH dao.children WHERE dao.id = :id")
     fun findByIdWithSubCategories(@Param("id") id: Int): Optional<CategoryDescription>
 
-    @Query("SELECT dao FROM CategoryDescription dao LEFT JOIN FETCH dao.subCategories JOIN FETCH dao.localization WHERE dao.id = 1")
+    @Query("SELECT dao FROM CategoryDescription dao LEFT JOIN FETCH dao.children LEFT JOIN FETCH dao.localization WHERE dao.id = :id")
     fun findByIdWithAllFields(@Param("id") id: Int): Optional<CategoryDescription>
 
 }

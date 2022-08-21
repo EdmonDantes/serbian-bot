@@ -1,7 +1,6 @@
 package ru.loginov.serbian.bot.telegram.command.impl.category
 
 import io.github.edmondantes.simple.localization.impl.localizationKey
-import io.github.edmondantes.simple.localization.impl.singleRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
@@ -38,9 +37,10 @@ class SubCommandCreateForCategory(
                 .validate { it != null }
                 .getOrNull()
 
-        val lang = user.getInputLanguageOr(suspend {
-            arguments.argument("lang", singleRequest("language")).requiredAndGet()
-        })
+        val lang = "Ks" // FIXME: !!!!!
+//        val lang = user.getInputLanguageOr(suspend {
+//            arguments.argument("lang", singleRequest("language")).requiredAndGet()
+//        })
 
         sendMessage {
             markdown2(localization) {

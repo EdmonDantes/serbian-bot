@@ -2,7 +2,7 @@ package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import io.github.edmondantes.simple.localization.context.LocalizationContext
 import io.github.edmondantes.simple.permissions.manager.PermissionManager
-import ru.loginov.serbian.bot.data.dto.user.UserDto
+import ru.loginov.serbian.bot.data.dto.user.UserDescription
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
 import ru.loginov.serbian.bot.telegram.command.argument.manager.impl.withLocalization
 import ru.loginov.telegram.api.TelegramAPI
@@ -14,7 +14,7 @@ class DefaultBotCommandExecuteContext(
         localizationContext: LocalizationContext,
         arguments: ArgumentManager<String>,
         chatId: Long,
-        user: UserDto,
+        user: UserDescription,
         incomeMessage: Message
 ) : AbstractBotCommandExecuteContext(
         telegram,

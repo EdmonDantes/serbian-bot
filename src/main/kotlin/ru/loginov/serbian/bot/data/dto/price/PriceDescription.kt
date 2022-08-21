@@ -1,7 +1,7 @@
 package ru.loginov.serbian.bot.data.dto.price
 
 import ru.loginov.serbian.bot.data.dto.category.CategoryDescription
-import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDto
+import ru.loginov.serbian.bot.data.dto.product.ProductDescription
 import ru.loginov.serbian.bot.data.dto.shop.ShopDescription
 import java.time.LocalDateTime
 import javax.persistence.CascadeType
@@ -37,7 +37,7 @@ class PriceDescription {
 
     @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", insertable = false, updatable = false)
-    var product: ProductDescriptionDto? = null
+    var product: ProductDescription? = null
 
     @Column(name = "product_id")
     var productId: Int? = null

@@ -8,7 +8,7 @@ import io.github.edmondantes.simple.permissions.manager.PermissionManager
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import ru.loginov.serbian.bot.configuration.TelegramCallbackStore
-import ru.loginov.serbian.bot.data.dto.user.UserDto
+import ru.loginov.serbian.bot.data.dto.user.UserDescription
 import ru.loginov.serbian.bot.data.manager.user.UserManager
 import ru.loginov.serbian.bot.data.manager.user.UserSettingsManager
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
@@ -90,7 +90,7 @@ class DefaultBotCommandExecuteContextFactory(
                 localizationContext,
                 EmptyArgumentManager() as ArgumentManager<LocalizationRequest>,
                 -1,
-                UserDto().also { it.language = lang },
+                UserDescription().also { it.language = lang },
                 Message(-1, chat = Chat(-1, "private", firstName = ""), sendDateTime = 0, text = "")
         ) {
             override fun checkPermission(permission: String): Boolean = false

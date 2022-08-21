@@ -6,4 +6,4 @@ import ru.loginov.serbian.bot.data.dto.category.CategoryLocalizedName
 import ru.loginov.serbian.bot.data.dto.localization.LocalizedId
 
 @Repository
-interface CategoryDtoLocalizationRepository : CrudRepository<CategoryLocalizedName, LocalizedId>
+interface CategoryLocalizedNameRepository : CrudRepository<CategoryLocalizedName, LocalizedId>

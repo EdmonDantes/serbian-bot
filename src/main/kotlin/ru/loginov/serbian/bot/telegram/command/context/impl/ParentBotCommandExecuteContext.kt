@@ -2,7 +2,7 @@ package ru.loginov.serbian.bot.telegram.command.context.impl
 
 import io.github.edmondantes.simple.localization.LocalizationRequest
 import io.github.edmondantes.simple.localization.context.LocalizationContext
-import ru.loginov.serbian.bot.data.dto.user.UserDto
+import ru.loginov.serbian.bot.data.dto.user.UserDescription
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.telegram.api.entity.BotCommand
@@ -24,7 +24,7 @@ open class ParentBotCommandExecuteContext(protected val parent: BotCommandExecut
         get() = parent.localization
     override val inputMessage: Message
         get() = parent.inputMessage
-    override val user: UserDto
+    override val user: UserDescription
         get() = parent.user
     override val chatId: Long
         get() = parent.chatId

@@ -8,46 +8,38 @@ import org.hibernate.Hibernate
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDto
-import ru.loginov.serbian.bot.data.dto.product.ProductDescriptionDtoLocalization
+import ru.loginov.serbian.bot.data.dto.product.ProductDescription
+import ru.loginov.serbian.bot.data.dto.product.ProductLocalizedName
 import ru.loginov.serbian.bot.data.manager.category.CategoryManager
-import ru.loginov.serbian.bot.data.repository.product.ProductDescriptionDtoLocalizationRepository
-import ru.loginov.serbian.bot.data.repository.product.ProductDescriptionDtoRepository
+import ru.loginov.serbian.bot.data.repository.product.ProductDescriptionRepository
+import ru.loginov.serbian.bot.data.repository.product.ProductLocalizedNameRepository
 import ru.loginov.serbian.bot.data.repository.search.SearchRepository
 
 //TODO: Create new business logic
 @Service
 class DefaultProductDescriptionManager(
-        private val productDescriptionDtoRepository: ProductDescriptionDtoRepository,
-        private val productDescriptionDtoLocalizationRepository: ProductDescriptionDtoLocalizationRepository,
-        private val searchRepository: SearchRepository<ProductDescriptionDtoLocalization>,
+        private val productDescriptionRepository: ProductDescriptionRepository,
+        private val productLocalizedNameRepository: ProductLocalizedNameRepository,
+        private val searchRepository: SearchRepository<ProductLocalizedName>,
         private val categoryManager: CategoryManager,
         private val localizer: Localizer
 ) : ProductDescriptionManager {
-    override suspend fun create(names: Map<String, String>, categoryId: Int?): ProductDescriptionDto? {
+    override suspend fun create(names: Map<String, String>, categoryId: Int?): ProductDescription? {
         if (categoryId != null && !categoryManager.existsById(categoryId)) {
             return null
         }
 
-        val dto = ProductDescriptionDto()
-        dto.categoryId = categoryId
-        dto.localization = HashMap()
-        names.forEach { (lang, name) ->
+        val dto = ProductDescription(null, categoryId, names.mapValues { (lang, name) ->
             if (!localizer.isSupport(lang)) {
                 throw LanguageNotSupportedException(lang)
             }
 
-            val localization = ProductDescriptionDtoLocalization()
-            localization.entity = dto
-            localization.name = name
-            localization.localizedId.locale = lang
-
-            dto.localization[lang] = localization
-        }
+            ProductLocalizedName(null as Int?, lang, name)
+        })
 
         return withContext(Dispatchers.IO) {
             try {
-                productDescriptionDtoRepository.save(dto)
+                productDescriptionRepository.save(dto)
             } catch (e: Exception) {
                 LOGGER.warn("Can not save product description with names '$names' and category id '$categoryId'", e)
                 null
@@ -55,27 +47,27 @@ class DefaultProductDescriptionManager(
         }
     }
 
-    override suspend fun findById(id: Int): ProductDescriptionDto? =
+    override suspend fun findById(id: Int): ProductDescription? =
             withContext(Dispatchers.IO) {
                 try {
-                    productDescriptionDtoRepository.findByIdOrNull(id)
+                    productDescriptionRepository.findByIdOrNull(id)
                 } catch (e: Exception) {
                     LOGGER.warn("Can not find ProductDescriptionDto by id '$id'", e)
                     null
                 }
             }
 
-    override suspend fun findByCategoryId(categoryId: Int): List<ProductDescriptionDto> =
+    override suspend fun findByCategoryId(categoryId: Int): List<ProductDescription> =
             withContext(Dispatchers.IO) {
                 try {
-                    productDescriptionDtoRepository.findAllByCategoryIdWithLocalization(categoryId)
+                    productDescriptionRepository.findAllByCategoryIdWithLocalization(categoryId)
                 } catch (e: Exception) {
                     LOGGER.warn("Can not find all ProductDescriptionDto by category id '$categoryId'", e)
                     emptyList()
                 }
             }
 
-    override suspend fun findByName(name: String): List<ProductDescriptionDtoLocalization> =
+    override suspend fun findByName(name: String): List<ProductLocalizedName> =
             withContext(Dispatchers.IO) {
                 try {
                     searchRepository.findAllByGeneralProperty(name)
@@ -89,14 +81,14 @@ class DefaultProductDescriptionManager(
     override suspend fun containsWithId(id: Int): Boolean =
             withContext(Dispatchers.IO) {
                 try {
-                    productDescriptionDtoRepository.existsById(id)
+                    productDescriptionRepository.existsById(id)
                 } catch (e: Exception) {
                     LOGGER.warn("Can not check existing for ProductDescriptionDto with id '$id'", e)
                     false
                 }
             }
 
-    override fun findLocalizedNameFor(dto: ProductDescriptionDto, language: String?): String? {
+    override fun findLocalizedNameFor(dto: ProductDescription, language: String?): String? {
         if (language != null && !localizer.isSupport(language)) {
             throw LanguageNotSupportedException(language)
         }
@@ -106,7 +98,7 @@ class DefaultProductDescriptionManager(
         val localizations = if (Hibernate.isInitialized(dto.localization)) {
             dto.localization
         } else if (dto.id != null) {
-            productDescriptionDtoRepository.findByIdWithLocalization(dto.id!!).orElse(null)?.localization
+            productDescriptionRepository.findByIdWithLocalization(dto.id!!).orElse(null)?.localization
         } else {
             null
         }
@@ -129,7 +121,7 @@ class DefaultProductDescriptionManager(
     override suspend fun remove(id: Int): Boolean =
             withContext(Dispatchers.IO) {
                 try {
-                    productDescriptionDtoRepository.deleteById(id)
+                    productDescriptionRepository.deleteById(id)
                     true
                 } catch (e: Exception) {
                     LOGGER.warn("Can not remove ProductDescriptionDto with id '$id'", e)
@@ -142,14 +134,14 @@ class DefaultProductDescriptionManager(
             return false
         }
 
-        val dto = ProductDescriptionDtoLocalization()
+        val dto = ProductLocalizedName()
         dto.localizedId.id = productId
         dto.localizedId.locale = language
         dto.name = value
 
         return withContext(Dispatchers.IO) {
             try {
-                productDescriptionDtoLocalizationRepository.save(dto)
+                productLocalizedNameRepository.save(dto)
                 true
             } catch (e: Exception) {
                 LOGGER.warn(

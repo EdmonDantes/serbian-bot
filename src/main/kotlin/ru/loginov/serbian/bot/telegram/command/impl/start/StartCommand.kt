@@ -17,7 +17,7 @@ class StartCommand(
         val lang = arguments.language("lang").optionalAndGet() ?: return
 
         try {
-            userManager.update(user.id!!, language = lang)
+//            userManager.update(user.id!!, language = lang)
         } catch (e: Exception) {
             LOGGER.warn("Can not update language to '$lang' for user with id '${user.id}'", e)
         }

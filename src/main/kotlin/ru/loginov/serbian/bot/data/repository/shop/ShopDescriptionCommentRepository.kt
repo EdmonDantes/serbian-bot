@@ -4,9 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository
 import ru.loginov.serbian.bot.data.dto.shop.ShopComment
 import java.time.LocalDateTime
 
-interface ShopDescriptionCommentDtoRepository : JpaRepository<ShopComment, Int> {
+interface ShopDescriptionCommentRepository : JpaRepository<ShopComment, Int> {
 
-    fun findTop10ByEntityIdAndCreatedTimeBeforeOrderByCreatedTimeDesc(
+    fun findTop10ByShopIdAndCreatedTimeBeforeOrderByCreatedTimeDesc(
             entityId: Int,
             createdTime: LocalDateTime
     ): List<ShopComment>

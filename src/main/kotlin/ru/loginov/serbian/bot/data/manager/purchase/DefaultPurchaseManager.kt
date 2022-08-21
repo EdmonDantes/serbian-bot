@@ -22,7 +22,7 @@ class DefaultPurchaseManager(
         val result = PurchaseDescription()
         result.categoryId = categoryId
         result.shopId = shopId
-        result.price = price
+        result.price = price.toLong() // FIXME:
 
         return purchaseDescriptionRepository.useSuspend {
             it.saveOr(result) { null }

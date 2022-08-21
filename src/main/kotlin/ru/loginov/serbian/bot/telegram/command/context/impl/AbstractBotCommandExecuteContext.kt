@@ -5,7 +5,7 @@ import io.github.edmondantes.simple.localization.context.LocalizationContext
 import io.github.edmondantes.simple.permissions.PermissionOwner
 import io.github.edmondantes.simple.permissions.manager.PermissionManager
 import org.slf4j.LoggerFactory
-import ru.loginov.serbian.bot.data.dto.user.UserDto
+import ru.loginov.serbian.bot.data.dto.user.UserDescription
 import ru.loginov.serbian.bot.telegram.command.argument.manager.ArgumentManager
 import ru.loginov.serbian.bot.telegram.command.context.BotCommandExecuteContext
 import ru.loginov.telegram.api.TelegramAPI
@@ -28,7 +28,7 @@ abstract class AbstractBotCommandExecuteContext(
         override val localization: LocalizationContext,
         override val arguments: ArgumentManager<LocalizationRequest>,
         final override val chatId: Long,
-        final override val user: UserDto,
+        final override val user: UserDescription,
         final override val inputMessage: Message
 ) : BotCommandExecuteContext {
 

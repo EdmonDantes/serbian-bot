@@ -3,7 +3,9 @@ package ru.loginov.serbian.bot.data.dto.category
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
-import java.util.Locale
+import ru.loginov.serbian.bot.data.dto.WithId
+import ru.loginov.serbian.bot.data.dto.localization.prepareLocalization
+import java.util.Collections
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -15,22 +17,31 @@ import javax.persistence.MapKey
 import javax.persistence.OneToMany
 
 @Entity
-class CategoryDescription {
+class CategoryDescription : WithId {
 
-    constructor() {}
+    constructor() : this(id = null)
 
-    constructor(id: Int?) {
+    constructor(
+            id: Int? = null,
+            parent: CategoryDescription? = null,
+            children: List<CategoryDescription> = Collections.emptyList(),
+            localization: Map<String, CategoryLocalizedName> = Collections.emptyMap()
+    ) {
+        this.localization = prepareLocalization(localization)
+        this.children = children
+        this.parentId = parent?.id
+        this.parent = parent
         this.id = id
-    }
 
-    constructor(parentId: Int?, id: Int?) {
-        this.parentId = parentId
-        this.id = id
+        this.children.forEach {
+            it.parent = this
+            it.parentId = id
+        }
     }
 
     @Id
     @GeneratedValue
-    var id: Int? = null
+    override var id: Int? = null
 
     @JsonIgnore
     @OneToMany(
@@ -38,7 +49,7 @@ class CategoryDescription {
             cascade = [CascadeType.REMOVE, CascadeType.REFRESH, CascadeType.DETACH],
             orphanRemoval = true
     )
-    var subCategories: MutableList<CategoryDescription> = ArrayList()
+    var children: List<CategoryDescription>
 
     @JsonIgnore
     @ManyToOne(cascade = [CascadeType.REFRESH], optional = true)
@@ -52,14 +63,5 @@ class CategoryDescription {
     @MapKey(name = "localizedId.locale")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
     @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var localization: MutableMap<String, CategoryLocalizedName> = HashMap()
-
-    fun putLocalization(locale: Locale, value: String) {
-        val localeTag = locale.toLanguageTag()
-        localization[localeTag] = CategoryLocalizedName(this, localeTag, value)
-    }
-
-    fun putLocalization(locale: String, value: String) {
-        localization[locale] = CategoryLocalizedName(this, locale, value)
-    }
+    var localization: Map<String, CategoryLocalizedName>
 }

@@ -14,19 +14,35 @@ import javax.persistence.Table
 
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-@Table(indexes = [Index(name = "indexByTime", columnList = "entity_id asc,created_time desc,id")])
+@Table(indexes = [Index(name = "indexByTime", columnList = "created_time desc,shop_id asc,id")])
 class ShopComment {
+
+    constructor() {}
+    constructor(id: Int) {
+        this.id = id
+    }
+
+    constructor(shopId: Int, comment: String, locale: String? = null) {
+        this.shopId = shopId
+        this.locale = locale
+        this.comment = comment
+        this.createdTime = LocalDateTime.now()
+    }
+
 
     @Id
     @GeneratedValue
     var id: Int? = null
 
     @ManyToOne
-    @JoinColumn(name = "entity_id", insertable = false, updatable = false)
-    var entity: ShopDescription? = null
+    @JoinColumn(name = "shop_id", insertable = false, updatable = false)
+    var shop: ShopDescription? = null
 
-    @Column(name = "entity_id", nullable = false)
-    var entityId: Int? = null
+    @Column(name = "shop_id", nullable = false)
+    var shopId: Int? = null
+
+    @Column(name = "locale")
+    var locale: String? = null
 
     @Column(nullable = false)
     var comment: String? = null
