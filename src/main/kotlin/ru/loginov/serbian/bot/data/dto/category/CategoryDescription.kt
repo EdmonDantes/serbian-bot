@@ -9,6 +9,7 @@ import java.util.Collections
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.JoinColumn
@@ -44,15 +45,11 @@ class CategoryDescription : WithId {
     override var id: Int? = null
 
     @JsonIgnore
-    @OneToMany(
-            mappedBy = "parent",
-            cascade = [CascadeType.REMOVE, CascadeType.REFRESH, CascadeType.DETACH],
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "parent", cascade = [CascadeType.ALL])
     var children: List<CategoryDescription>
 
     @JsonIgnore
-    @ManyToOne(cascade = [CascadeType.REFRESH], optional = true)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH])
     @JoinColumn(name = "parent_id", insertable = false, updatable = false)
     var parent: CategoryDescription? = null
 

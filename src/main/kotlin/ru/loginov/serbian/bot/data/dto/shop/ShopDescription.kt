@@ -49,7 +49,7 @@ class ShopDescription {
     var googleMapLink: String? = null
 
     @JsonIgnore
-    @ManyToOne(cascade = [CascadeType.ALL], optional = false)
+    @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH], optional = false)
     @JoinColumn(name = "country_id", insertable = false, updatable = false)
     var country: CountryDescription? = null
 

@@ -19,9 +19,11 @@ inline fun <O : Any, I : Any?, R : Any> R.assertAfter(
             .find {
                 !ignoreProperties.contains(it.name)
                         && it is KMutableProperty1<*, *>
-                        && (it.annotations.any { it is Id || it is EmbeddedId }
-                        || it.javaField?.annotations?.any { it is Id || it is EmbeddedId } ?: false)
                         && it.annotations.any { it is GeneratedValue }
+                        && (
+                        it.annotations.any { it is Id || it is EmbeddedId }
+                                || it.javaField?.annotations?.any { it is Id || it is EmbeddedId } ?: false
+                        )
             }
             ?.let { it as KMutableProperty1<O, *> }
     val trackedProperties = expected::class.memberProperties

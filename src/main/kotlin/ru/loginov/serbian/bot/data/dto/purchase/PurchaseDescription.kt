@@ -51,7 +51,7 @@ class PurchaseDescription : WithId {
     override var id: Int? = null
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH])
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
     var category: CategoryDescription? = null
 
@@ -60,7 +60,7 @@ class PurchaseDescription : WithId {
     var categoryId: Int? = null
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH])
     @JoinColumn(name = "product_id", insertable = false, updatable = false)
     var product: ProductDescription? = null
 
@@ -69,7 +69,7 @@ class PurchaseDescription : WithId {
     var productId: Int? = null
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH])
     @JoinColumn(name = "shop_id", insertable = false, updatable = false)
     var shop: ShopDescription? = null
 
@@ -77,7 +77,7 @@ class PurchaseDescription : WithId {
     var shopId: Int? = null
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH])
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     var user: UserDescription? = null
 

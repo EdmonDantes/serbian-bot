@@ -39,7 +39,7 @@ class ProductDescription : WithId {
     override var id: Int? = null
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH])
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
     var category: CategoryDescription? = null
 

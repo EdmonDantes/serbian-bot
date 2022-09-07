@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import ru.loginov.serbian.bot.data.dto.category.CategoryDescription
 import ru.loginov.serbian.bot.data.dto.place.CountryDescription
@@ -20,7 +21,10 @@ import ru.loginov.serbian.bot.data.repository.place.CountryDescriptionRepository
 import ru.loginov.serbian.bot.data.repository.product.ProductDescriptionRepository
 import ru.loginov.serbian.bot.data.repository.shop.ShopDescriptionRepository
 import ru.loginov.serbian.bot.data.repository.user.UserDescriptionRepository
+import java.time.LocalDateTime
+import java.util.stream.IntStream
 import kotlin.properties.Delegates
+import kotlin.streams.toList
 
 @SpringBootTest(
         classes = [
@@ -73,10 +77,15 @@ class PurchaseDescriptionRepositoriesTest {
     @BeforeEach
     fun beforeTest() {
         repository.deleteAll()
-        categoryRepository.deleteAll()
+        repository.flush()
         productRepository.deleteAll()
+        productRepository.flush()
+        categoryRepository.deleteAll()
+        categoryRepository.flush()
         shopRepository.deleteAll()
+        shopRepository.flush()
         countryRepository.deleteAll()
+        countryRepository.flush()
 
         createdCountryId = countryRepository.saveAndFlush(CountryDescription(name = "test")).id
                 ?: error("Can not create country description")
@@ -102,7 +111,7 @@ class PurchaseDescriptionRepositoriesTest {
     }
 
     @Test
-    fun simpleTest() {
+    fun simpleTestWithCategory() {
         val purchase = repository.saveAndFlush(
                 PurchaseDescription(
                         categoryId = createdCategoryId,
@@ -115,6 +124,152 @@ class PurchaseDescriptionRepositoriesTest {
 
         Assertions.assertNotNull(purchase)
         Assertions.assertNotNull(purchase.id)
+    }
+
+    @Test
+    fun simpleTestWithProduct() {
+        val purchase = repository.saveAndFlush(
+                PurchaseDescription(
+                        productId = createdProductId,
+                        shopId = createdShopId,
+                        userId = createdUserId,
+                        purchaseTrustLevel = PurchaseTrustLevel.TRUSTED,
+                        price = 200
+                )
+        )
+
+        Assertions.assertNotNull(purchase)
+        Assertions.assertNotNull(purchase.id)
+    }
+
+
+    @Test
+    fun testFindCategoryAndShopWithoutPaging() {
+
+        val secondCategory = categoryRepository.saveAndFlush(CategoryDescription())
+
+        Assertions.assertNotNull(secondCategory)
+        Assertions.assertNotNull(secondCategory.id)
+
+        val purchases = IntStream.range(0, 1000).mapToObj {
+            PurchaseDescription(
+                    categoryId = if (it % 2 == 0) createdCategoryId else secondCategory.id,
+                    shopId = createdShopId,
+                    userId = createdUserId,
+                    purchaseTrustLevel = PurchaseTrustLevel.TRUSTED,
+                    price = it + 10
+            )
+        }.toList()
+
+        repository.saveAllAndFlush(purchases)
+
+        Assertions.assertEquals(1000, repository.count())
+
+        val page = repository.findAllByCategoryIdAndShopIdAndCreatedDateTimeAfter(
+                createdCategoryId,
+                createdShopId,
+                LocalDateTime.now().minusMonths(1)
+        )
+
+        Assertions.assertEquals(500, page.totalElements)
+        Assertions.assertEquals(500, page.numberOfElements)
+    }
+
+    @Test
+    fun testFindCategoryAndShopWithPaging() {
+
+        val secondCategory = categoryRepository.saveAndFlush(CategoryDescription())
+
+        Assertions.assertNotNull(secondCategory)
+        Assertions.assertNotNull(secondCategory.id)
+
+        val purchases = IntStream.range(0, 1000).mapToObj {
+            PurchaseDescription(
+                    categoryId = if (it % 2 == 0) createdCategoryId else secondCategory.id,
+                    shopId = createdShopId,
+                    userId = createdUserId,
+                    purchaseTrustLevel = PurchaseTrustLevel.TRUSTED,
+                    price = it + 10
+            )
+        }.toList()
+
+        repository.saveAllAndFlush(purchases)
+
+        Assertions.assertEquals(1000, repository.count())
+
+        val page = repository.findAllByCategoryIdAndShopIdAndCreatedDateTimeAfter(
+                createdCategoryId,
+                createdShopId,
+                LocalDateTime.now().minusMonths(1),
+                Pageable.ofSize(100)
+        )
+
+        Assertions.assertEquals(500, page.totalElements)
+        Assertions.assertEquals(100, page.numberOfElements)
+    }
+
+
+    @Test
+    fun testFindProductAndShopWithoutPaging() {
+        val secondProduct = productRepository.saveAndFlush(ProductDescription(categoryId = createdCategoryId))
+
+        Assertions.assertNotNull(secondProduct)
+        Assertions.assertNotNull(secondProduct.id)
+
+        val purchases = IntStream.range(0, 1000).mapToObj {
+            PurchaseDescription(
+                    productId = if (it % 2 == 0) createdProductId else secondProduct.id,
+                    shopId = createdShopId,
+                    userId = createdUserId,
+                    purchaseTrustLevel = PurchaseTrustLevel.TRUSTED,
+                    price = it + 10
+            )
+        }.toList()
+
+        repository.saveAllAndFlush(purchases)
+
+        Assertions.assertEquals(1000, repository.count())
+
+        val page = repository.findAllByProductIdAndShopIdAndCreatedDateTimeAfter(
+                createdProductId,
+                createdShopId,
+                LocalDateTime.now().minusMonths(1)
+        )
+
+        Assertions.assertEquals(500, page.totalElements)
+        Assertions.assertEquals(500, page.numberOfElements)
+    }
+
+    @Test
+    fun testFindProductAndShopWithPaging() {
+        val secondProduct = productRepository.saveAndFlush(ProductDescription(categoryId = createdCategoryId))
+
+        Assertions.assertNotNull(secondProduct)
+        Assertions.assertNotNull(secondProduct.id)
+
+        val purchases = IntStream.range(0, 1000).mapToObj {
+            PurchaseDescription(
+                    productId = if (it % 2 == 0) createdProductId else secondProduct.id,
+                    shopId = createdShopId,
+                    userId = createdUserId,
+                    purchaseTrustLevel = PurchaseTrustLevel.TRUSTED,
+                    price = it + 10
+            )
+        }.toList()
+
+        repository.saveAllAndFlush(purchases)
+
+        Assertions.assertEquals(1000, repository.count())
+
+        val page = repository.findAllByProductIdAndShopIdAndCreatedDateTimeAfter(
+                createdProductId,
+                createdShopId,
+                LocalDateTime.now().minusMonths(1),
+                Pageable.ofSize(100)
+        )
+
+        Assertions.assertEquals(500, page.totalElements)
+        Assertions.assertEquals(100, page.numberOfElements)
     }
 
 }
